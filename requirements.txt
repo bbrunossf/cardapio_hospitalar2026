@@ -1,0 +1,6 @@
+Flask>=3.0
+Flask-SQLAlchemy>=3.0
+Flask-Admin>=2.0
+SQLAlchemy>=2.0
+Werkzeug>=3.0
+PuLP>=2.9

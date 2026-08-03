@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+    <!DOCTYPE html>
+    <html lang="pt-br" data-theme="dark">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado - Cardápio Otimizado</title>
+    <style>
+      :root {
+        --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
+        --text: #e0e0e0; --text2: #a0a0a0; --primary: #4fc3f7;
+        --success: #66bb6a; --warning: #ffa726; --danger: #ef5350;
+        --border: #2a2a4a; --radius: 8px;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg); color: var(--text); padding: 24px;
+      }
+      .container { max-width: 1100px; margin: 0 auto; }
+      h1 { font-size: 1.6rem; margin-bottom: 4px; }
+      .subtitle { color: var(--text2); margin-bottom: 24px; }
+      .metricas {
+        display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px;
+      }
+      .metrica {
+        flex: 1; min-width: 140px; background: var(--surface);
+        border-radius: var(--radius); padding: 14px; text-align: center;
+      }
+      .metrica .valor { font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+      .metrica .label { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+      .dia-card {
+        background: var(--surface); border-radius: var(--radius);
+        padding: 20px; margin-bottom: 20px;
+      }
+      .dia-titulo {
+        font-size: 1.2rem; font-weight: 700; margin-bottom: 14px;
+        padding-bottom: 10px; border-bottom: 1px solid var(--border);
+      }
+      .refeicao { margin-bottom: 16px; }
+      .refeicao-nome {
+        font-size: 0.95rem; color: var(--warning); font-weight: 600; margin-bottom: 6px;
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+      th { text-align: left; padding: 8px 10px; font-size: 0.8rem; color: var(--text2); border-bottom: 2px solid var(--border); }
+      td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+      .tipo-badge {
+        display: inline-block; padding: 2px 8px; border-radius: 4px;
+        font-size: 0.75rem; background: var(--surface2); color: var(--primary);
+      }
+      .status-badge {
+        display: inline-block; padding: 4px 12px; border-radius: 4px;
+        font-size: 0.8rem; font-weight: 600;
+      }
+      .status-ok { background: #1b5e20; color: var(--success); }
+      .status-warn { background: #e65100; color: var(--warning); }
+      .back-link { margin-top: 24px; text-align: center; }
+      .back-link a { color: var(--primary); text-decoration: none; }
+    </style>
+    </head>
+    <body>
+    <div class="container">
+      <h1>🍽️ Cardápio Otimizado</h1>
+      <p class="subtitle">
+        Dieta: <strong>{{ dieta }}</strong> &middot; {{ dias }} dias &middot;
+        Status: <span class="status-badge {{ 'status-ok' if resultado.status == 'Optimal' else 'status-warn' }}">{{ resultado.status }}</span>
+      </p>
+
+      <div class="metricas">
+        <div class="metrica"><div class="valor">{{ "%.0f" % resultado.metricas.media_energia_diaria_kcal }}</div><div class="label">kcal/dia (média)</div></div>
+        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_proteina_diaria_g }}g</div><div class="label">proteína/dia</div></div>
+        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_lipidios_diaria_g }}g</div><div class="label">lipídios/dia</div></div>
+        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_carboidrato_diaria_g }}g</div><div class="label">carboidrato/dia</div></div>
+        <div class="metrica"><div class="valor">{{ "%.0f" % resultado.metricas.media_sodio_diario_mg }}mg</div><div class="label">sódio/dia</div></div>
+        <div class="metrica"><div class="valor">{{ resultado.metricas.total_pratos_selecionados }}</div><div class="label">pratos no total</div></div>
+      </div>
+
+      {% for dia in resultado.cardapio %}
+      <div class="dia-card">
+        <div class="dia-titulo">📅 Dia {{ dia.dia }}</div>
+        {% for ref in dia.refeicoes %}
+        <div class="refeicao">
+          <div class="refeicao-nome">🕐 {{ ref.refeicao_nome }} {% if ref.horario %}({{ ref.horario }}){% endif %}</div>
+          <table>
+            {% for tipo in ref.tipos %}
+            {% for prato in tipo.pratos %}
+            <tr>
+              <td><span class="tipo-badge">{{ tipo.tipo }}</span></td>
+              <td>{{ prato.nome }}</td>
+              <td style="text-align:right">{% if prato.porcao_g %}{{ "%.0f" % prato.porcao_g }}g{% endif %}</td>
+              <td style="text-align:right; color: var(--text2)">{{ "%.0f" % prato.energia_kcal }} kcal</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+          </table>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+
+      <div class="back-link"><a href="/otimizacao">← Nova otimização</a> &nbsp;|&nbsp; <a href="/admin/">← Voltar ao Admin</a></div>
+    </div>
+    </body>
+    </html>
+</html>

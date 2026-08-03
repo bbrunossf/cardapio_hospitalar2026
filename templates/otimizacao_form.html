@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otimização de Cardápio</title>
+    <style>
+    :root {
+        --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
+        --text: #e0e0e0; --text2: #a0a0a0; --primary: #4fc3f7;
+        --success: #66bb6a; --warning: #ffa726;
+        --border: #2a2a4a; --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg); color: var(--text);
+        display: flex; justify-content: center; align-items: center;
+        min-height: 100vh; padding: 20px;
+    }
+    .container {
+        max-width: 600px; width: 100%;
+        background: var(--surface); border-radius: 12px; padding: 32px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .subtitle { color: var(--text2); margin-bottom: 28px; font-size: 0.9rem; }
+    label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text2); }
+    input, select {
+        width: 100%; padding: 10px 14px; border-radius: var(--radius);
+        border: 1px solid var(--border); background: var(--bg);
+        color: var(--text); font-size: 0.95rem; margin-bottom: 18px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+    .btn {
+        width: 100%; padding: 12px; border-radius: var(--radius); border: none;
+        cursor: pointer; font-size: 1rem; font-weight: 600;
+        background: var(--primary); color: #000; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .row { display: flex; gap: 16px; }
+    .row > div { flex: 1; }
+    .back-link { display: block; margin-top: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; }
+    .back-link a { color: var(--primary); text-decoration: none; }
+    .erro { padding: 12px; background: #3e1a1a; color: #ef5350; border-radius: var(--radius); margin-bottom: 16px; display: none; }
+    </style>
+    </head>
+<body>
+    <div class="container">
+    <h1>🔬 Otimização de Cardápio</h1>
+    <p class="subtitle">Gere um cardápio otimizado por refeição usando programação linear (PuLP + CBC)</p>
+
+    <div class="erro" id="erroBox"></div>
+
+    <form id="otimizacaoForm">
+        <label for="dieta">Dieta</label>
+        <input type="text" id="dieta" name="dieta" value="LIVRE" placeholder="Ex: LIVRE, BRANDA, PASTOSA...">
+
+        <div class="row">
+        <div>
+            <label for="dias">Quantidade de dias</label>
+            <input type="number" id="dias" name="dias" value="5" min="1" max="30">
+        </div>
+        <div>
+            <label for="objetivo">Função objetivo</label>
+            <select id="objetivo" name="objetivo">
+            <option value="max_energia">Maximizar Energia (kcal)</option>
+            <option value="max_proteina">Maximizar Proteína (g)</option>
+            <option value="min_custo">Minimizar Custo (R$)</option>
+            </select>
+        </div>
+        </div>
+
+        <label for="formato">Formato da saída</label>
+        <select id="formato" name="formato">
+        <option value="json">JSON (para API)</option>
+        <option value="html">Tabela HTML (retrato)</option>
+        <option value="html_paisagem">Tabela HTML (paisagem — dias nas colunas)</option>
+        </select>
+
+        <button type="submit" class="btn" id="btnExecutar">▶ Executar Otimização</button>
+    </form>
+
+    <div class="back-link"><a href="/admin/">← Voltar ao Admin</a></div>
+    </div>
+
+    <script>
+    document.getElementById('otimizacaoForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnExecutar');
+    const erroBox = document.getElementById('erroBox');
+    btn.disabled = true;
+    btn.textContent = '⏳ Executando... isso pode levar alguns segundos';
+    erroBox.style.display = 'none';
+
+    const payload = {
+        dieta: document.getElementById('dieta').value,
+        dias: parseInt(document.getElementById('dias').value),
+        objetivo: document.getElementById('objetivo').value,
+        formato: document.getElementById('formato').value,
+    };
+
+    try {
+        const resp = await fetch('/api/otimizacao/executar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload),
+        });
+
+        if (payload.formato === 'html' || payload.formato === 'html_paisagem') {
+        document.body.innerHTML = await resp.text();
+        } else {
+        const data = await resp.json();
+        if (data.erro) {
+            erroBox.textContent = 'Erro: ' + data.erro;
+            erroBox.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '▶ Executar Otimização';
+            return;
+        }
+        document.body.innerHTML = '<pre style="padding:20px;color:#e0e0e0;background:#1a1a2e;">' +
+            JSON.stringify(data, null, 2) + '</pre><p style="text-align:center;padding:10px"><a href="/otimizacao" style="color:#4fc3f7;">← Nova consulta</a></p>';
+        }
+    } catch (err) {
+        erroBox.textContent = 'Erro de conexão: ' + err.message;
+        erroBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '▶ Executar Otimização';
+    }
+    });
+    </script>
+</body>
+</html>

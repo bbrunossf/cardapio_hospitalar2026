@@ -1,0 +1,300 @@
+,ingrediente,qtde,ENERGIA (kcal),PROTEÍNA (g),LIPÍDEOS (g),CARBOIDRATO (g),FIBRA ALIMENTAR (g),CÁLCIO (mg),FÓSFORO (mg),FERRO (mg),SÓDIO (mg),POTÁSSIO (mg),"VIT, C (mg)",FONTE
+0,Abacaxi,100.0,0.0,0.858695652173913,0.123333333333333,0.0,0.986666666666666,0.0,12.78,0.256666666666666,0.0,131.34,0.0,"Abacaxi, cru/TACO"
+1,Abacaxi cru,5.0,0.0,0.858695652173913,0.123333333333333,0.0,0.986666666666666,0.0,12.78,0.256666666666666,0.0,131.34,0.0,"Abacaxi, cru/TACO"
+5,Abóbora cozida,30.0,0.0,0.39375,0.799,0.0,0.0,19.08,0.0,0.113,131.0,0.0,0.0,"Abóbora moranga refogada TACO com sódio TBCA (Abóbora, moranga, refogada, c/ sal)"
+10,Abóbora moranga refogada,50.0,0.0,0.39375,0.799,0.0,0.0,19.08,0.0,0.113,0.0,0.0,0.0,"Abóbora, moranga, refogada/ TACO"
+14,Abobrinha cozida,90.0,0.0,0.0,0.199,0.0,0.0,0.0,0.0,0.159666666666666,131.0,0.0,2.13,"Abobrinha, italiana, cozida/TACO com sódio TBCA (Abobrinha, italiana, c/ casca, refogada, c/ saL)"
+17,Abobrinha ensopada,100.0,42.3,0.91,2.83,4.31,1.4,27.0,39.0,0.36,1.0,192.0,5.5,Abobrinha ensopada DIETBOX/IBGE
+19,Abobrinha italiana cozida,20.0,0.0,0.0,0.199,0.0,0.0,0.0,0.0,0.159666666666666,131.0,0.0,2.13,"Abobrinha, italiana, cozida/TACO com sódio TBCA (Abobrinha, italiana, c/ casca, refogada, c/ saL)"
+28,Abobrinha italiana refogada,50.0,0.0,0.0,0.821333333333333,0.0,1.38,0.0,0.0,0.358,0.0,0.0,7.53,"Abobrinha, italiana, refogada/TACO"
+31,Acelga,10.0,0.0,0.0,0.106,0.0,0.0,0.0,0.0,0.269333333333333,0.0,0.0,22.55,"Acelga,crua/TACO"
+34,Achocolatado,20.0,401.02,0.0,0.0,0.0,3.89,0.0,0.0,5.36,0.0,496.45,0.0,"Achocolatado, pó/TACO"
+35,Achocolatado em pó,5.0,401.02,0.0,0.0,0.0,3.89,0.0,0.0,5.36,0.0,496.45,0.0,"Achocolatado, pó/TACO"
+36,Açucar,20.0,0.0,0.32,0.0,99.61,0.0,0.0,0.0,0.163333333333333,0.0,2.56,0.0,Açúcar cristal TACO
+37,Açúcar cristal,5.0,0.0,0.32,0.0,99.61,0.0,0.0,0.0,0.163333333333333,0.0,2.56,0.0,"Açúcar,cristal/ TACO"
+59,Agrião,10.0,0.0,0.0,0.236666666666666,0.0,0.0,132.53,0.0,0.0,0.0,217.66,60.1,"Agrião, cru/TACO"
+62,Agrião cru,10.0,0.0,0.0,0.236666666666666,0.0,0.0,132.53,0.0,0.0,0.0,217.66,60.1,"Agrião, cru/TACO"
+67,Água de coco,160.0,0.0,0.0,0.0,0.0,0.130333333333333,0.0,0.0,0.0,0.0,0.0,0.0,Água de coco/TACO
+68,Aipim,80.0,125.0,0.6,0.3,30.1,1.6,19.0,22.0,0.1,189.0,100.0,11.1,"Aipim cozido DIETBOX/IBGE  com sódio TBCA (Mandioca, cozida, drenada, c/ óleo de soja, c/ sal)"
+70,Aipim cozido,65.0,125.0,0.6,0.3,30.1,1.6,19.0,22.0,0.1,1.0,100.0,11.1,Aipim cozido DIETBOX/IBGE
+77,Alecrim seco,1.0,331.0,4.88,15.2,64.1,35.3,1280.0,70.0,29.3,49.5,955.0,61.2,Alecrim seco DIETBOX/TUCUNDUVA
+78,Alface,10.0,0.0,0.0,0.16,0.0,0.0,37.98,0.0,0.396666666666666,3.38,0.0,0.0,"Alface, crespa, crua/ TACO"
+82,"Alface crespa, crua",15.0,0.0,0.0,0.16,0.0,0.0,37.98,0.0,0.396666666666666,3.38,0.0,0.0,"Alface, crespa, crua/TACO"
+86,Alho ,10.0,0.0,0.0,0.22,0.0,0.0,13.56,149.09,0.8,5.36,0.0,0.0,"Alho, cru/ TACO"
+87,Alho cru,5.0,0.0,0.0,0.22,0.0,0.0,13.56,149.09,0.8,5.36,0.0,0.0,"Alho, cru/ TACO"
+88,Alho cru ,5.0,0.0,0.0,0.22,0.0,0.0,13.56,149.09,0.8,5.36,0.0,0.0,"Alho, cru/TACO"
+89,Almôndegas,50.0,230.0,15.06,12.79,7.05,0.0,20.05,0.0,2.44,0.0,0.0,3.2,Almôndega Tabela para avaliação de consumo alimentar em medeidas caseiras (receita elaborada pela equipe e a0lisada segundo IBGE e/ou GF.
+92,Almôndegas ,50.0,230.0,15.06,12.79,7.05,0.0,20.05,0.0,2.44,1031.0,537.0,3.2,"Almôndega Tabela para avaliação de consumo alimentar em medeidas caseiras (receita elaborada pela equipe e a0lisada segundo IBGE e/ou GF) com sódio e potássio TBCA (Almôndega, boi, frita)"
+96,Ameixa em calda,10.0,0.0,0.408333333333333,0.0,0.0,0.517,0.0,0.0,0.0,0.0,0.0,0.0,Ameixa em calda enlatada TACO
+97,Amido,8.0,0.0,0.597826086956521,0.0,0.0,0.7433333,0.0,0.0,0.127666666666666,0.0,8535.0,0.0,"Milho, amido, cru/TACO"
+98,Amido de milho,8.0,0.0,0.597826086956521,0.0,0.0,0.7433333,0.0,0.0,0.127666666666666,0.0,8535.0,0.0,"Milho, amido, cru/TACO"
+100,Amido de milho ,7.0,0.0,0.597826086956521,0.0,0.0,0.7433333,0.0,0.0,0.127666666666666,0.0,8535.0,0.0,"Milho, amido, cru. TACO"
+103,Apresuntado ,15.0,0.0,13.45,0.0,0.0,0.0,0.0,0.0,0.877666666666666,0.0,0.0,0.0,Apresuntado/TACO
+104,Arroz,100.0,0.0,0.0,0.227,0.0,0.0,0.0,0.0,0.0766666666666666,1.0,0.0,0.0,"Arroz, tipo 1, cozido/TACO"
+109,Arroz ,60.0,0.0,0.0,0.227,0.0,0.0,0.0,0.0,0.0766666666666666,190.0,0.0,0.0,"Arroz, tipo 1, cozido/TACO"
+129,Arroz cozido,20.0,0.0,0.0,0.227,0.0,0.0,0.0,0.0,0.0766666666666666,1.0,0.0,0.0,Arroz Tipo 1 cozido/TACO
+130,Arroz doce,160.0,169.33,3.91,2.32,32.99,0.42,86.05,89.2,1.16,33.1,127.98,0.82,Arroz doce DIETBOX/TUCUNDUVA
+131,Arroz papa,55.0,0.0,0.0,0.227,0.0,0.0,0.0,0.0,0.0766666666666666,190.0,0.0,0.0,Arroz Tipo 1 cozido/TACO
+137,Arroz papa ,55.0,0.0,0.0,0.227,0.0,0.0,0.0,0.0,0.0766666666666666,190.0,0.0,0.0,Arroz Tipo 1 cozido/TACO
+138,Aveia,8.0,0.0,0.0,0.0,0.0,9.13,47.89,0.0,0.0,0.0,0.0,1.35,"Aveia, flocos, crua/TACO"
+140,Aveia em flocos,8.0,0.0,0.0,0.0,0.0,9.13,47.89,0.0,0.0,0.0,0.0,1.35,"Aveia, flocos, crua/TACO"
+141,Azeite,5.0,884.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Azeite, de oliva, ex0a virgem/TACO"
+144,"Azeite, de oliva, extra virgem",5.0,884.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Azeite, de oliva, extra virgem/TACI"
+145,Azeitona verde em conserva,5.0,0.0,0.947916666666666,0.0,0.0,0.0,0.0,5.36,0.176333333333333,0.0,0.0,0.0,"Azeitona, verde, conserva/TACO"
+146,Bacon,5.0,889.0,0.0,98.59,0.0,0.0,0.66,0.0,0.0,545.2,0.12,0.0,Bacon DIETBOX/TUCUNDUVA
+150,Bacon ,5.0,889.0,0.0,98.59,0.0,0.0,0.66,0.0,0.0,545.2,0.12,0.0,Bacon DIETBOX/TUCUNDUVA
+151,Banana da terra cozida,50.0,89.0,1.09,0.33,22.84,2.6,5.0,22.0,0.26,1.0,358.0,8.7,"Banana (ouro, prata, d´água, da terra, etc.) Cozido(a) DIETBOX/IBGE"
+152,Banana maçã,65.0,0.0,0.0,0.06,0.0,0.0,3.22,0.0,0.203333333333333,0.0,0.0,0.0,"Banana, maçã, crua/TACO"
+153,Banana nanica,120.0,0.0,0.0,0.116666666666666,0.0,0.0,0.0,26.72,0.346666666666666,0.0,376.47,5.86,"Banana, nanica, crua/TACO"
+154,Banana prata,100.0,0.0,0.0,0.065,0.0,0.0,0.0,0.0,0.38,0.0,0.0,21.59,"Banana, prata, crua/TACO"
+155,Banana-prata,40.0,0.0,0.0,0.065,0.0,0.0,0.0,0.0,0.38,0.0,0.0,21.59,Banana prata crua TACO
+157,Banana-terra frita,5.0,213.11,1.22,13.25,25.47,2.9,5.58,24.54,0.3,1.12,399.28,9.7,DIETBOX
+160,Batata baroa cozida,50.0,0.0,0.852083333333333,0.166333333333333,0.0,0.0,11.85,0.0,0.423666666666666,0.0,0.0,17.1,"Batata, baroa, cozida/TACO"
+167,Batata Cozida,5.0,0.0,0.0,0.0,0.0,0.0,3.52,0.0,0.194,0.0,0.0,3.76,"Batata, inglesa, cozida/TACO"
+169,Batata doce,65.0,0.0,0.641666666666666,0.0876666666666666,0.0,0.0,0.0,0.0,0.187,200.0,148.44,0.0,"Batata, doce, cozidaTACO com sódio TBCA ( Batata, doce, s/ casca, assada, c/ sal)"
+170,Batata doce corada,100.0,0.0,0.641666666666666,0.0876666666666666,0.0,0.0,0.0,0.0,0.187,200.0,148.44,0.0,"Batata, doce, cozidaTACO com sódio TBCA ( Batata, doce, s/ casca, assada, c/ sal)"
+172,Batata doce cozida,100.0,0.0,0.641666666666666,0.0876666666666666,0.0,0.0,0.0,0.0,0.187,200.0,148.44,0.0,"Batata, doce, cozidaTACO com sódio TBCA ( Batata, doce, s/ casca, assada, c/ sal)"
+173,Batata inglesa cozida,20.0,0.0,0.0,0.0,0.0,0.0,3.52,0.0,0.194,0.0,0.0,3.76,"Batata, inglesa, cozida/TACO"
+189,"Batata, inglesa sauté",100.0,0.0,0.0,0.896333333333333,0.0,0.0,0.0,0.0,0.25,196.0,0.0,0.0,"Batata, inglesa, sauté/TACO com sódio TBCA (Batata, inglesa, sauté, c/ sal)"
+191,Berinjela cozida,25.0,0.0,0.677083333333333,0.148333333333333,0.0,0.0,0.0,0.0,0.220333333333333,1325.0,105.48,0.0,Berinjela cozida TACO
+196,Beterraba cozida,30.0,0.0,0.0,0.0926666666666666,0.0,0.0,0.0,0.0,0.238666666666666,139.0,0.0,1.24,"Beterraba, cozida/TACO com sódio TBCA (Beterraba, refogada, c/ sal)"
+202,Beterraba ralada,50.0,0.0,0.0,0.09,0.0,0.0,0.0,0.0,0.32,9.72,0.0,0.0,"Beterraba, crua/TACO"
+204,Biscoito sal cream cracker 6 unidades,35.0,0.0,0.0,0.0,0.0,2.51,0.0,148.26,2.2,0.0,0.0,0.0,"Biscoito, salgado, cream cracker/TACO"
+206,Bolinho de arroz,60.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Bolinho de arroz/TACO
+208,Bolinho de Arroz ,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,Bolinho de arroz/TACO
+210,Brócolis,50.0,0.0,0.0,0.459,0.0,0.0,0.0,0.0,0.535,0.0,0.0,0.0,Brócolis cozido TACO
+211,Brócolis cozido,50.0,0.0,0.0,0.459,0.0,0.0,0.0,0.0,0.535,131.0,0.0,0.0,"Brócolis, cozido/TACO com sódio TBCO (Brócolis, flor, cozido, c/ sal, drenado)"
+214,Brócolis refogado ,100.0,60.74,2.38,3.32,7.18,3.3,40.0,67.0,0.67,2.0,293.0,64.9,Brócolis refogado DIETBOX/IBGE com sódio Brocolis/cozido/TACO
+215,Cação em posta,50.0,0.0,0.0,0.0,0.0,0.536666666666666,0.0,0.0,0.998333333333333,0.0,0.0,0.0,"Cação, posta, com farinha de trigo, frita/TACO"
+219,Cação em posta cozida,50.0,0.0,0.0,0.747999999999999,0.0,0.0,0.0,0.0,0.317,0.0,248.64,0.0,"Cação, posta, cozida/TACO"
+225,Cação em posta desfiado,120.0,0.0,0.0,0.747999999999999,0.0,0.0,0.0,0.0,0.317,0.0,248.64,0.0,"Cação, posta, cozida/TACO"
+227,Café ,60.0,0.0,0.7125,0.0693333333333333,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,café infusão 10% TACO
+231,Café  ,60.0,0.0,0.7125,0.0693333333333333,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Café infusão 10% TACO
+236,Canjiquinha,20.0,31.44,0.95,0.12,7.01,0.71,8.56,15.76,0.28,310.43,88.32,2.1,Canjiquinha de milho em grão Sopa DIETBOX/IBGE
+240,Carne (patinho),50.0,248.57,36.12,10.61,0.0,0.0,4.0,226.0,3.32,384.0,334.0,0.0,"Patinho ensopado DIETBOX/IBGE com sódio TBCA Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal, Bos taurus"
+243,Carne assada (lagarto),120.0,199.0,36.12,0.0,5.0,0.0,4.0,226.0,3.32,384.0,334.0,0.0,"Lagarto bovino assado DIETBOX/IBGE com sódio TCBA (Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal)"
+244,Carne moída,35.0,214.0,26.62,11.1,0.0,0.0,13.0,193.0,2.89,61.0,300.0,0.0,"Carne moída cozida DIETBOX/IBGE  com sódio TBCA Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal, Bos taurus"
+250,Carne Moída,60.0,214.0,26.62,11.1,0.0,0.0,13.0,193.0,2.89,384.0,300.0,0.0,"Carne moída DIETBOX/IBGE  com sódio TBCA Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal, Bos taurus"
+261,Carne moída refogada,120.0,236.6,26.62,13.6,0.0,0.0,13.0,193.0,2.89,384.0,300.0,0.0,"Carne moída refogada DIETBOX/IBGE  com sódio TBCA Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal, Bos taurus"
+262,Carne moída refogada (Patinho Moído),50.0,236.6,26.62,13.6,0.0,0.0,13.0,193.0,2.89,384.0,300.0,0.0,"Carne moída refogada DIETBOX/IBGE  com sódio TBCA Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal, Bos taurus"
+265,Carne suína,120.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.457333333333333,384.0,0.0,0.0,"Porco, lombo, assado/TACO com sódio TCBA (Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal)"
+266,"Carne, bovina, capa de contra-filé, sem gordura, grelhada",50.0,0.0,0.0,9.95,0.0,0.0,0.0,0.0,2.84,384.0,0.0,0.0,"Carne, bovina, capa de contra-filé, sem gordura, grelhada com sódio TCBA (Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal)"
+269,"Carne, bovina, patinho, sem gordura, grelhado",50.0,0.0,35.9,0.0,0.0,0.0,0.0,0.0,0.0,384.0,420.96,0.0,"Carne, bovina, patinho, sem gordura, grelhado/TACO com sódio TCBA (Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal)"
+274,Cebola,5.0,0.0,0.0,0.08,0.0,0.0,14.0,0.0,0.203333333333333,0.596666666666666,0.0,0.0,Cebola crua TACO
+282,Cebola branca crua,5.0,0.0,0.0,0.08,0.0,0.0,14.0,0.0,0.203333333333333,0.596666666666666,0.0,0.0,"Cebola, crua/TACO"
+283,Cebolinha crua,5.0,0.0,0.0,0.35,0.0,3.55,0.0,26.89,0.646666666666666,0.0,0.0,31.78,"Cebolinha, crua/TACO"
+284,Cebolinha verde,5.0,0.0,0.0,0.35,0.0,3.55,0.0,26.89,0.646666666666666,0.0,0.0,31.78,"Cebolinha, crua/TACO"
+288,Cenoura,25.0,0.0,0.847916666666666,0.218333333333333,0.0,0.0,0.0,0.0,0.0936666666666666,0.0,0.0,0.0,"Cenoura, cozida/TACO"
+289,Cenoura cozida,5.0,0.0,0.847916666666666,0.218333333333333,0.0,0.0,0.0,0.0,0.0936666666666666,133.0,0.0,0.0,"Cenoura, cozida/TACO e sódio TBCA ( Cenoura, s/ casca, cozida, drenada, c/ óleo de soja, c/ sal)"
+320,Cenoura crua,50.0,0.0,0.0,0.173333333333333,7.66,0.0,22.54,27.85,0.183333333333333,0.0,0.0,0.0,"Cenoura, crua/TACO"
+322,Cenoura crua ralada ,100.0,0.0,0.847916666666666,0.218333333333333,0.0,0.0,0.0,0.0,0.0936666666666666,0.0,0.0,0.0,"Cenoura, cozida/TACO"
+323,Cenoura ralada,25.0,0.0,0.0,0.173333333333333,7.66,0.0,22.54,27.85,0.183333333333333,0.0,0.0,0.0,Cenoura crua TACO
+324,"Chá de camomila, ebulição",160.0,1.0,0.0,0.0,0.2,0.0,2.0,0.0,0.08,1.0,9.0,0.0,"Chá, erva, camomila, ebulição DIETBOX/USDA"
+325,Chá de erva doce,160.0,0.0,0.0,0.0,0.391333333333321,0.0,0.0,0.651,0.0,0.625333333333333,9929.0,0.0,"Chá, erva-doce, infusão 5%"
+326,"Chá, erva-doce, infusão 5%",160.0,0.0,0.0,0.0,0.391333333333321,0.0,0.0,0.651,0.0,0.625333333333333,9929.0,0.0,"Chá, erva-doce, infusão 5%"
+327,"Chá, mate, infusão 5%",160.0,0.0,0.0,0.052,0.642999999999993,0.0,0.644666666666666,0.0,0.0,0.0,0.0,0.0,"Chá, mate, infusão 5%/TACO"
+328,Chuchu,25.0,0.0,0.414583333333333,0.0,0.0,0.0,0.0,0.0,0.062,0.0,0.0,0.0,Chuchu cozido TACO
+329,Chuchu cozido,5.0,0.0,0.414583333333333,0.0,0.0,0.0,0.0,0.0,0.062,0.0,0.0,0.0,Chuchu cozido TACO
+355,Chuchu Cozido,100.0,0.0,0.414583333333333,0.0,0.0,0.0,0.0,0.0,0.062,0.0,0.0,0.0,Chuchu cozido TACO
+356,Chuchu cozido ,25.0,0.0,0.414583333333333,0.0,0.0,0.0,0.0,0.0,0.062,130.0,0.0,0.0,"Chuchu, cozido/TACO com Sódio TBCA (Chuchu, s/ casca, cozido, c/ sal, drenado)"
+360,Chuchu ensopado,100.0,49.09,0.62,3.32,5.09,2.8,13.0,29.0,0.22,128.0,173.0,8.0,"Chuchu ensopado DIETBOX/IBGE com sódio TBCA (Chuchu, s/ casca, refogado, c/ sal)"
+361,Chuchu refogado,80.0,49.09,0.62,3.32,5.09,2.8,13.0,29.0,0.22,128.0,173.0,8.0,"Chuchu refogado DIETBOX/IBGE com sódio TBCA (Chuchu, s/ casca, refogado, c/ sal)"
+362,Chuchu Refogado,100.0,49.09,0.62,3.32,5.09,2.8,13.0,29.0,0.22,1.0,173.0,8.0,Chuchu Refogado DIETBOX/IBGE
+364,Clara de ovo cozida,15.0,0.0,0.0,0.089,0.0,0.0,0.0,0.0,0.0786666666666666,0.0,0.0,0.0,"Ovo, de galinha, clara, cozida/10minutos/ TACO"
+365,Clara de ovos,20.0,0.0,0.0,0.089,0.0,0.0,0.0,0.0,0.0786666666666666,0.0,0.0,0.0,"Ovo, de galinha, clara, cozida/10minutos TACO"
+369,Coentro,5.0,23.0,2.13,0.52,3.67,2.8,67.0,48.0,1.77,46.0,521.0,27.0,"Folha de coentro, crua DIETBOX/USDA"
+370,Couve,10.0,0.0,0.0,0.546666666666666,0.0,3.12,0.0,0.0,0.453666666666666,0.0,0.0,0.0,"Couve, manteiga, crua /TACO"
+371,Couve manteiga cozida,10.0,32.0,1.91,0.4,5.64,2.0,72.0,28.0,0.9,23.0,228.0,41.0,Couve cozida DIETBOX/TUCUNDUVA
+372,Couve manteiga crua,10.0,0.0,0.0,0.546666666666666,0.0,3.12,0.0,0.0,0.453666666666666,0.0,0.0,0.0,"Couve, manteiga, crua /TACO"
+374,Couve-flor,25.0,0.0,0.0,0.269333333333333,0.0,0.0,0.0,0.0,0.130333333333333,0.0,0.0,0.0,
+376,Couve-flor cozida,50.0,0.0,0.0,0.269333333333333,0.0,0.0,0.0,0.0,0.130333333333333,130.0,0.0,0.0,"Couve-flor, cozida/TACO com sódio TBCA (Couve-flor, cozida, c/ sal, drenada, Brassica oleracea var. botrytis L)"
+382,Couve-flor refogada,100.0,55.38,1.84,4.11,4.11,2.3,16.0,32.0,0.32,132.0,142.0,44.3,"Couve-flor refogado DIETBOX/IBGE com sódio TBCA (Couve-flor, refogada, c/ sal)"
+383,Creme de arroz em pó,8.0,0.0,0.0,0.0,0.0,0.0,0.0,153.02,0.632333333333333,1.0,0.0,0.0,"Creme de arroz, pó/TACO"
+386,Cremogema tradicional,8.0,360.0,0.0,0.0,90.0,0.0,570.0,0.0,10.5,0.0,0.0,33.75,Cremogema tradicional/ Fabricante
+388,Curau,80.0,116.27,2.82,2.02,23.53,1.07,56.49,79.07,0.24,28.95,177.97,3.13,Curau DIETBOX/TUCUNDUVA
+389,Empadão de Frango,50.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Empada de frango, pré-cozida, assada,. TACO"
+390,Empadão de frango,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,36.0,0.0,0.0,"Empada de frango, pré-cozida, assada,. TACO com sódio do Frango, peito, sem pele, cozido/TACO"
+394,Ervilha em conserva,55.0,0.0,0.0,0.38,0.0,5.08,0.0,0.0,0.0,0.0,0.0,0.0,Ervilha enlatada drenada/TACO
+397,Ervilha enlatada drenada,5.0,0.0,0.0,0.38,0.0,5.08,0.0,0.0,0.0,0.0,0.0,0.0,"Ervilha, enlatada, drenada/TACO"
+398,Espaguete,100.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,1.0,31.0,0.0,Macarrão cozido DIETBOX/TUCUNDUVA
+400,Espaguete ,100.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,191.0,31.0,0.0,"Macarrão cozido DIETBOX/TUCUNDUVA  com sódio TBCA (Macarrão, trigo, c/ ovos, ao alho e óleo, c/ sal)"
+401,Espaguete ao alho e óleo,100.0,186.68,5.8,4.17,30.86,1.8,7.0,58.0,1.28,1.0,44.0,0.0,Macarrão ao alho e óleo DIETBOX/IBGE
+403,Espaguete cozido,100.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,191.0,31.0,0.0,"Macarrão cozido DIETBOX/TUCUNDUVA  com sódio TBCA (Macarrão, trigo, c/ ovos, ao alho e óleo, c/ sal)"
+404,Espinafre cozido,10.0,23.0,2.98,0.26,3.76,2.3,136.0,56.0,3.57,142.0,466.0,9.8,"Espinafre refogado DIETBOX/IBGE com sódio TBCA (Espinafre, folha, cozida, c/ sal, drenado)"
+406,Espinafre refogado,100.0,45.3,2.97,2.78,3.75,2.4,136.0,56.0,3.57,70.0,466.0,9.8,Espinafre refogado DIETBOX/IBGE
+408,Farinha de mandioca,50.0,0.0,0.0,0.286666666666666,0.0,6.54,0.0,0.0,0.0,10.31,0.0,0.0,Farinha de mandioca torrado TACO
+409,Farinha de milho,30.0,361.0,6.94,3.87,77.9,13.4,7.0,272.0,2.39,5.0,315.0,0.0,Farinha de milho DIETBOX/TUCUNDUVA
+414,Farinha de trigo,2.0,0.0,0.0,0.0,0.0,0.0,0.0,114.74,0.95,0.736666666666666,0.0,0.0,"Farinha, de trigo/TACO"
+418,Farinha láctea,10.0,0.0,0.0,5.79,0.0,1.94,0.0,0.0,0.0,0.0,0.0,24.31,"Farinha, láctea, de cereais/TACO"
+420,Feijão carioca cozido (50% grãos/caldo),40.0,0.0,0.0,0.542333333333333,8.2,0.0,0.0,0.0,0.0,2.0,0.0,0.0,Feijão carioca cozido/ TACO considerando no CHO o CHO disponível expresso na tabela brasileira de composição de alimentos (tbca)
+428,Feijão cozido (só caldo),100.0,11.1,0.61,0.29,1.51,0.76,3.3,11.4,0.19,127.0,33.8,0.1,Feijão cozido (só caldo) DIETBOX. Considerou-se metade do sódio do 50% grãos/50% caldo
+431,Feijão cozido (só grãos),40.0,0.0,0.0,0.542333333333333,8.2,0.0,0.0,0.0,0.0,1759.0,0.0,0.0,Feijão carioca cozido/ TACO considerando no CHO o CHO disponível expresso na tabela brasileira de composição de alimentos (tbca)
+434,Feijão inteiro (50% grãos/50% caldo),40.0,0.0,0.0,0.542333333333333,8.2,0.0,0.0,0.0,0.0,1854.0,0.0,0.0,Feijão carioca cozido/ TACO considerando no CHO o CHO disponível expresso na tabela brasileira de composição de alimentos (tbca)
+436,Feijão preto cozido (50% grão/50% caldo),40.0,0.0,0.0,0.535666666666666,5.61,0.0,0.0,0.0,0.0,254.0,0.0,0.0,"Feijão, preto, cozido/ TACO utilizando CHO disponível expresso na tabela Brasileira de Composição de Alimentos (TBCA)."
+440,Feijão preto cozido (50% grãos/caldo),40.0,0.0,0.0,0.535666666666666,5.61,0.0,0.0,0.0,0.0,2.0,0.0,0.0,"Feijão, preto, cozido/ TACO utilizando CHO disponível expresso na tabela Brasileira de Composição de Alimentos (TBCA)."
+446,Feijão preto inteiro,40.0,0.0,0.0,0.535666666666666,5.61,0.0,0.0,0.0,0.0,254.0,0.0,0.0,"Feijão, preto, cozido/ TACO utilizando CHO disponível expresso na tabela Brasileira de Composição de Alimentos (TBCA)."
+449,File de frango com molho branco e ervas,50.0,170.99,25.51,6.1,1.85,0.04,34.88,192.49,0.92,82.52,227.65,0.0,Filé de frango Molho branco DIETBOX/IBGE
+454,Filé de Frango Empanado,120.0,211.84,31.37,7.12,3.39,0.14,15.67,220.8,1.27,369.0,251.76,0.0,"Peito de galinha ou frango Empanado(a)/à milanesa DIETBOX/IBGE com Sódio TBCA (Carne, frango, peito, s/ pele, frita, c/ óleo de soja, c/ sal)"
+455,Folha de coentro crua,5.0,23.0,2.13,0.52,3.67,2.8,67.0,48.0,1.77,46.0,521.0,27.0,Folha de coentro crua DIETBX/USDA
+456,Frango desfiado,120.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+457,Frango em iscas,120.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+458,Fubá,14.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.85,0.0,0.0,0.0,"Milho, fubá, cru/TACO"
+459,Fubá ,14.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.85,0.0,0.0,0.0,"Milho, fubá, cru/TACO"
+460,Fubá cru,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.85,442.0,0.0,0.0,"Milho, fubá, cru/TACO com sódio TBCA (Milho, polenta/fubá, cozido)"
+462,Gelatina de cereja,4.0,10.0,2.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Gelatina diet* (qualquer sabor) - Royal® DIETBOX/TUCUNDUVA
+463,Gelatina de Cereja,4.0,0.0,0.0,0.0,0.0,0.0,0.0,1.99,0.333333333333333,0.0,7.25,0.0,"Gelatina, sabores variados, pó/ TACO"
+464,Gelatina de framboesa,4.0,0.0,0.0,0.0,0.0,0.0,0.0,1.99,0.333333333333333,0.0,7.25,0.0,"Gelatina, sabores variados, pó/ TACO"
+465,Gelatina de limão,4.0,0.0,0.0,0.0,0.0,0.0,0.0,1.99,0.333333333333333,0.0,7.25,0.0,"Gelatina, sabores variados, pó/ TACO"
+467,Gelatina de morango,2.0,0.0,0.0,0.0,0.0,0.0,0.0,1.99,0.333333333333333,0.0,7.25,0.0,"Gelatina, sabores variados, pó/ TACO"
+470,Gelatina de uva,4.0,0.0,0.0,0.0,0.0,0.0,0.0,1.99,0.333333333333333,0.0,7.25,0.0,"Gelatina, sabores variados, pó/ TACO"
+471,Gelatina diet de limão,80.0,10.0,2.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Gelatina diet* (qualquer sabor) - Royal® DIETBOX/TUCUNDUVA
+474,Gelatina diet de morango,80.0,10.0,2.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Gelatina diet* (qualquer sabor) - Royal® DIETBOX/TUCUNDUVA
+476,Gelatina diet de uva,80.0,10.0,2.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Gelatina diet* (qualquer sabor) - Royal® DIETBOX/TUCUNDUVA
+477,Gelatina diet qualquer sabor,80.0,10.0,2.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Gelatina diet* (qualquer sabor) - Royal® DIETBOX/TUCUNDUVA
+478,Geleia de mocotó,80.0,147.0,3.0,0.0,35.0,0.0,18.0,0.0,1.3,0.0,6.0,0.0,Geleia de mocotó DIETBOX/TUDUNDUVA
+480,Goiaba vermelha crua,180.0,0.0,0.0,0.44,0.0,0.0,0.0,15.37,0.17,0.0,197.58,0.0,"Goiaba, vermelha, com casca, crua/TACO"
+481,Hortelã,5.0,43.0,3.8,0.7,5.3,0.0,210.0,75.0,9.5,15.0,260.0,31.0,Hortelã DIETBOX/TUCUNDUVA
+482,Inhame cozido,50.0,116.0,1.5,0.14,27.6,3.9,14.0,49.0,0.52,8.0,670.0,12.1,Inhame cozido DIETBOX/TUCUNDUVA
+485,Inhame Cozido,100.0,116.0,1.5,0.14,27.6,3.9,14.0,49.0,0.52,8.0,670.0,12.1,Inhame cozido DIETBOX/TUCUNDUVA
+486,Jiló cozido,100.0,22.0,1.87,0.21,4.51,2.5,77.0,32.0,0.28,6.0,135.0,16.3,Jiló cozido DIETBOX/IBGE
+488,Lagarto bovino assado,50.0,199.0,36.12,5.0,0.0,0.0,4.0,226.0,3.32,384.0,334.0,0.0,"Lagarto bovino assado DIETBOX/IBGE com sódio TCBA (Carne, boi, acém, moída, refogada c/ óleo e temperos, c/ sal)"
+491,Laranja lima,150.0,0.0,0.0,0.0753333333333333,0.0,0.0,0.0,0.0,0.12,1111.0,129.87,0.0,"Laranja, lima, crua/TACO"
+493,Laranja pera,10.0,0.0,0.0,0.126666666666666,0.0,0.766666666666666,0.0,0.0,0.09,0.0,162.82,0.0,"Laranja, pera, crua/TACO"
+499,"Lasanha (presunto, queijo e molho à bolonhesa)",50.0,185.0,12.91,9.06,12.3,0.74,41.97,124.8,1.6,401.52,200.37,3.92,"Lasanha (presunto, queijo e molho à bolonhesa)DIETBOX/TUCUNDUVA"
+501,Leite de vaca em pó,5.0,0.0,25.42,0.0,39.18,0.0,0.0,0.0,0.523333333333333,0.0,0.0,0.0,"Leite, de vaca, integral, pó/TACO"
+502,Leite de vaca integral,20.0,61.4,3.3,3.32,4.67,0.0,119.0,93.4,0.05,49.0,152.0,0.94,"Leite longa vida 3,5% PADRÃO DIETBOX/TUCUNDUVA"
+516,Leite em pó desnatado,20.0,0.0,34.69,0.933333333333333,0.0,0.0,1363.17,0.0,0.926666666666666,0.0,0.0,0.0,"Leite, de vaca, desnatado, pó/TACO"
+520,Leite em pó desnatado enriquecido com cálcio,20.0,340.0,32.5,0.0,50.0,0.0,0.0,1673.0,13.5,510.0,0.0,0.0,"Leite em pó enriquecido com cálcio/Molico/Rótulo do produto + fósforo e potássio do Leite, de vaca, desnatado, pó/TACO"
+522,Limão tahiti,10.0,0.0,0.939583333333333,0.14,0.0,0.0,0.0,0.0,0.179666666666667,0.0,0.0,0.0,"Limão, tahiti, cru/TACO"
+524,"Linguiça (suína, bovina, mista)",10.0,396.0,13.8,36.25,2.7,0.0,10.0,107.0,1.13,805.0,189.0,0.0,"Linguiça (suína, bovina, mista) DIETBOX"
+525,Linguiça Calabresa,10.0,300.0,12.1,27.5,1.1,0.0,7.0,0.0,1.8,840.0,188.0,0.0,"Tabela de avaliação de consumo alimentar em medidas caseiras ( IBGE) com sódio e potássio TBCA (Linguiça, calabresa, fininha, crua) "
+526,Maçã,120.0,0.0,0.286666666666666,0.0,0.0,0.0,0.0,0.0,0.0933333333333333,0.0,0.0,0.0,"Maçã, Fuji, com casca, crua/TACO"
+527,Maçã fuji,40.0,0.0,0.286666666666666,0.0,0.0,0.0,0.0,0.0,0.0933333333333333,0.0,0.0,0.0,"Maçã, Fuji, com casca, crua"
+530,Maçã fuji com casca,120.0,0.0,0.286666666666666,0.0,0.0,0.0,0.0,0.0,0.0933333333333333,0.0,0.0,0.0,"Maçã, Fuji, com casca, crua/TACO"
+532,Macarrão cozido,70.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,191.0,31.0,0.0,"Macarrão cozido DIETBOX/TUCUNDUVA  com sódio TBCA (Macarrão, trigo, c/ ovos, ao alho e óleo, c/ sal)"
+535,Macarrão parafuso ao alho e óleo,100.0,186.68,5.8,4.17,30.86,1.8,7.0,58.0,1.28,1.0,44.0,0.0,Macarrão ao alho e óleo DIETBOX/IBGE 
+537,Macarrão Parafuso cozido,100.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,191.0,31.0,0.0,"Macarrão cozido DIETBOX/TUCUNDUVA  com sódio TBCA (Macarrão, trigo, c/ ovos, ao alho e óleo, c/ sal)"
+538,Macarrão parafuso cozido,100.0,141.0,4.78,0.67,28.3,1.5,7.0,54.0,1.41,191.0,31.0,0.0,"Macarrão cozido DIETBOX/TUCUNDUVA com sódio TBCA (Macarrão, trigo, c/ ovos, ao alho e óleo, c/ sal)"
+539,"Maionese (Batata, Cenoura, Vagem e maionese)",100.0,96.82,1.59,3.83,14.87,1.81,19.97,37.11,0.6,603.27,276.46,10.06,"Maionese (Batata, Cenoura, Vagem e maionese) DIETBOX/TUCUNDUVA"
+540,Mamão,40.0,0.0,0.45625,0.124333333333333,0.0,0.0,0.0,0.0,0.193333333333333,0.0,0.0,0.0,"Mamão, Papaia, cru"
+541,"Mamão papaia, cru",150.0,0.0,0.45625,0.124333333333333,0.0,0.0,0.0,0.0,0.193333333333333,0.0,0.0,0.0,"Mamão, Papaia, cru/TACO"
+542,"Manga, Tommy Atkins crua",30.0,0.0,0.855072463768116,0.22,0.0,0.0,0.0,0.0,0.08,0.0,0.0,0.0,"Manga, Tommy Atkins, crua/TACO"
+544,Manjericão,5.0,0.0,0.0,0.393333333333333,0.0,0.0,0.0,0.0,0.973333333333333,0.0,0.0,0.0,"Manjericão, cru/TACO"
+545,Manjericão seco,1.0,251.0,14.4,3.98,61.0,17.7,0.0,490.0,42.0,34.2,3432.0,61.2,Manjericão seco DIETBOX/TUCUNDUVA
+546,Manjerona seca,1.0,271.0,12.7,7.04,60.6,18.1,0.0,306.0,82.7,77.0,1522.0,51.4,Manjerona seca DIETBOX/TUCUNDUVA
+547,Margarina,5.0,0.0,0.0,0.0,0.0,0.0,0.0,3749.0,0.0526666666666666,894.0,0.0,0.0,"Margarina, com óleo hidrogenado, sem sal (80% de lipídeos)/ TACO Com acréscimo de sódio da margarina sal"
+550,Margarina com sal,5.0,0.0,0.0,0.0,0.0,0.0,0.0,3749.0,0.0526666666666666,78.0,0.0,0.0,"Margarina, com óleo hidrogenado, sem sal (80% de lipídeos)/ TACO Com acréscimo de sódio da margarina sal"
+553,Margarina sem sal,5.0,0.0,0.0,0.0,0.0,0.0,0.0,3749.0,0.0526666666666666,78.0,0.0,0.0,Margarina sem sal 80% de lipideo TACO
+558,Melancia,120.0,0.0,0.884057971014492,0.0,0.0,0.123333333333333,7.72,0.0,0.226666666666666,0.0,0.0,0.0,"Melancia, crua/TACO"
+559,Melão,120.0,0.0,0.677536231884058,0.0,0.0,0.25,0.0,10.14,0.23,0.0,216.0,8.68,"Melão, cru/TACO"
+560,Milho em espiga ,50.0,0.0,0.0,0.609,0.0,0.0,0.0,0.0,0.411,0.0,0.0,0.0,"Milho, verde, cru/TACO"
+561,Milho enlatado drenado,5.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.585666666666666,0.0,0.0,0.0,"Milho, verde, enlatado, drenado/TACO"
+564,Molho ao sugo,20.0,0.0,0.0,0.0,0.0,0.0,0.0,30.01,1.25,103.93,0.0,0.0,Tomate purê (escolheu-se purê pois o molho e o extrato possuem sal). Considerou-se 1 colher de sopa cheia de molho.
+565,Molho branco,15.0,128.51,3.4,9.28,8.05,0.17,104.03,86.48,0.29,502.86,137.45,0.81,Molho branco DIETBOX/TUCUNDUVA
+567,Molho de limão,10.0,0.0,0.939583333333333,0.14,0.0,0.0,0.0,0.0,0.179666666666667,0.0,0.0,0.0,"Limão, tahiti, cru/TACO"
+568,Molho de maracujá,5.0,0.0,0.0,0.0,0.0,0.0,0.0,50.69,0.56,1.58,338.42,19.84,"Maracujá, cru/TACO"
+569,Molho de tomate,20.0,0.0,0.0,0.0,0.0,0.0,0.0,30.01,1.25,2.5,0.0,0.0,"Tomate, purê/TACO. Com sódio de meio tomate salada. "
+572,Molho madeira,20.0,83.67,0.94,6.17,4.89,0.19,5.58,14.39,0.32,30.0,25.76,0.0,"Molho madeira, DIETBOX, TUCUNDUVA. Considerou-se 20g (1 colher de sopa)"
+576,Molho sugo,20.0,0.0,0.0,0.0,0.0,0.0,0.0,30.01,1.25,103.93,0.0,0.0,Tomate purê (escolheu-se purê pois o molho e o extrato possuem sal). Considerou-se 1 colher de sopa cheia de molho.
+577,Molho vermelho tomate sem pele,20.0,0.0,0.0,0.0,0.0,0.0,0.0,30.01,1.25,103.93,0.0,0.0,Tomate purê (escolheu-se purê pois o molho e o extrato possuem sal). Considerou-se 1 colher de sopa cheia de molho.
+578,Mousse de maracujá,80.0,198.57,4.37,7.7,29.04,0.08,21.84,53.38,0.45,34.7,152.12,7.81,Musse de maracujá DIETBOX/TUCUNDUVA
+579,Mucilon de arroz,14.0,375.0,7.5,0.0,87.5,0.0,240.0,0.0,6.5,150.0,0.0,0.0,Mucilon de arroz - Nestlé® DIETBOX/TUCUNDUVA
+582,Mucilon de milho,14.0,375.0,7.5,0.0,85.0,0.0,240.0,0.0,6.5,500.0,0.0,0.0,Mucilon de milho - Nestlé® DIETBOX/TUCUNDUVA
+584,Multicereais,21.0,78.0,1.7,0.0,17.0,0.0,53.0,39.0,6.6,34.0,0.0,22.0,Rótulo Mulicereas/Nestle
+585,Musse de maracujá,80.0,198.57,4.37,7.7,29.04,0.08,21.84,53.38,0.45,34.7,152.12,7.81,Musse de maracujá DIETBOX/TUCUNDUVA
+586,Neston,14.0,345.8,12.92,0.0,70.8,6.25,508.0,550.0,12.5,550.0,0.0,40.42,Neston DIETBOX/IBGE
+588,Novomilk banana,20.0,385.0,8.5,0.0,85.0,0.0,22.0,0.0,0.0,120.0,390.0,70.0,Rótulo Novomilke de ba00
+590,Nutri Renal,200.0,200.0,3.3,6.7,32.0,0.0,111.0,69.0,2.0,200.0,167.0,0.0,Nutri Renal - Rótulo
+591,Óleo vegetal,3.0,884.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Óleo, de soja/ TACO"
+596,Ovo de galinha,5.0,0.0,0.0,0.0,0.614916666666673,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Ovo, de galinha, inteiro, cozido/10minutos/TACO"
+600,Ovo de galinha inteiro cozido,9.0,0.0,0.0,0.0,0.614916666666673,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Ovo, de galinha, inteiro, cozido/10minutos/TACO"
+607,Ovo de galinha inteiro frito,5.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Ovo, de galinha, inteiro, frito/TACO"
+609,Ovos,15.0,0.0,0.0,0.0,0.614916666666673,0.0,0.0,0.0,0.0,0.0,0.0,0.0,Ovo de galinha inteiro cozido/TACO
+611,Paçoca,18.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Paçoca, amendoim/ TACO"
+612,Pão brioche,50.0,355.23,5.15,13.08,55.83,2.02,32.49,73.77,2.09,207.79,98.68,0.05,Pão Doce/IBGE/DIETBOX
+613,Pão brioche integral,50.0,0.0,0.0,0.0,0.0,0.0,0.0,94.74,1.0,3.73,142.2,0.0,"Pão, trigo, francês/ TACO (Utilizado o teor de sódio do de brioche). Sódio calculado de acordo com receita da padaria."
+616,Pão francês,50.0,0.0,0.0,0.0,0.0,0.0,0.0,94.74,1.0,0.0,142.2,0.0,"Pão, trigo, francês/ TACO"
+617,Pão francês ,4.0,0.0,0.0,0.0,0.0,0.0,0.0,94.74,1.0,0.0,142.2,0.0,"Pão, trigo, francês/ TACO"
+623,Pão francês integral,50.0,247.0,12.95,3.35,41.29,6.71,107.0,202.0,2.43,472.0,248.0,0.0,Pão integral DIETBOX/IBGE
+625,Pão francês sem sal,50.0,0.0,0.0,0.0,0.0,0.0,0.0,94.74,1.0,3.73,142.2,0.0,"Pão, trigo, francês/ TACO (Utilizado o teor de sódio do de brioche). Sódio calculado de acordo com receita da padaria."
+626,Patinho cozido,50.0,199.0,36.12,5.0,0.0,0.0,4.0,226.0,3.32,45.0,334.0,0.0,Patinho cozido DIETBOX/IBGE
+631,Patinho moído,120.0,293.11,24.09,20.83,0.86,0.13,13.75,171.73,2.45,411.33,301.72,0.7,Carne moída refogada DIETBOX/TUCUNDUVA
+632,Patinho moído almôndega sem gordura,120.0,0.0,35.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,420.96,0.0,"Carne, bovina, patinho, sem gordura, grelhado"
+633,Pavê de amendoim,80.0,437.0,8.69,27.8,38.0,0.0,56.29,0.0,0.95,0.0,0.0,0.37,Pavê de amendoim (Tabela para avaliação de consumo alimentar em medidas caseiras)
+635,Pé de moça,30.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Pé-de-moleque, amendoim/ TACO"
+636,"Peito de frango sem pele, cozido",50.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+641,"Peito de frango, sem pele, cozido",35.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,0.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO"
+647,"Peito de frango, sem pele, cozido, desfiado",20.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+657,"Peito de frango, sem pele, cozido, desfiado ",30.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+659,"Peito de frango, sem pele, cozido, em cubos",50.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,0.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO"
+661,"Peito de frango, sem pele, cozido, em iscas",50.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,0.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO"
+663,"Peito de frango, sem pele, cozido,desfiado",60.0,0.0,0.0,3.16,0.0,0.0,6.44,0.0,0.337333333333333,356.0,0.0,0.0,"Frango, peito, sem pele, cozido/TACO com sódio TBCA (Carne, frango, peito, s/ pele, cozida, drenada, c/ sal)"
+665,"Peito de frango, sem pele, grelhado",50.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.328666666666666,370.0,387.37,0.0,"Frango, peito, sem pele, grelhado/TACO com sódio TBCA (Carne, frango, peito, s/ pele, grelhada, s/ gordura, c/ sal)"
+668,Pepino,50.0,0.0,0.869565217391304,0.0,0.0,1.12,0.0,0.0,0.146666666666666,0.0,0.0,0.0,"Pepino, cru/TACO"
+669,Pepino cru,25.0,0.0,0.869565217391304,0.0,0.0,1.12,0.0,0.0,0.146666666666666,0.0,0.0,0.0,"Pepino, cru/TACO"
+670,Pepino em cubinhos,25.0,0.0,0.869565217391304,0.0,0.0,1.12,0.0,0.0,0.146666666666666,0.0,0.0,0.0,"Pepino, cru/TACO"
+672,Pepino em rodelas,20.0,0.0,0.869565217391304,0.0,0.0,1.12,0.0,0.0,0.146666666666666,0.0,0.0,0.0,"Pepino, cru/TACO"
+673,Pera,200.0,59.0,0.39,0.4,15.1,2.4,11.0,11.0,0.25,0.0,125.0,4.0,Pêra DIETBOX/TUCUNDUVA
+674,"Pêra, Williams, crua",235.0,0.565217391304347,0.11,0.0,0.0,0.0,0.0,0.0933333333333333,0.0,0.0,0.0,0.0,"Pêra, Williams, crua TACO"
+675,Pimentão amarelo,5.0,0.0,0.0,0.436666666666666,0.0,1.92,9.61,0.0,0.413333333333333,0.0,0.0,201.36,"Pimentão, amarelo, cru/TACO"
+677,Pimentão verde,5.0,0.0,0.0,0.15,0.0,0.0,0.0,0.0,0.41,0.0,174.33,100.21,"Pimentão, verde, cru/TACO"
+681,Pimentão vermelho,5.0,0.0,0.0,0.146666666666666,0.0,0.0,6.37,19.96,0.333333333333333,0.0,0.0,158.21,"Pimentão, vermelho, cru/TACO"
+685,Pirão ,100.0,119.65,8.05,5.76,8.9,0.75,61.42,128.38,0.31,0.5,255.1,2.54,Pirão DIETBOX/IBGE. Sódio de 50g de farinha de mandioca (TACO).
+687,Polenta,100.0,62.88,1.02,1.67,11.32,1.97,2.84,40.05,0.36,1.0,46.43,0.0,Polenta DIETBOX/TUCUNDUVA. Considerou-se o sódio de 100g do fubá(TACO).
+690,Polpa de acerola congelada,19.0,0.0,0.591666666666666,0.0,0.0,0.703333333333333,0.0,0.0,0.167333333333333,1.28,0.0,0.0,"Acerola, polpa, congelada/ TACO"
+692,Polpa de caju congelada,25.0,0.0,0.48125,0.154,0.0,0.814666666666666,0.839333333333333,0.0,0.146666666666666,0.0,0.0,0.0,"Caju, polpa, congelada/TACO"
+694,Polpa de fruta,50.0,0.0,0.591666666666666,0.0,0.0,0.703333333333333,0.0,0.0,0.167333333333333,1.28,0.0,0.0,"Acerola, polpa, congelada/ TACO"
+695,Polpa de graviola congelada,25.0,0.0,0.566666666666666,0.137666666666666,0.0,0.0,0.0,0.0,0.102666666666666,0.0,0.0,0.0,"Graviola, polpa, congelada/TACO"
+697,Polpa de mamão congelada,35.0,40.0,0.0,0.0,10.0,1.0,0.0,0.0,0.0,0.0,0.0,82.0,"Polpa de mamão, Rótulo Lara Fruit"
+698,Polpa de manga congelada,25.0,0.0,0.38125,0.234,0.0,1.07,0.0,0.0,0.0893333333333333,0.0,0.0,0.0,"Manga, polpa, congelada/TACO"
+702,Polpa de maracujá,50.0,0.0,0.8125,0.176666666666666,0.0,0.505999999999999,0.0,0.0,0.292333333333333,0.0,0.0,0.0,"Maracujá, polpa, congelada/TACO"
+703,Polpa de maracujá congelada,20.0,0.0,0.8125,0.176666666666666,0.0,0.505999999999999,0.0,0.0,0.292333333333333,0.0,0.0,0.0,"Maracujá, polpa, congelada/TACO"
+706,Proteína,12.0,375.0,91.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Bem Vital Caseinato, Nutricium. Informações do rótulo."
+707,Pudim de baunilha,40.0,112.0,2.86,2.9,18.68,0.1,89.0,74.0,0.04,156.0,119.0,0.0,"Pudim, baunilha, mistura seca, normal, preparo com leite integral/USDA/DIETBOX"
+709,Pudim de chocolate,60.0,119.0,3.21,3.15,19.4,0.8,96.0,87.0,0.35,98.0,150.0,0.0,"Pudim, chocolate, mistura seca, normal, preparo com leite integral/USDA/DIETBOX"
+711,Pudim de chocolate Diet,80.0,76.1,3.85,3.0,8.92,0.8,96.0,87.0,0.35,98.0,150.0,0.0,"Macronutriente do Pudim de chocolate diet - Royal® (com leite integral)* DIETBOX/TUCUNDUVA e micronutriente Pudim, chocolate, mistura seca, normal, preparo com leite integral/USDA/DIETBOX"
+712,Pudim de coco,70.0,117.0,2.9,3.5,19.1,0.1,100.0,200.0,0.15,246.0,129.0,0.8,"Pudim, creme de coco, mistura seca, instantânea, preparo com leite integral/USDA/DIETBOX"
+714,Pudim de coco diet com leite desnatado,80.0,74.6,3.54,3.23,8.38,0.1,100.0,200.0,0.15,246.0,129.0,0.8,"Macronutrientes do Pudim diet coco - Royal® (com leite integral)/TUCUNDUVA/DIETBOX e Micronutrientes do Pudim, creme de coco, mistura seca, instantânea, preparo com leite integral/USDA/DIETBOX"
+715,Pudim de morango diet,80.0,72.3,3.46,2.85,8.77,0.1,89.0,74.0,0.04,156.0,119.0,0.0,"Macronutriente do Pudim diet baunilha - Royal® (com leite integral)* DIETBOX/TUCUNDUVA e micronutriente do Pudim, baunilha, mistura seca, normal, preparo com leite integral/USDA/DIETBOX. Utilizou-se baunilha pois não tem informação disponível do sabor morango."
+716,Pudim diet de baunilha,80.0,72.3,3.46,2.85,8.77,0.1,89.0,74.0,0.04,156.0,119.0,0.0,"Macronutriente do Pudim diet baunilha - Royal® (com leite integral)* DIETBOX/TUCUNDUVA e micronutriente do Pudim, baunilha, mistura seca, normal, preparo com leite integral/USDA/DIETBOX"
+717,Purê de batata ,65.0,115.16,1.81,4.36,17.76,1.78,18.21,43.96,0.27,138.26,298.44,6.42,Purê de batata DIETBOX/IBGE
+721,Purê de batata baroa,65.0,0.0,0.852083333333333,0.166333333333333,0.0,0.0,11.85,0.0,0.423666666666666,190.0,0.0,17.1,"Batata, baroa, cozida/TACO com sódio TBCA (Batata, baroa, cozida, drenada, c/ óleo de soja, c/ sal)"
+722,Queijo mozarela,10.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.306,0.0,0.0,0.0,"Queijo, mozarela/ TACO"
+724,Queijo muçarela,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.306,0.0,0.0,0.0,"Queijo, mozarela/TACO"
+725,Queijo parmesão,5.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.532333333333333,0.0,0.0,0.0,"Queijo, parmesão/TACO"
+726,Quiabo cozido,30.0,22.0,1.87,0.21,4.51,2.5,77.0,32.0,0.28,6.0,135.0,16.3,Quiabo cozido DIETBOX/IBGE
+730,Quiabo ensopado,100.0,47.09,1.87,3.05,4.51,2.5,77.0,32.0,0.28,6.0,135.0,16.3,Quiabo ensopado DIETBOX/IBGE
+732,Quiabo refogado,100.0,47.09,1.87,3.05,4.51,2.5,77.0,32.0,0.28,129.0,135.0,16.3,"Quiabo refogado DIETBOX/IBGE com sódio TBCA (Quiabo, cozido, c/ sal, drenado)"
+733,Quiche,100.0,282.73,10.34,20.44,13.85,0.56,156.43,177.97,0.97,408.79,145.81,0.51,Quiche DIETBOX/IBGE
+734,Rabanete cru,20.0,0.0,0.0,0.0733333333333333,0.0,0.0,0.0,0.0,0.35,0.0,0.0,0.0,"Rabanete, cru/TACO"
+736,Repolho branco cru,25.0,0.0,0.876811594202898,0.143333333333333,0.0,1.89,0.0,14.2,0.15,0.0,150.09,0.0,"Repolho, branco, cru/TACO"
+739,Repolho branco refogado,100.0,49.77,1.27,3.09,5.51,1.9,48.0,33.0,0.17,132.0,196.0,37.5,"Repolho refogado DIETBOX/IBGE com sódio TBCA Repolho, branco, refogado, c/ sal)"
+740,Repolho roxo,50.0,0.0,0.0,0.0636666666666666,0.0,0.0,0.0,0.0,0.516333333333333,0.0,0.0,43.2,"Repolho, roxo, cru/TACO"
+741,"Repolho roxo, cru",20.0,0.0,0.0,0.0636666666666666,0.0,0.0,0.0,0.0,0.516333333333333,0.0,0.0,43.2,"Repolho, roxo, cru/TACO"
+744,Ricota,25.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.136666666666666,0.0,0.0,0.0,Queijo ricota TACO
+750,Rúcula crua,20.0,0.0,0.0,0.107333333333333,0.0,1.74,0.0,0.0,0.939,0.0,0.0,0.0,"Rúcula, crua/TACO"
+752,Sal,0.5,0.0,0.0,0.0,0.0,0.0,24.0,0.0,0.1,0.0,8.01,0.0,
+755,Salpicão de frango,100.0,0.0,0.0,0.0,0.0,0.41,0.0,0.0,0.318333333333333,25.0,0.0,0.0,"Salpicão, de frango TACO. Considerou-se o sódio de 50g de Frango, peito, sem pele, grelhado/TACO."
+758,"Sobrecoxa de frango sem pele, assada",150.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,375.0,382.21,0.0,"Frango, sobrecoxa, sem pele, assada/TACO com sódio TBCA (Carne, frango, peito, c/ pele, assada, c/ sal)"
+759,"Sobrecoxa de frango, sem pele, assada",50.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,382.21,0.0,"Frango, sobrecoxa, sem pele, assada/TACO"
+769,Sopa creme de ervilha,100.0,46.86,5.41,1.74,2.19,0.72,6.47,51.48,0.65,8.58,101.64,5.54,"Sopa creme de ervilha DIETBOX/TUCUNDUVA com sódio da tabela TBCA (Ervilha, grão, seca, partida, cozida, drenada, c/ sal sem sal)"
+771,Sopa de canjiquinha de milho em grão ,100.0,31.44,0.95,0.12,7.01,0.71,8.56,15.76,0.28,310.43,88.32,2.1,Canjiquinha de milho em grão Sopa DIETBOX/IBGE
+772,Souflê,100.0,126.1,5.11,9.17,6.4,1.1,101.63,90.54,1.85,58.0,444.31,3.91,"Suflê DIETBOX/IBGE. Considerou-se o teor de sódio de 10g de Queijo, mozarela/ TACO pois é o único ingrediente com maior teor de sódio do soufle."
+774,Suco de cajú,25.0,0.0,0.48125,0.154,0.0,0.814666666666666,0.839333333333333,0.0,0.146666666666666,0.0,0.0,0.0,"Caju, polpa, congelada/TACO"
+776,Taioba refogada,100.0,47.13,2.11,2.75,4.91,2.8,140.0,30.0,1.16,16.0,116.0,18.2,Taioba refogada DIETBOX/IBGE
+778,Tapioca seca,8.0,341.0,0.19,0.02,88.7,0.7,20.0,7.0,1.59,1.0,11.0,0.0,Tapioca seca DIETBOX/TUCUNDUVA
+779,TCM,5.0,884.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,"Azeite, de oliva, extra virgem/TACO"
+780,Tomate,6.0,0.0,0.0,0.173333333333333,0.0,0.0,6.94,0.0,0.236666666666666,1.02,0.0,0.0,"Tomate, com semente, cru/TACO"
+784,Tomate ,5.0,0.0,0.810416666666666,0.0,0.0,0.0,0.0,0.0,0.290333333333333,0.0,0.0,0.0,"Tomate, salada/TACO"
+786,"Tomate com semente, cru",5.0,0.0,0.0,0.173333333333333,0.0,0.0,6.94,0.0,0.236666666666666,1.02,0.0,0.0,"Tomate, com semente, cru/TACO"
+789,Tomate cru com semente,10.0,0.0,0.0,0.173333333333333,0.0,0.0,6.94,0.0,0.236666666666666,1.02,0.0,0.0,"Tomate, com semente, cru/TACO"
+790,Tomate salada,25.0,0.0,0.810416666666666,0.0,0.0,0.0,0.0,0.0,0.290333333333333,0.0,0.0,0.0,"Tomate, salada/TACO"
+795,Tomate salada em cubinhos,25.0,0.0,0.810416666666666,0.0,0.0,0.0,0.0,0.0,0.290333333333333,0.0,0.0,0.0,"Tomate, salada/TACO"
+797,Trigo,8.0,0.0,0.0,0.0,0.0,0.0,0.0,114.74,0.95,0.736666666666666,0.0,0.0,Farinha de trigo/TACO
+799,Uva passas,5.0,299.0,2.3,0.5,71.4,0.0,60.0,0.0,2.99,0.0,0.0,0.0,Tabela para avaliação de consumo alimentar em medidas caseiras ( GF)
+800,Uva rubi crua,100.0,0.0,0.608333333333333,0.157,0.0,0.933666666666666,0.0,0.0,0.170666666666666,0.0,0.0,1863.0,"Uva, Rubi, crua/ TACO"
+801,"Uva, Rubi, crua",100.0,0.0,0.608333333333333,0.157,0.0,0.933666666666666,0.0,0.0,0.170666666666666,0.0,0.0,1863.0,"Uva, Rubi, crua/ TACO"
+802,Vagem cozida,15.0,35.0,1.9,0.28,7.9,3.2,46.0,39.0,1.28,3.0,299.0,9.7,Vagem cozida DIETBOX/TUCUNDUVA
+811,Vinagre,8.0,14.0,0.0,0.0,5.91,0.0,6.0,9.01,0.6,1.01,100.0,0.0,Vinagre/DIETBOX/Tucunduva
+812,Vinagrete,20.0,76.79,0.65,6.21,3.68,0.93,19.92,19.03,0.65,0.15,156.7,13.73,Vinagrete DIETBOX/IBGE
+815,Vitamina HPHC,160.0,0.0,0.0,0.0,0.0,0.355849652777777,0.0,0.0,0.921510590277777,0.0,0.0,0.0,Vitamina HPHC/ MANUAL DE SUPLEMENTOS (Utilizou-se a média do valor nutricional de todas as vitaminas por 100ml)

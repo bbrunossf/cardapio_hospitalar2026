@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Composição de Pratos</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --surface2: #0f3460;
+    --text: #e0e0e0;
+    --text2: #a0a0a0;
+    --primary: #4fc3f7;
+    --success: #66bb6a;
+    --danger: #ef5350;
+    --warning: #ffa726;
+    --border: #2a2a4a;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text); height: 100vh;
+    display: flex; flex-direction: column;
+  }
+  header {
+    background: var(--surface); padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header h1 { font-size: 1.3rem; font-weight: 600; }
+  header a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+  .container { display: flex; flex: 1; overflow: hidden; }
+  .panel-left {
+    width: 380px; min-width: 280px;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+  .panel-right { flex: 1; padding: 24px; overflow-y: auto; }
+  .search-box {
+    padding: 12px; border-bottom: 1px solid var(--border);
+  }
+  .search-box input {
+    width: 100%; padding: 10px 14px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); font-size: 0.9rem; outline: none;
+  }
+  .search-box input:focus { border-color: var(--primary); }
+  .prato-list { flex: 1; overflow-y: auto; }
+  .prato-item {
+    padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.15s;
+  }
+  .prato-item:hover { background: var(--surface2); }
+  .prato-item.active { background: var(--surface2); border-left: 3px solid var(--primary); }
+  .prato-item .nome { font-size: 0.9rem; }
+  .prato-item .tipo { font-size: 0.75rem; color: var(--text2); }
+  .prato-item .badge {
+    font-size: 0.7rem; padding: 2px 8px; border-radius: 12px;
+    background: var(--surface2); color: var(--text2);
+  }
+  .prato-item .badge.ok { background: #1b5e20; color: var(--success); }
+  .prato-item .badge.warn { background: #e65100; color: var(--warning); }
+  .prato-item .badge.empty { background: #4a148c; color: #ce93d8; }
+
+  .prato-detail h2 {
+    font-size: 1.4rem; margin-bottom: 4px;
+  }
+  .prato-detail .subtitulo {
+    font-size: 0.85rem; color: var(--text2); margin-bottom: 20px;
+  }
+  .porcao-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+    padding: 16px; background: var(--surface); border-radius: var(--radius);
+  }
+  .porcao-row label { font-size: 0.85rem; color: var(--text2); }
+  .porcao-row input[type="number"] {
+    width: 100px; padding: 8px 12px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); font-size: 1rem; text-align: center;
+  }
+  .porcao-row .status { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+  .porcao-row .status.ok { color: var(--success); }
+  .porcao-row .status.warn { color: var(--warning); }
+  .porcao-row .diferenca { font-weight: 600; }
+  .btn {
+    padding: 8px 16px; border-radius: var(--radius); border: none;
+    cursor: pointer; font-size: 0.85rem; font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--primary); color: #000; }
+  .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: var(--text2); border-bottom: 2px solid var(--border); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  td input[type="number"] {
+    width: 80px; padding: 6px 8px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); text-align: center;
+  }
+  .ingrediente-nome { font-weight: 500; }
+  .saved-msg { color: var(--success); font-size: 0.75rem; margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
+  .saved-msg.show { opacity: 1; }
+  .total-row td { border-top: 2px solid var(--border); font-weight: 600; }
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; color: var(--text2); text-align: center; gap: 12px;
+  }
+  .empty-state .icon { font-size: 3rem; }
+  .loading { text-align: center; padding: 40px; color: var(--text2); }
+  .loading::after { content: "..."; animation: dots 1.5s infinite; }
+  @keyframes dots { 0%,20% { content: "."; } 40% { content: ".."; } 60%,100% { content: "..."; } }
+  .stats-bar {
+    padding: 8px 16px; font-size: 0.75rem; color: var(--text2);
+    border-top: 1px solid var(--border); background: var(--surface);
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🍽️ Composição de Pratos</h1>
+  <a href="/admin/">&larr; Voltar ao Admin</a>
+</header>
+<div class="container">
+  <div class="panel-left">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Buscar prato..." oninput="filtrarPratos()">
+    </div>
+    <div class="prato-list" id="pratoList">
+      <div class="loading">Carregando pratos</div>
+    </div>
+    <div class="stats-bar" id="statsBar"></div>
+  </div>
+  <div class="panel-right" id="panelRight">
+    <div class="empty-state">
+      <div class="icon">👈</div>
+      <p>Selecione um prato na lista ao lado<br>para ver sua composição</p>
+    </div>
+  </div>
+</div>
+<script>
+let pratos = [];
+let pratoAtivo = null;
+let ingredientesCache = {};
+
+async function carregarPratos() {
+  const r = await fetch('/api/pratos');
+  pratos = await r.json();
+  document.getElementById('statsBar').textContent = `${pratos.length} pratos cadastrados`;
+  renderPratos(pratos);
+}
+
+function renderPratos(lista) {
+  const el = document.getElementById('pratoList');
+  if (lista.length === 0) {
+    el.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text2);">Nenhum prato encontrado</div>';
+    return;
+  }
+  el.innerHTML = lista.map(p => {
+    let badge = '<span class="badge empty">sem composição</span>';
+    if (p.qtd_ingredientes > 0) {
+      const diff = Math.abs(parseFloat(p.massa_total || 0) - parseFloat(p.porcao_padrao_g || 0));
+      badge = diff < 0.01
+        ? '<span class="badge ok">✓ ok</span>'
+        : `<span class="badge warn">⚠ ${diff.toFixed(1)}g</span>`;
+    }
+    return `<div class="prato-item${pratoAtivo === p.id ? ' active' : ''}" onclick="selecionarPrato(${p.id})" data-nome="${p.nome.toLowerCase()}">
+      <div><div class="nome">${p.nome}</div><div class="tipo">${p.tipo || ''}</div></div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+function filtrarPratos() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtrados = pratos.filter(p => p.nome.toLowerCase().includes(q));
+  renderPratos(filtrados);
+}
+
+async function selecionarPrato(id) {
+  pratoAtivo = id;
+  renderPratos(pratos);
+
+  const panel = document.getElementById('panelRight');
+  panel.innerHTML = '<div class="loading">Carregando composição</div>';
+
+  const r = await fetch(`/api/pratos/${id}/composicao`);
+  const data = await r.json();
+
+  if (data.error) {
+    panel.innerHTML = `<div class="empty-state"><p>${data.error}</p></div>`;
+    return;
+  }
+
+  renderComposicao(data);
+}
+
+function renderComposicao(data) {
+  const { prato, ingredientes, massa_calculada, diferenca, ok } = data;
+  const porcao = parseFloat(prato.porcao_padrao_g || 0);
+
+  const statusClass = ok ? 'ok' : 'warn';
+  const statusIcon = ok ? '✅' : '⚠️';
+  const statusText = ok ? 'Massas coincidem' : `Diferença de ${Math.abs(diferenca).toFixed(1)}g`;
+
+  const panel = document.getElementById('panelRight');
+  panel.innerHTML = `
+    <div class="prato-detail">
+      <h2>${prato.nome}</h2>
+      <div class="subtitulo">${prato.tipo || ''} &middot; ${prato.consistencia || '—'} &middot; ${prato.temperatura_servimento || '—'}</div>
+
+      <div class="porcao-row">
+        <label>Porção padrão (g)</label>
+        <input type="number" step="0.5" id="porcaoInput" value="${porcao}" onchange="salvarPorcao(${prato.id})">
+        <div class="status ${statusClass}">
+          <span>${statusIcon}</span>
+          <span class="diferenca">${massa_calculada.toFixed(1)}g calculados</span>
+          <span>— ${statusText}</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="salvarPorcao(${prato.id})">Salvar</button>
+        <span class="saved-msg" id="porcaoSaved">✓ salvo</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr><th>Ingrediente</th><th style="width:120px;text-align:center;">Quantidade (g)</th><th style="width:120px;"></th></tr>
+        </thead>
+        <tbody>
+          ${ingredientes.map(ing => `
+            <tr>
+              <td class="ingrediente-nome">${ing.ingrediente}</td>
+              <td style="text-align:center;">
+                <input type="number" step="0.5" id="qtd_${ing.ingrediente_id}" value="${parseFloat(ing.quantidade_g).toFixed(1)}"
+                       onchange="salvarComposicao(${prato.id}, ${ing.ingrediente_id})">
+              </td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick="salvarComposicao(${prato.id}, ${ing.ingrediente_id})">Salvar</button>
+                <span class="saved-msg" id="saved_${ing.ingrediente_id}">✓</span>
+                <button class="btn btn-sm" style="background:var(--danger);color:#fff;margin-left:4px;" onclick="removerIngrediente(${prato.id}, ${ing.ingrediente_id}, '${ing.ingrediente}')">✕</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td><strong>Total</strong></td>
+            <td style="text-align:center;"><strong>${massa_calculada.toFixed(1)}g</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border-radius: var(--radius);">
+        <h4 style="margin-bottom: 12px; font-size: 0.95rem;">➕ Adicionar Ingrediente</h4>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="addIngSearch" placeholder="Buscar ingrediente..." oninput="filtrarIngredientesDisponiveis()"
+                 style="flex:1; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; outline: none;">
+          <input type="number" id="addIngQtd" value="10" step="0.5" min="0.5"
+                 style="width: 80px; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; font-size: 0.9rem; outline: none;">
+          <span style="color:var(--text2); display:flex; align-items:center; font-size:0.85rem;">g</span>
+        </div>
+        <div id="ingredientesDisponiveis" style="max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px;">
+          <div style="color: var(--text2); font-size: 0.85rem; padding: 8px;">Carregando...</div>
+        </div>
+      </div>
+    </div>
+  `;
+  filtrarIngredientesDisponiveis();
+}
+
+async function salvarPorcao(pratoId) {
+  const input = document.getElementById('porcaoInput');
+  const val = input.value;
+  const r = await fetch(`/api/pratos/${pratoId}/porcao`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ porcao_padrao_g: val })
+  });
+  const data = await r.json();
+  if (data.success) {
+    const msg = document.getElementById('porcaoSaved');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+    // Recarrega para mostrar status atualizado
+    selecionarPrato(pratoId);
+    carregarPratos(); // atualiza lista
+  }
+}
+
+async function salvarComposicao(pratoId, ingredienteId) {
+  const input = document.getElementById(`qtd_${ingredienteId}`);
+  const val = input.value;
+  const r = await fetch(`/api/composicao/${pratoId}/${ingredienteId}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ quantidade_g: val })
+  });
+  const data = await r.json();
+  if (data.success) {
+    const msg = document.getElementById(`saved_${ingredienteId}`);
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+    // Recarrega para recalcular massas
+    selecionarPrato(pratoId);
+    carregarPratos(); // atualiza lista
+  }
+}
+
+let todosIngredientes = [];
+
+async function carregarIngredientes() {
+  const r = await fetch('/api/ingredientes');
+  todosIngredientes = await r.json();
+}
+
+function filtrarIngredientesDisponiveis() {
+  if (!pratoAtivo || !todosIngredientes.length) return;
+  const q = document.getElementById('addIngSearch').value.toLowerCase();
+  const idsNoPrato = new Set(
+    Array.from(document.querySelectorAll('.prato-detail table tbody tr')).map(tr => {
+      const btn = tr.querySelector('button[style*="var(--danger)"]');
+      if (btn) {
+        const match = btn.getAttribute('onclick').match(/removerIngrediente\(\d+, (\d+)/);
+        return match ? parseInt(match[1]) : null;
+      }
+      return null;
+    }).filter(Boolean)
+  );
+  const disponiveis = todosIngredientes.filter(i =>
+    !idsNoPrato.has(i.id) && i.nome.toLowerCase().includes(q)
+  ).slice(0, 100);
+  const el = document.getElementById('ingredientesDisponiveis');
+  if (disponiveis.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);font-size:0.85rem;padding:4px;">Nenhum ingrediente disponível</div>';
+    return;
+  }
+  el.innerHTML = disponiveis.map(i =>
+    `<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);margin:2px;white-space:nowrap;"
+            onclick="adicionarIngrediente(${pratoAtivo}, ${i.id}, '${i.nome.replace(/'/g, "\\'")}')">
+       ${i.nome}
+     </button>`
+  ).join('');
+}
+
+async function adicionarIngrediente(pratoId, ingredienteId, nome) {
+  const qtd = parseFloat(document.getElementById('addIngQtd').value) || 10;
+  const r = await fetch(`/api/composicao/${pratoId}/add/${ingredienteId}`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ quantidade_g: qtd })
+  });
+  if (r.ok) {
+    selecionarPrato(pratoId);
+    carregarPratos();
+  } else {
+    const err = await r.json();
+    alert(err.error || 'Erro ao adicionar ingrediente');
+  }
+}
+
+async function removerIngrediente(pratoId, ingredienteId, nome) {
+  if (!confirm(`Remover "${nome}" do prato?`)) return;
+  const r = await fetch(`/api/composicao/${pratoId}/${ingredienteId}`, {
+    method: 'DELETE'
+  });
+  if (r.ok) {
+    selecionarPrato(pratoId);
+    carregarPratos();
+  }
+}
+
+carregarPratos();
+carregarIngredientes();
+</script>
+</body>
+</html>

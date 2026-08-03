@@ -24,8 +24,9 @@ db = SQLAlchemy(app)
 class Ingrediente(db.Model):
     __tablename__ = 'ingredientes'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(100), nullable=False)
+    nome = db.Column(db.String(100), nullable=False)    
     tipo_alimento = db.Column(db.String(50))
+    qtde = db.Column(db.Numeric(3,2))
     unidade_medida = db.Column(db.String(20))
     energia_kcal = db.Column(db.Numeric(8,2))
     carboidrato_g = db.Column(db.Numeric(8,2))
@@ -46,10 +47,11 @@ class Ingrediente(db.Model):
     observacoes = db.Column(db.Text)
     criado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
     editado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    fonte = db.Column(db.String(20))
     desativado = db.Column(db.Boolean, default=False)
 
     def __str__(self):
-        return self.nome
+        return self.nome if self.nome else f"Device {self.id}"
 
 
 class FormaPreparo(db.Model):
@@ -196,7 +198,101 @@ class VariacaoPreparacao(db.Model):
     def __str__(self):
         return self.nome_exibicao or ''
 
+# ==========================================
+# NOVOS MODELOS PARA REGRAS (Épicos 2 e 3)
+# ==========================================
 
+class TipoRefeicao(db.Model):
+    __tablename__ = 'tipos_refeicao'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(50), unique=True, nullable=False)
+    horario_padrao = db.Column(db.String(10)) # Ex: '07:00:00'
+    descricao = db.Column(db.Text)
+    # criado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    # editado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    # desativado = db.Column(db.Boolean, default=False)
+
+    def __str__(self):
+        return self.nome
+
+class RegraComposicao(db.Model):
+    __tablename__ = 'regras_composicao'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tipo_refeicao_id = db.Column(db.Integer, db.ForeignKey('tipos_refeicao.id'), nullable=False)
+    tipo_prato_id = db.Column(db.Integer, db.ForeignKey('tipos_prato.id'), nullable=False)
+    qtd_minima = db.Column(db.Integer, default=0)
+    qtd_maxima = db.Column(db.Integer, default=1)
+    obrigatorio = db.Column(db.Boolean, default=True)
+    
+    tipo_refeicao = db.relationship('TipoRefeicao', backref='regras_composicao')
+    tipo_prato = db.relationship('TipoPrato', backref='regras_composicao')
+
+    def __str__(self):
+        return f"{self.tipo_refeicao} -> {self.tipo_prato}"
+
+class DietaRefeicao(db.Model):
+    __tablename__ = 'dieta_refeicoes'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dieta_id = db.Column(db.Integer, db.ForeignKey('dietas.id'), nullable=False)
+    tipo_refeicao_id = db.Column(db.Integer, db.ForeignKey('tipos_refeicao.id'), nullable=False)
+    
+    dieta = db.relationship('Dieta', backref='dieta_refeicoes')
+    tipo_refeicao = db.relationship('TipoRefeicao', backref='dieta_refeicoes')
+
+    def __str__(self):
+        return f"{self.dieta} - {self.tipo_refeicao}"
+
+class RegraElegibilidadeDieta(db.Model):
+    __tablename__ = 'regras_elegibilidade_dieta'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dieta_id = db.Column(db.Integer, db.ForeignKey('dietas.id'), nullable=False)
+    atributo = db.Column(db.String(50), nullable=False) # 'consistencia', 'cor', 'textura'
+    valores_permitidos = db.Column(db.Text, nullable=False) # JSON: '["líquido", "pastoso"]'
+    operador = db.Column(db.String(20), default='IN') # 'IN', 'NOT IN'
+    
+    dieta = db.relationship('Dieta', backref='regras_elegibilidade')
+
+    def __str__(self):
+        return f"{self.dieta} - {self.atributo} {self.operador}"
+
+class RestricaoNutricionalDieta(db.Model):
+    __tablename__ = 'restricoes_nutricionais_dieta'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dieta_id = db.Column(db.Integer, db.ForeignKey('dietas.id'), nullable=False)
+    nutriente = db.Column(db.String(50), nullable=False) # 'energia', 'lipidios', etc.
+    valor_minimo = db.Column(db.Numeric(10,2))
+    valor_maximo = db.Column(db.Numeric(10,2))
+    periodo = db.Column(db.String(20), default='diario')
+    
+    dieta = db.relationship('Dieta', backref='restricoes_nutricionais')
+
+    def __str__(self):
+        return f"{self.dieta} - {self.nutriente}"
+
+class RegraSensorialGeral(db.Model):
+    __tablename__ = 'regras_sensoriais_gerais'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tipo_refeicao_id = db.Column(db.Integer, db.ForeignKey('tipos_refeicao.id'), nullable=False)
+    regra = db.Column(db.String(50), nullable=False) # 'max_cores_iguais', 'consistencia_unica'
+    valor_limite = db.Column(db.Integer, nullable=False)
+    grupos_afetados = db.Column(db.Text, nullable=False) # JSON: '["MD", "EN", "SD"]'
+    
+    tipo_refeicao = db.relationship('TipoRefeicao', backref='regras_sensoriais')
+
+    def __str__(self):
+        return f"{self.tipo_refeicao} - {self.regra}"
+
+class RegraVariedade(db.Model):
+    __tablename__ = 'regras_variedade'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tipo_prato_id = db.Column(db.Integer, db.ForeignKey('tipos_prato.id'), nullable=False)
+    dias_minimos_repeticao = db.Column(db.Integer, default=3)
+    frequencia_maxima_semanal = db.Column(db.Integer, default=7)
+    
+    tipo_prato = db.relationship('TipoPrato', backref='regras_variedade')
+
+    def __str__(self):
+        return f"{self.tipo_prato} - Variedade"
 # ─── VIEWS ADMIN ──────────────────────────────────────────────────────────
 
 class BaseModelView(ModelView):
@@ -213,19 +309,25 @@ class BaseModelView(ModelView):
 
 
 class IngredienteView(BaseModelView):
-    column_list = ['nome', 'tipo_alimento', 'energia_kcal', 'proteina_g',
-                   'lipidios_g', 'carboidrato_g', 'custo_por_100g', 'disponibilidade']
+    column_list = ['nome', 'tipo_alimento', 'qtde', 'unidade_medida', 'energia_kcal', 'carboidrato_g', 'proteina_g', 'lipidios_g', 'fibra_alimentar_g', 'calcio_mg',
+    'ferro_mg', 'sodio_mg', 'potassio_mg', 'fosforo_mg', 'vit_c_mg', 'vit_a_mg',
+    'gordura_saturada_g', 'colesterol_mg',
+    
+    
+    'custo_por_100g', 'disponibilidade', 'observacoes', 'fonte', 'desativado']
+                   
     column_searchable_list = ['nome', 'tipo_alimento']
     column_filters = ['tipo_alimento', 'disponibilidade', 'desativado']
     column_editable_list = ['disponibilidade', 'custo_por_100g']
     form_excluded_columns = ['criado_em', 'editado_em']
+    
     column_labels = {
-        'nome': 'Nome', 'tipo_alimento': 'Tipo', 'energia_kcal': 'Kcal',
+        'nome': 'Nome', 'tipo_alimento': 'Tipo', 'qtde': 'Qtde_medida', 'unidade_medida': 'unidade', 'energia_kcal': 'Kcal', 'carboidrato_g': 'Carboidrato (g)',
         'proteina_g': 'Proteína (g)', 'lipidios_g': 'Lipídios (g)',
-        'carboidrato_g': 'Carboidrato (g)', 'custo_por_100g': 'Custo R$',
-        'disponibilidade': 'Disponível'
+         'custo_por_100g': 'Custo R$', 'disponibilidade': 'Disponível'
     }
-
+# class IngredienteView(ModelView):
+    # pass
 
 class FormaPreparoView(BaseModelView):
     column_list = ['nome', 'descricao', 'fator_correcao', 'fator_parte_comestivel']
@@ -289,6 +391,51 @@ class VariacaoPreparacaoView(BaseModelView):
         'dieta': 'Dieta', 'sodio_mg': 'Sódio (mg)', 'energia_kcal': 'Kcal'
     }
 
+# ==========================================
+# NOVAS VIEWS ADMIN PARA REGRAS
+# ==========================================
+
+class TipoRefeicaoView(BaseModelView):
+    column_list = ['nome', 'horario_padrao', 'descricao']
+    column_searchable_list = ['nome']
+    form_excluded_columns = ['criado_em', 'editado_em', 'regras_composicao', 'dieta_refeicoes', 'regras_sensoriais']
+
+class RegraComposicaoView(BaseModelView):
+    column_list = ['tipo_refeicao', 'tipo_prato', 'qtd_minima', 'qtd_maxima', 'obrigatorio']
+    column_filters = ['tipo_refeicao', 'tipo_prato', 'obrigatorio']
+    form_excluded_columns = ['id']
+
+class DietaRefeicaoView(BaseModelView):
+    column_list = ['dieta', 'tipo_refeicao']
+    column_filters = ['dieta', 'tipo_refeicao']
+    form_excluded_columns = ['id']
+
+class RegraElegibilidadeDietaView(BaseModelView):
+    column_list = ['dieta', 'atributo', 'valores_permitidos', 'operador']
+    column_filters = ['dieta', 'atributo', 'operador']
+    column_searchable_list = ['valores_permitidos']
+    form_excluded_columns = ['id']
+    form_widget_args = {
+        'valores_permitidos': {'rows': 3} # Campo de texto maior para JSON
+    }
+
+class RestricaoNutricionalDietaView(BaseModelView):
+    column_list = ['dieta', 'nutriente', 'valor_minimo', 'valor_maximo', 'periodo']
+    column_filters = ['dieta', 'nutriente', 'periodo']
+    form_excluded_columns = ['id']
+
+class RegraSensorialGeralView(BaseModelView):
+    column_list = ['tipo_refeicao', 'regra', 'valor_limite', 'grupos_afetados']
+    column_filters = ['tipo_refeicao', 'regra']
+    form_excluded_columns = ['id']
+    form_widget_args = {
+        'grupos_afetados': {'rows': 3}
+    }
+
+class RegraVariedadeView(BaseModelView):
+    column_list = ['tipo_prato', 'dias_minimos_repeticao', 'frequencia_maxima_semanal']
+    column_filters = ['tipo_prato']
+    form_excluded_columns = ['id']
 
 # ─── DASHBOARD ───────────────────────────────────────────────────────────
 
@@ -351,7 +498,7 @@ class DashboardView(AdminIndexView):
 DASHBOARD_TEMPLATE = '''
 {% extends 'admin/master.html' %}
 {% block body %}
-<div style="padding: 20px;">
+<div style="padding: 20px; width: 100%">
   <h1>📊 Cardápio Hospitalar — Dashboard</h1>
   <p style="color: #666;">Épico 1: Gestão de Dados Mestres</p>
 
@@ -465,7 +612,9 @@ DASHBOARD_TEMPLATE = '''
 admin = Admin(app, name='Cardápio Hospitalar', theme=Bootstrap4Theme(),
               index_view=DashboardView())
 
-admin.add_view(IngredienteView(Ingrediente, db, name='Ingredientes'))
+#admin.add_view(IngredienteView(Ingrediente, db, name='Ingredientes'))
+admin.add_view(IngredienteView(Ingrediente, db.session))
+
 admin.add_view(FormaPreparoView(FormaPreparo, db, name='Formas Preparo'))
 admin.add_view(PreparacaoView(Preparacao, db, name='Preparações'))
 admin.add_view(TipoPratoView(TipoPrato, db, name='Tipos Prato'))
@@ -473,6 +622,14 @@ admin.add_view(PratoView(Prato, db, name='Pratos'))
 admin.add_view(PratoPreparacaoView(PratoPreparacao, db, name='Relações Prato-Prep'))
 admin.add_view(DietaView(Dieta, db, name='Dietas'))
 admin.add_view(VariacaoPreparacaoView(VariacaoPreparacao, db, name='Variações'))
+# Adicione estas linhas após as views existentes
+admin.add_view(TipoRefeicaoView(TipoRefeicao, db, name='Tipos Refeição', category='Regras'))
+admin.add_view(RegraComposicaoView(RegraComposicao, db, name='Composição Refeições', category='Regras'))
+admin.add_view(DietaRefeicaoView(DietaRefeicao, db, name='Dietas x Refeições', category='Regras'))
+admin.add_view(RegraElegibilidadeDietaView(RegraElegibilidadeDieta, db, name='Elegibilidade Dietas', category='Regras'))
+admin.add_view(RestricaoNutricionalDietaView(RestricaoNutricionalDieta, db, name='Restrições Nutricionais', category='Regras'))
+admin.add_view(RegraSensorialGeralView(RegraSensorialGeral, db, name='Regras Sensoriais', category='Regras'))
+admin.add_view(RegraVariedadeView(RegraVariedade, db, name='Regras Variedade', category='Regras'))
 
 
 @app.route('/')
@@ -487,13 +644,13 @@ if __name__ == '__main__':
 
     # Escreve o template do dashboard
     dashboard_path = os.path.join(templates_dir, 'dashboard.html')
-    with open(dashboard_path, 'w') as f:
+    with open(dashboard_path, 'w', encoding="utf-8") as f:
         f.write(DASHBOARD_TEMPLATE)
 
     print("=" * 60)
     print("🏥  Cardápio Hospitalar — Admin Interface")
     print("=" * 60)
-    print(f"📍  http://10.0.0.6:5000")
+    #print(f"📍  http://10.0.0.6:5000")
     print(f"📁  BD: {app.config['SQLALCHEMY_DATABASE_URI']}")
     print("=" * 60)
     app.run(debug=True, host='0.0.0.0', port=5000)
