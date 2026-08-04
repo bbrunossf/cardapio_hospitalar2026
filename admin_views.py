@@ -6,6 +6,7 @@ from models import (
     RegraElegibilidadeDieta, RestricaoNutricionalDieta,
     RegraSensorialGeral, RegraVariedade, VwPratosNutricional
 )
+from models_rotulo import AlimentoIndustrializado, AlimentoVersao, VwAlimentosIndustrializados100g
 from extensions import db, admin
 
 
@@ -156,6 +157,53 @@ class VwPratosNutricionalView(BaseModelView):
     column_default_sort = ('energia_kcal', True)
 
 
+class AlimentoIndustrializadoView(BaseModelView):
+    column_list = [
+        'nome', 'marca', 'codigo_barras', 'peso_liquido', 'unidade_peso',
+        'porcao_qtd', 'porcao_unidade', 'energia_kcal', 'carboidratos_g',
+        'proteinas_g', 'gorduras_totais_g', 'fonte', 'versao', 'desativado'
+    ]
+    column_searchable_list = ['nome', 'marca', 'codigo_barras']
+    column_filters = ['marca', 'fonte', 'desativado']
+    form_excluded_columns = ['criado_em', 'editado_em', 'versoes']
+    column_labels = {
+        'nome': 'Nome', 'marca': 'Marca', 'codigo_barras': 'Código de Barras',
+        'peso_liquido': 'Peso Líquido', 'unidade_peso': 'Unidade',
+        'porcao_qtd': 'Porção', 'porcao_unidade': 'Unid. Porção',
+        'energia_kcal': 'Energia (kcal)', 'carboidratos_g': 'Carboidratos (g)',
+        'proteinas_g': 'Proteínas (g)', 'gorduras_totais_g': 'Gorduras Totais (g)',
+        'fonte': 'Fonte', 'versao': 'Versão', 'desativado': 'Desativado'
+    }
+
+
+class AlimentoVersaoView(BaseModelView):
+    can_create = False
+    can_edit = False
+    can_delete = False
+    column_list = ['alimento', 'versao', 'motivo', 'criado_em']
+    column_filters = ['versao', 'motivo']
+    form_excluded_columns = ['criado_em']
+    column_labels = {
+        'alimento': 'Alimento', 'versao': 'Versão', 'motivo': 'Motivo', 'criado_em': 'Data'
+    }
+
+
+class VwAlimentosIndustrializados100gView(BaseModelView):
+    can_create = False
+    can_edit = False
+    can_delete = False
+    column_list = [
+        'nome', 'marca', 'energia_kcal_100g', 'carboidratos_g_100g',
+        'proteinas_g_100g', 'gorduras_totais_g_100g', 'fibras_g_100g', 'sodio_mg_100g'
+    ]
+    column_searchable_list = ['nome', 'marca']
+    column_labels = {
+        'nome': 'Nome', 'marca': 'Marca',
+        'energia_kcal_100g': 'Energia/100g', 'carboidratos_g_100g': 'Carboidratos/100g',
+        'proteinas_g_100g': 'Proteínas/100g', 'gorduras_totais_g_100g': 'Gorduras/100g',
+        'fibras_g_100g': 'Fibras/100g', 'sodio_mg_100g': 'Sódio/100g'
+    }
+
 
 
 # ─── Função de setup ────────────────────────────────────────────────────
@@ -175,5 +223,8 @@ def setup_admin():
     admin.add_view(RegraSensorialGeralView(RegraSensorialGeral, db, name='Regras Sensoriais', category='Regras'))
     admin.add_view(RegraVariedadeView(RegraVariedade, db, name='Regras Variedade', category='Regras'))
     admin.add_view(PratoComposicaoView(PratoComposicao, db, name='Composição de Pratos'))
+    admin.add_view(AlimentoIndustrializadoView(AlimentoIndustrializado, db, name='Alimentos Industrializados'))
+    admin.add_view(AlimentoVersaoView(AlimentoVersao, db, name='Versões de Alimentos'))
     admin.add_view(VwPratosNutricionalView(VwPratosNutricional, db, name='📊 Nutrientes (view)', category='Consultas'))
+    admin.add_view(VwAlimentosIndustrializados100gView(VwAlimentosIndustrializados100g, db, name='📊 Alimentos 100g (view)', category='Consultas'))
     admin.add_link(MenuLink(name='🍽️ Ajustar Composição', url='/composicao-view', category='Consultas'))

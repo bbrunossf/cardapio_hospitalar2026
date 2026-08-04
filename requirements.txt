@@ -4,3 +4,7 @@ Flask-Admin>=2.0
 SQLAlchemy>=2.0
 Werkzeug>=3.0
 PuLP>=2.9
+requests>=2.31
+pytesseract>=0.3
+Pillow>=10.0
+rapidfuzz>=3.0

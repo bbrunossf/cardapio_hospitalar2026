@@ -11,6 +11,7 @@ from dashboard import DashboardView
 from admin_views import setup_admin
 from api.composicao import composicao_bp
 from api.otimizacao import otimizacao_bp
+from api.rotulo import rotulo_bp
 
 
 def create_app():
@@ -26,6 +27,7 @@ def create_app():
     # Registra blueprint da API de composição
     app.register_blueprint(composicao_bp)
     app.register_blueprint(otimizacao_bp)
+    app.register_blueprint(rotulo_bp)
 
     # Inicializa admin passando a DashboardView customizada
     admin.init_app(app, index_view=DashboardView())

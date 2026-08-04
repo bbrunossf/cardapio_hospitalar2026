@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro por Rótulo Nutricional</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { color: #333; }
+        .section { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
+        label { display: block; margin-top: 1rem; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+        button { margin-top: 1rem; padding: 0.6rem 1.2rem; cursor: pointer; }
+        .primary { background: #007bff; color: white; border: none; border-radius: 4px; }
+        .secondary { background: #6c757d; color: white; border: none; border-radius: 4px; }
+        .avisos { background: #fff3cd; color: #856404; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
+        .erros { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
+        .duplicata { border: 1px solid #ccc; padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; }
+        .revisao { background: #fff3cd; border: 1px solid #ffeeba; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Cadastro de Alimento Industrializado</h1>
+
+    <div class="section">
+        <h2>1. Buscar por código de barras</h2>
+        <label for="ean">EAN / Código de barras</label>
+        <input type="text" id="ean" placeholder="7891234567890">
+        <button class="primary" onclick="buscarEan()">Buscar</button>
+    </div>
+
+    <div class="section">
+        <h2>2. Ou envie a foto do rótulo</h2>
+        <label for="imagem">Imagem do rótulo</label>
+        <input type="file" id="imagem" accept="image/*">
+        <button class="primary" onclick="extrairRotulo()">Extrair rótulo</button>
+        <p style="font-size: 0.9em; color: #666;">
+            A imagem é usada apenas para extração e não é armazenada.
+        </p>
+    </div>
+
+    <div id="mensagens"></div>
+
+    <div id="formulario" class="section hidden">
+        <h2>Revisar dados</h2>
+        <div class="grid">
+            <div>
+                <label for="codigo_barras">Código de barras</label>
+                <input type="text" id="codigo_barras">
+            </div>
+            <div>
+                <label for="nome">Nome *</label>
+                <input type="text" id="nome">
+            </div>
+            <div>
+                <label for="marca">Marca</label>
+                <input type="text" id="marca">
+            </div>
+            <div>
+                <label for="fabricante">Fabricante</label>
+                <input type="text" id="fabricante">
+            </div>
+            <div>
+                <label for="peso_liquido">Peso líquido</label>
+                <input type="number" step="0.01" id="peso_liquido">
+            </div>
+            <div>
+                <label for="unidade_peso">Unidade peso</label>
+                <input type="text" id="unidade_peso" placeholder="g, ml, kg, L">
+            </div>
+            <div>
+                <label for="porcao_qtd">Porção</label>
+                <input type="number" step="0.01" id="porcao_qtd">
+            </div>
+            <div>
+                <label for="porcao_unidade">Unidade porção</label>
+                <input type="text" id="porcao_unidade" placeholder="g, ml, fatia, unidade">
+            </div>
+        </div>
+
+        <h3>Nutrientes</h3>
+        <div class="grid" id="nutrientes">
+            <!-- preenchido via JS -->
+        </div>
+
+        <label for="ingredientes_lista">Lista de ingredientes</label>
+        <textarea id="ingredientes_lista" rows="3"></textarea>
+
+        <label for="alergenos">Alérgenos (separados por vírgula)</label>
+        <input type="text" id="alergenos">
+
+        <div id="duplicatas"></div>
+
+        <button class="primary" onclick="salvar('criar')">Salvar novo</button>
+        <button class="secondary hidden" id="btnAtualizar" onclick="salvar('atualizar')">Atualizar existente</button>
+    </div>
+
+    <script>
+        let dadosAtuais = null;
+        let alimentoAtualizarId = null;
+
+        const nutrientesConfig = [
+            { nome: 'energia_kcal', label: 'Energia (kcal)' },
+            { nome: 'carboidratos_g', label: 'Carboidratos (g)' },
+            { nome: 'acucares_totais_g', label: 'Açúcares totais (g)' },
+            { nome: 'acucares_adicionados_g', label: 'Açúcares adicionados (g)' },
+            { nome: 'proteinas_g', label: 'Proteínas (g)' },
+            { nome: 'gorduras_totais_g', label: 'Gorduras totais (g)' },
+            { nome: 'gorduras_saturadas_g', label: 'Gorduras saturadas (g)' },
+            { nome: 'gorduras_trans_g', label: 'Gorduras trans (g)' },
+            { nome: 'fibras_g', label: 'Fibras (g)' },
+            { nome: 'sodio_mg', label: 'Sódio (mg)' },
+        ];
+
+        function renderNutrientes(valores = {}) {
+            const container = document.getElementById('nutrientes');
+            container.innerHTML = '';
+            nutrientesConfig.forEach(cfg => {
+                const val = valores[cfg.nome] || {};
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <label for="nut_${cfg.nome}">${cfg.label}</label>
+                    <input type="number" step="0.01" id="nut_${cfg.nome}" value="${val.valor !== null ? val.valor : ''}">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function lerNutrientes() {
+            const nutrientes = {};
+            nutrientesConfig.forEach(cfg => {
+                const raw = document.getElementById(`nut_${cfg.nome}`).value;
+                const unidade = cfg.nome === 'sodio_mg' ? 'mg' : cfg.nome === 'energia_kcal' ? 'kcal' : 'g';
+                nutrientes[cfg.nome] = {
+                    valor: raw === '' ? null : parseFloat(raw),
+                    unidade: unidade,
+                    presente: raw !== ''
+                };
+            });
+            return nutrientes;
+        }
+
+        function mostrarMensagem(tipo, lista) {
+            const div = document.getElementById('mensagens');
+            if (!lista || lista.length === 0) {
+                div.innerHTML = '';
+                return;
+            }
+            div.innerHTML = `<div class="${tipo}"><ul>${lista.map(m => `<li>${m}</li>`).join('')}</ul></div>`;
+        }
+
+        function preencherFormulario(resposta) {
+            const dados = resposta.dados || {};
+            dadosAtuais = resposta;
+            alimentoAtualizarId = null;
+
+            document.getElementById('codigo_barras').value = dados.codigo_barras || '';
+            document.getElementById('nome').value = dados.nome || '';
+            document.getElementById('marca').value = dados.marca || '';
+            document.getElementById('fabricante').value = dados.fabricante || '';
+            document.getElementById('peso_liquido').value = dados.peso_liquido?.valor || '';
+            document.getElementById('unidade_peso').value = dados.peso_liquido?.unidade || '';
+            document.getElementById('porcao_qtd').value = dados.porcao?.valor || '';
+            document.getElementById('porcao_unidade').value = dados.porcao?.unidade || '';
+            document.getElementById('ingredientes_lista').value = dados.ingredientes_lista || '';
+            document.getElementById('alergenos').value = (dados.alergenos || []).join(', ');
+
+            renderNutrientes(dados.nutrientes || {});
+
+            // Destaca campos de revisão
+            if (resposta.campos_revisao && resposta.campos_revisao.length > 0) {
+                resposta.campos_revisao.forEach(campo => {
+                    const input = document.getElementById(`nut_${campo}`);
+                    if (input) input.parentElement.classList.add('revisao');
+                });
+            }
+
+            mostrarMensagem('avisos', resposta.avisos);
+            renderDuplicatas(resposta.duplicatas || []);
+
+            document.getElementById('formulario').classList.remove('hidden');
+        }
+
+        function renderDuplicatas(duplicatas) {
+            const div = document.getElementById('duplicatas');
+            if (duplicatas.length === 0) {
+                div.innerHTML = '';
+                document.getElementById('btnAtualizar').classList.add('hidden');
+                return;
+            }
+
+            let html = '<h3>Possíveis duplicatas</h3>';
+            duplicatas.forEach(d => {
+                html += `
+                    <div class="duplicata">
+                        <strong>${d.nome}</strong> ${d.marca ? '(' + d.marca + ')' : ''}<br>
+                        Similaridade: ${(d.similaridade * 100).toFixed(0)}%<br>
+                        <button class="secondary" onclick="escolherAtualizar(${d.id})">Atualizar este</button>
+                    </div>
+                `;
+            });
+            div.innerHTML = html;
+            document.getElementById('btnAtualizar').classList.remove('hidden');
+        }
+
+        function escolherAtualizar(id) {
+            alimentoAtualizarId = id;
+            document.getElementById('btnAtualizar').classList.remove('hidden');
+            alert('Modo atualizar selecionado. Clique em "Atualizar existente" para confirmar.');
+        }
+
+        function coletarPayload() {
+            return {
+                acao: alimentoAtualizarId ? 'atualizar' : 'criar',
+                alimento_id: alimentoAtualizarId,
+                dados: {
+                    codigo_barras: document.getElementById('codigo_barras').value || null,
+                    nome: document.getElementById('nome').value,
+                    marca: document.getElementById('marca').value || null,
+                    fabricante: document.getElementById('fabricante').value || null,
+                    peso_liquido: {
+                        valor: parseFloat(document.getElementById('peso_liquido').value) || null,
+                        unidade: document.getElementById('unidade_peso').value || null
+                    },
+                    porcao: {
+                        valor: parseFloat(document.getElementById('porcao_qtd').value) || null,
+                        unidade: document.getElementById('porcao_unidade').value || null
+                    },
+                    nutrientes: lerNutrientes(),
+                    ingredientes_lista: document.getElementById('ingredientes_lista').value || null,
+                    alergenos: document.getElementById('alergenos').value.split(',').map(s => s.trim()).filter(Boolean),
+                    _fonte: dadosAtuais?.status || 'manual'
+                }
+            };
+        }
+
+        async function buscarEan() {
+            const ean = document.getElementById('ean').value.trim();
+            if (!ean) return alert('Informe o EAN.');
+
+            const res = await fetch(`/api/alimentos/consulta-ean?ean=${encodeURIComponent(ean)}`);
+            const json = await res.json();
+            processarResposta(json);
+        }
+
+        async function extrairRotulo() {
+            const input = document.getElementById('imagem');
+            if (!input.files || input.files.length === 0) return alert('Selecione uma imagem.');
+
+            const form = new FormData();
+            form.append('imagem', input.files[0]);
+
+            const res = await fetch('/api/alimentos/extrair-rotulo', {
+                method: 'POST',
+                body: form
+            });
+            const json = await res.json();
+            processarResposta(json);
+        }
+
+        function processarResposta(json) {
+            if (json.erro) {
+                mostrarMensagem('erros', [json.erro]);
+                return;
+            }
+            if (json.status === 'nao_encontrado') {
+                mostrarMensagem('avisos', ['EAN não encontrado. Envie a foto do rótulo.']);
+                document.getElementById('formulario').classList.add('hidden');
+                return;
+            }
+            preencherFormulario(json);
+        }
+
+        async function salvar(acao) {
+            if (acao === 'atualizar') {
+                if (!alimentoAtualizarId) {
+                    alert('Selecione uma duplicata para atualizar.');
+                    return;
+                }
+            }
+
+            const payload = coletarPayload();
+            const res = await fetch('/api/alimentos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+
+            if (json.sucesso) {
+                alert('Salvo com sucesso! ID: ' + json.alimento_id);
+                document.getElementById('formulario').classList.add('hidden');
+                document.getElementById('mensagens').innerHTML = '';
+            } else {
+                mostrarMensagem('erros', json.erros || ['Erro ao salvar.']);
+                if (json.duplicatas) renderDuplicatas(json.duplicatas);
+            }
+        }
+    </script>
+</body>
+</html>

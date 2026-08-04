@@ -16,7 +16,38 @@ otimizacao_bp = Blueprint('otimizacao', __name__)
 # CARREGAMENTO DE DADOS
 # ══════════════════════════════════════════════════════════════════
 
-def carregar_dados_otimizacao(dieta_nome="LIVRE"):
+# Mapeamento de nutrientes das restrições para colunas do banco
+COLUNAS_NUTRIENTES = {
+    'energia': 'energia_kcal', 'proteina': 'proteina_g', 'lipidios': 'lipidios_g',
+    'carboidrato': 'carboidrato_g', 'fibra': 'fibra_alimentar_g', 'sodio': 'sodio_mg',
+    'potassio': 'potassio_mg',
+}
+
+# Mapeamento para view de alimentos industrializados (base 100g)
+COLUNAS_INDUSTRIALIZADOS = {
+    'energia': 'energia_kcal_100g',
+    'proteina': 'proteinas_g_100g',
+    'lipidios': 'gorduras_totais_g_100g',
+    'carboidrato': 'carboidratos_g_100g',
+    'fibra': 'fibras_g_100g',
+    'sodio': 'sodio_mg_100g',
+    'potassio': None,  # não disponível no módulo de rótulo
+}
+
+
+def carregar_alimentos_industrializados():
+    """Carrega alimentos industrializados da view 100g (seção 9)."""
+    rows = db.session.execute(text("""
+        SELECT id, nome, marca,
+               energia_kcal_100g, carboidratos_g_100g, proteinas_g_100g,
+               gorduras_totais_g_100g, gorduras_saturadas_g_100g,
+               gorduras_trans_g_100g, fibras_g_100g, sodio_mg_100g
+        FROM vw_alimentos_industrializados_100g
+    """)).mappings().all()
+    return [dict(r) for r in rows]
+
+
+def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False):
     """Carrega dados do banco via SQLAlchemy (substitui sqlite3 direto)."""
     dieta = db.session.execute(
         text("SELECT id FROM dietas WHERE nome = :nome"), {'nome': dieta_nome}
@@ -45,6 +76,13 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE"):
     """)).mappings().all()
     pratos = [dict(row) for row in pratos]
     mapa_pratos = {p['id']: p for p in pratos}
+
+    # Alimentos industrializados não são pratos diretamente; são carregados
+    # como fonte adicional de ingredientes. A integração mínima viável
+    # documenta como unificar as fontes (seção 9).
+    alimentos_ind = []
+    if incluir_industrializados:
+        alimentos_ind = carregar_alimentos_industrializados()
 
     tipos_prato_rows = db.session.execute(
         text("SELECT id, nome FROM tipos_preparacoes")
@@ -101,6 +139,7 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE"):
         'restricoes_nutricionais': restricoes_nutricionais,
         'regras_variedade': regras_variedade,
         'regras_elegibilidade': regras_elegibilidade,
+        'alimentos_industrializados': alimentos_ind,
     }
 
 
@@ -181,15 +220,9 @@ def criar_modelo_otimizacao(dados, dias=5):
                     problema += soma == 0, f"Bloq_R{r}_T{t}_Dia{d}"
 
     # Restrições Nutricionais
-    colunas_nutrientes = {
-        'energia': 'energia_kcal', 'proteina': 'proteina_g', 'lipidios': 'lipidios_g',
-        'carboidrato': 'carboidrato_g', 'fibra': 'fibra_alimentar_g', 'sodio': 'sodio_mg',
-        'potassio': 'potassio_mg',
-    }
-
     for rest in dados['restricoes_nutricionais']:
         nutriente = rest['nutriente']
-        col = colunas_nutrientes.get(nutriente)
+        col = COLUNAS_NUTRIENTES.get(nutriente)
         if not col:
             continue
         for d in dias_range:
