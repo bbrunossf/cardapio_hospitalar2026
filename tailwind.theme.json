@@ -1,0 +1,109 @@
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#005eb8",
+        "primary-hover": "#004e99",
+        "primary-soft": "#e6f0fa",
+        "background": "#f4f7fa",
+        "surface": "#ffffff",
+        "text": "#1f2933",
+        "text-muted": "#5c6b7a",
+        "border": "#d9e1e8",
+        "success": "#0b7a75",
+        "warning": "#e8a33d",
+        "danger": "#c2410c"
+      },
+      "fontFamily": {
+        "h1": [
+          "IBM Plex Sans"
+        ],
+        "h2": [
+          "IBM Plex Sans"
+        ],
+        "h3": [
+          "IBM Plex Sans"
+        ],
+        "h4": [
+          "IBM Plex Sans"
+        ],
+        "body-md": [
+          "IBM Plex Sans"
+        ],
+        "body-sm": [
+          "IBM Plex Sans"
+        ],
+        "label": [
+          "IBM Plex Sans"
+        ],
+        "numeric": [
+          "IBM Plex Sans"
+        ]
+      },
+      "fontSize": {
+        "h1": [
+          "2rem",
+          {
+            "letterSpacing": "-0.01em",
+            "fontWeight": "700"
+          }
+        ],
+        "h2": [
+          "1.5rem",
+          {
+            "fontWeight": "700"
+          }
+        ],
+        "h3": [
+          "1.25rem",
+          {
+            "fontWeight": "600"
+          }
+        ],
+        "h4": [
+          "1.125rem",
+          {
+            "fontWeight": "600"
+          }
+        ],
+        "body-md": [
+          "1rem",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "body-sm": [
+          "0.875rem",
+          {
+            "fontWeight": "400"
+          }
+        ],
+        "label": [
+          "0.8125rem",
+          {
+            "letterSpacing": "0.04em",
+            "fontWeight": "600"
+          }
+        ],
+        "numeric": [
+          "1rem",
+          {
+            "fontWeight": "500"
+          }
+        ]
+      },
+      "borderRadius": {
+        "sm": "4px",
+        "md": "8px",
+        "lg": "12px"
+      },
+      "spacing": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "16px",
+        "lg": "24px",
+        "xl": "32px"
+      }
+    }
+  }
+}
