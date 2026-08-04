@@ -1,127 +1,185 @@
-
 {% extends 'admin/master.html' %}
 {% block body %}
-<style>
-  .container, .container-fluid { max-width: 100% !important; padding-left: 24px; padding-right: 24px; }
-</style>
-<div style="padding: 20px; width: 100%">
-  <h1>📊 Cardápio Hospitalar — Dashboard</h1>
-  <p style="color: #666;">Épico 1: Gestão de Dados Mestres</p>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identidade.css') }}">
 
-  <div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 25px 0;">
-    {% for label, count in [('🥩 Ingredientes', stats.ingredientes), ('🍽️ Pratos', stats.pratos), ('🥗 Dietas', stats.dietas), ('⏰ Refeições', stats.tipos_refeicao)] %}
-    <div style="flex: 1; min-width: 150px; background: #f8f9fa; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <div style="font-size: 2.5em; font-weight: bold; color: #2c3e50;">{{ count }}</div>
-      <div style="color: #7f8c8d; margin-top: 5px;">{{ label }}</div>
+<div class="idv-dashboard">
+  <!-- Header -->
+  <div class="idv-header">
+    <h1 class="idv-h1">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+      Cardápio Hospitalar — Dashboard
+    </h1>
+    <p class="idv-sub">Épico 1: Gestão de Dados Mestres</p>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="idv-stats">
+    {% for icon, label, count in [
+      ('carrot', 'Ingredientes', stats.ingredientes),
+      ('utensils', 'Pratos', stats.pratos),
+      ('salad', 'Dietas', stats.dietas),
+      ('clock', 'Refeições', stats.tipos_refeicao)
+    ] %}
+    <div class="idv-stat">
+      <div class="idv-stat-icon">
+        {% if icon == 'carrot' %}
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.27 21.7s9.87-3.5 12.73-6.36a4.5 4.5 0 0 0-6.36-6.37C5.77 11.84 2.27 21.7 2.27 21.7zM8.64 14l-2.05-2.05"/><path d="M15.34 15.34l-2.05-2.05"/><path d="M22 9s-1.33-3.5-5-5c0 0 1.33.5 2 2s2 2 2 2z"/></svg>
+        {% elif icon == 'utensils' %}
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+        {% elif icon == 'salad' %}
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h10"/><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"/><path d="m13 12 4-4"/><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"/></svg>
+        {% else %}
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        {% endif %}
+      </div>
+      <div class="idv-stat-value num">{{ count }}</div>
+      <div class="idv-stat-label">{{ label }}</div>
     </div>
     {% endfor %}
   </div>
 
   {% if stats.pratos_sem_composicao %}
-  <div style="margin-bottom: 20px; padding: 12px 20px; background: #fff3cd; border-radius: 8px; font-size: 0.9em;">
-    ⚠️ <strong>{{ stats.pratos_sem_composicao }} pratos</strong> ainda sem composição de ingredientes.
+  <div class="idv-alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+    <span><strong class="num">{{ stats.pratos_sem_composicao }} pratos</strong> ainda sem composição de ingredientes.</span>
   </div>
   {% endif %}
 
-  <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>🔥 Pratos mais calóricos</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr style="border-bottom: 2px solid #eee;">
-          <th style="text-align: left; padding: 8px;">Prato</th>
-          <th style="text-align: right; padding: 8px;">Kcal</th>
-          <th style="text-align: right; padding: 8px;">Prot</th>
-        </tr>
-        {% for p in top_kcal %}
-        <tr style="border-bottom: 1px solid #f0f0f0;">
-          <td style="padding: 6px;">{{ p.prato_nome }}</td>
-          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.0f"|format(p.energia_kcal|float) }}</td>
-          <td style="text-align: right; padding: 6px;">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
-        </tr>
-        {% endfor %}
+  <!-- Painéis superiores -->
+  <div class="idv-grid">
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        Pratos mais calóricos
+      </h3>
+      <table class="idv-table">
+        <thead>
+          <tr>
+            <th>Prato</th>
+            <th class="numeric">Kcal</th>
+            <th class="numeric">Prot</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in top_kcal %}
+          <tr>
+            <td>{{ p.prato_nome }}</td>
+            <td class="numeric bold num">{{ "%.0f"|format(p.energia_kcal|float) }}</td>
+            <td class="numeric num">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
 
-    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>💪 Ingredientes + Proteicos</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr style="border-bottom: 2px solid #eee;">
-          <th style="text-align: left; padding: 8px;">Ingrediente</th>
-          <th style="text-align: right; padding: 8px;">Proteína</th>
-          <th style="text-align: left; padding: 8px;">Tipo</th>
-        </tr>
-        {% for p in top_prot %}
-        <tr style="border-bottom: 1px solid #f0f0f0;">
-          <td style="padding: 6px;">{{ p.nome }}</td>
-          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
-          <td style="padding: 6px; font-size: 0.85em; color: #666;">{{ p.tipo_alimento }}</td>
-        </tr>
-        {% endfor %}
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg>
+        Ingredientes + Proteicos
+      </h3>
+      <table class="idv-table">
+        <thead>
+          <tr>
+            <th>Ingrediente</th>
+            <th class="numeric">Proteína</th>
+            <th>Tipo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in top_prot %}
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td class="numeric bold num">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
+            <td class="muted">{{ p.tipo_alimento }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
 
-    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>🥧 Pratos por Tipo</h3>
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+        Pratos por Tipo
+      </h3>
       {% for t in pratos_por_tipo %}
-      <div style="margin: 8px 0; display: flex; align-items: center;">
-        <span style="width: 150px;">{{ t.tipo_prato }}</span>
-        <div style="width: 100%; height: 20px; background: #ecf0f1; border-radius: 10px; margin: 0 10px;">
-          <div style="height: 100%; width: {{ (t.qtd / pratos_por_tipo|map(attribute='qtd')|sum * 100)|round }}%; background: #3498db; border-radius: 10px;"></div>
+      <div class="idv-bar-row">
+        <span class="idv-bar-label">{{ t.tipo_prato }}</span>
+        <div class="idv-bar-track">
+          <div class="idv-bar-fill" style="width: {{ (t.qtd / pratos_por_tipo|map(attribute='qtd')|sum * 100)|round }}%;"></div>
         </div>
-        <span style="font-weight: bold;">{{ t.qtd }}</span>
+        <span class="idv-bar-value num">{{ t.qtd }}</span>
       </div>
       {% endfor %}
     </div>
 
-    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>📏 Maiores Porções</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <tr style="border-bottom: 2px solid #eee;">
-          <th style="text-align: left; padding: 8px;">Prato</th>
-          <th style="text-align: right; padding: 8px;">Porção (g)</th>
-        </tr>
-        {% for p in top_porcoes %}
-        <tr style="border-bottom: 1px solid #f0f0f0;">
-          <td style="padding: 6px;">{{ p.nome }}</td>
-          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.0f"|format(p.porcao_padrao_g|float) }}g</td>
-        </tr>
-        {% endfor %}
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/></svg>
+        Maiores Porções
+      </h3>
+      <table class="idv-table">
+        <thead>
+          <tr>
+            <th>Prato</th>
+            <th class="numeric">Porção (g)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in top_porcoes %}
+          <tr>
+            <td>{{ p.nome }}</td>
+            <td class="numeric bold num">{{ "%.0f"|format(p.porcao_padrao_g|float) }}g</td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
 
-  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
-    <div style="flex: 1; min-width: 250px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>📦 Consistência dos Pratos</h3>
+  <!-- Painéis inferiores -->
+  <div class="idv-grid">
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+        Consistência dos Pratos
+      </h3>
       {% for c in consistencias %}
-      <div style="margin: 8px 0; display: flex; align-items: center;">
-        <span style="width: 100px;">{{ c.consistencia }}</span>
-        <div style="width: 100%; height: 20px; background: #ecf0f1; border-radius: 10px; margin: 0 10px;">
-          <div style="height: 100%; width: {{ (c.qtd / consistencias_total * 100)|round }}%; background: #3498db; border-radius: 10px;"></div>
+      <div class="idv-bar-row">
+        <span class="idv-bar-label">{{ c.consistencia }}</span>
+        <div class="idv-bar-track">
+          <div class="idv-bar-fill" style="width: {{ (c.qtd / consistencias_total * 100)|round }}%;"></div>
         </div>
-        <span style="font-weight: bold;">{{ c.qtd }}</span>
+        <span class="idv-bar-value num">{{ c.qtd }}</span>
       </div>
       {% endfor %}
     </div>
 
-    <div style="flex: 1; min-width: 250px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      <h3>🥗 Dietas</h3>
-      <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
+    <div class="idv-panel">
+      <h3 class="idv-h3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+        Dietas
+      </h3>
+      <div class="idv-diet-block">
         {% for d in dietas_sal %}
-        <div style="text-align: center;">
-          <div style="font-size: 2em;">{{ '🧂' if d.com_sal else '🚫' }}</div>
-          <div style="font-size: 1.5em; font-weight: bold;">{{ d.qtd }}</div>
-          <div style="color: #666;">{{ 'Com sal' if d.com_sal else 'Sem sal' }}</div>
+        <div class="idv-diet-item">
+          <div class="idv-diet-icon">
+            {% if d.com_sal %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+            {% endif %}
+          </div>
+          <div class="idv-diet-value num">{{ d.qtd }}</div>
+          <div class="idv-diet-label">{{ 'Com sal' if d.com_sal else 'Sem sal' }}</div>
         </div>
         {% endfor %}
       </div>
-      <div style="font-size: 0.85em; color: #7f8c8d; text-align: center;">
-        {{ dietas_sal|map(attribute='qtd')|sum }} dietas no total
-      </div>
+      <div class="idv-diet-total num">{{ dietas_sal|map(attribute='qtd')|sum }} dietas no total</div>
     </div>
   </div>
 
-  <div style="margin-top: 30px; text-align: center; color: #95a5a6; font-size: 0.85em;">
+  <div class="idv-footer">
     <p>Use o menu acima para navegar entre as tabelas e gerenciar os dados.</p>
   </div>
 </div>

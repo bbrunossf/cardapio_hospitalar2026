@@ -1,149 +1,30 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="dark">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultado - Cardápio Otimizado</title>
-    <style>
-        :root {
-        --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
-        --text: #e0e0e0; --text2: #a0a0a0; --primary: #4fc3f7;
-        --success: #66bb6a; --warning: #ffa726; --danger: #ef5350;
-        --border: #2a2a4a; --radius: 8px;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: var(--bg); color: var(--text); padding: 24px;
-        }
-        h1 { font-size: 1.6rem; margin-bottom: 4px; }
-        .subtitle { color: var(--text2); margin-bottom: 20px; }
-        .metricas {
-        display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px;
-        }
-        .metrica {
-        flex: 1; min-width: 130px; background: var(--surface);
-        border-radius: var(--radius); padding: 12px; text-align: center;
-        }
-        .metrica .valor { font-size: 1.3rem; font-weight: bold; color: var(--primary); }
-        .metrica .label { font-size: 0.72rem; color: var(--text2); margin-top: 4px; }
-        .status-badge {
-        display: inline-block; padding: 4px 12px; border-radius: 4px;
-        font-size: 0.8rem; font-weight: 600;
-        }
-        .status-ok { background: #1b5e20; color: var(--success); }
-        .status-warn { background: #e65100; color: var(--warning); }
-
-        /* ─── Tabela paisagem ─── */
-        .table-wrapper {
-        overflow-x: auto;
-        margin: 20px 0 30px;
-        border-radius: var(--radius);
-        border: 1px solid var(--border);
-        background: var(--surface);
-        }
-        .paisagem-table {
-        border-collapse: collapse;
-        font-size: 0.80rem;
-        min-width: 100%;
-        }
-        .paisagem-table thead th {
-        position: sticky;
-        top: 0;
-        z-index: 3;
-        background: #0d1b36;
-        padding: 10px 12px;
-        text-align: center;
-        border-bottom: 2px solid var(--primary);
-        font-size: 0.85rem;
-        white-space: nowrap;
-        color: var(--text);
-        }
-        .paisagem-table thead th.col-fixa {
-        position: sticky;
-        left: 0;
-        z-index: 4;
-        text-align: left;
-        min-width: 150px;
-        background: #0d1b36;
-        }
-        .paisagem-table tbody td {
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--border);
-        border-right: 1px solid rgba(42, 42, 74, 0.5);
-        vertical-align: top;
-        min-width: 200px;
-        max-width: 280px;
-        }
-        .paisagem-table tbody td.col-fixa {
-        position: sticky;
-        left: 0;
-        z-index: 1;
-        background: var(--surface);
-        font-weight: 600;
-        font-size: 0.82rem;
-        color: var(--warning);
-        }
-        .paisagem-table tbody tr:nth-child(odd) td {
-        background: rgba(22, 33, 62, 0.6);
-        }
-        .paisagem-table tbody tr:nth-child(even) td {
-        background: rgba(15, 52, 96, 0.25);
-        }
-        .paisagem-table tbody tr:nth-child(odd) td.col-fixa {
-        background: rgba(22, 33, 62, 0.95);
-        }
-        .paisagem-table tbody tr:nth-child(even) td.col-fixa {
-        background: rgba(15, 52, 96, 0.7);
-        }
-
-        .celula-vazia {
-        color: var(--text2);
-        font-style: italic;
-        font-size: 0.75rem;
-        text-align: center;
-        padding-top: 10px;
-        }
-        .celula-tipo {
-        font-size: 0.68rem;
-        color: var(--primary);
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        margin-top: 8px;
-        margin-bottom: 2px;
-        padding-bottom: 2px;
-        border-bottom: 1px dotted rgba(79, 195, 247, 0.2);
-        }
-        .celula-tipo:first-child { margin-top: 0; }
-        .celula-prato {
-        padding: 2px 0 2px 8px;
-        font-size: 0.78rem;
-        line-height: 1.4;
-        color: var(--text);
-        }
-        .celula-prato .porcao { color: var(--text2); font-size: 0.72rem; }
-        .celula-prato .kcal { color: var(--text2); font-size: 0.7rem; margin-left: 4px; }
-
-        .back-link { margin-top: 30px; text-align: center; }
-        .back-link a { color: var(--primary); text-decoration: none; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
 </head>
-<body>
+<body class="pg-result">
 
-    <h1>📅 Cardápio Otimizado — Visão Paisagem</h1>
+    <div class="pg-wrap">
+    <h1 class="pg-h1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+        Cardápio Otimizado — Visão Paisagem
+    </h1>
     <p class="subtitle">
         Dieta: <strong>{{ dieta }}</strong> &middot; {{ dias }} dias &middot;
         Status: <span class="status-badge {{ 'status-ok' if resultado.status == 'Optimal' else 'status-warn' }}">{{ resultado.status }}</span>
     </p>
 
     <div class="metricas">
-        <div class="metrica"><div class="valor">{{ "%.0f" % resultado.metricas.media_energia_diaria_kcal }}</div><div class="label">kcal/dia</div></div>
-        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_proteina_diaria_g }}g</div><div class="label">proteína/dia</div></div>
-        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_lipidios_diaria_g }}g</div><div class="label">lipídios/dia</div></div>
-        <div class="metrica"><div class="valor">{{ "%.1f" % resultado.metricas.media_carboidrato_diaria_g }}g</div><div class="label">carboidrato/dia</div></div>
-        <div class="metrica"><div class="valor">{{ "%.0f" % resultado.metricas.media_sodio_diario_mg }}mg</div><div class="label">sódio/dia</div></div>
-        <div class="metrica"><div class="valor">{{ resultado.metricas.total_pratos_selecionados }}</div><div class="label">pratos total</div></div>
+        <div class="metrica"><div class="valor num">{{ "%.0f" % resultado.metricas.media_energia_diaria_kcal }}</div><div class="label">kcal/dia</div></div>
+        <div class="metrica"><div class="valor num">{{ "%.1f" % resultado.metricas.media_proteina_diaria_g }}g</div><div class="label">proteína/dia</div></div>
+        <div class="metrica"><div class="valor num">{{ "%.1f" % resultado.metricas.media_lipidios_diaria_g }}g</div><div class="label">lipídios/dia</div></div>
+        <div class="metrica"><div class="valor num">{{ "%.1f" % resultado.metricas.media_carboidrato_diaria_g }}g</div><div class="label">carboidrato/dia</div></div>
+        <div class="metrica"><div class="valor num">{{ "%.0f" % resultado.metricas.media_sodio_diario_mg }}mg</div><div class="label">sódio/dia</div></div>
+        <div class="metrica"><div class="valor num">{{ resultado.metricas.total_pratos_selecionados }}</div><div class="label">pratos total</div></div>
     </div>
 
     <div class="table-wrapper">
@@ -152,14 +33,17 @@
             <tr>
             <th class="col-fixa">Refeição</th>
             {% for dia in resultado.cardapio %}
-            <th>📅 Dia {{ dia.dia }}</th>
+            <th>Dia {{ dia.dia }}</th>
             {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for ref_nome in refeicoes_unicas %}
             <tr>
-            <td class="col-fixa">🕐 {{ ref_nome }}</td>
+            <td class="col-fixa">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                {{ ref_nome }}
+            </td>
             {% for dia in resultado.cardapio %}
             <td>
                 {% set tem_conteudo = namespace(found=false) %}
@@ -171,8 +55,8 @@
                     {% for prato in tipo.pratos %}
                     <div class="celula-prato">
                         {{ prato.nome }}
-                        {% if prato.porcao_g %}<span class="porcao"> {{ "%.0f" % prato.porcao_g }}g</span>{% endif %}
-                        <span class="kcal">{{ "%.0f" % prato.energia_kcal }} kcal</span>
+                        {% if prato.porcao_g %}<span class="porcao num"> {{ "%.0f" % prato.porcao_g }}g</span>{% endif %}
+                        <span class="kcal num">{{ "%.0f" % prato.energia_kcal }} kcal</span>
                     </div>
                     {% endfor %}
                     {% endfor %}
@@ -192,6 +76,7 @@
     <div class="back-link">
         <a href="/otimizacao">← Nova otimização</a> &nbsp;|&nbsp;
         <a href="/admin/">← Voltar ao Admin</a>
+    </div>
     </div>
 </body>
 </html>

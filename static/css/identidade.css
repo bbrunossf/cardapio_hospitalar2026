@@ -1,0 +1,274 @@
+/* ============================================================
+   Identidade Visual Bruno — Cardápio Plena
+   Fonte da verdade: novo_cardapio/DESIGN.md (tokens canônicos)
+   Vibe: institucional limpo · NHS Blue · off-white · legível
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Tokens (espelham DESIGN.md) */
+  --idv-primary: #005EB8;
+  --idv-primary-hover: #004E99;
+  --idv-primary-soft: #E6F0FA;
+  --idv-background: #F4F7FA;
+  --idv-surface: #FFFFFF;
+  --idv-text: #1F2933;
+  --idv-text-muted: #5C6B7A;
+  --idv-border: #D9E1E8;
+  --idv-success: #0B7A75;
+  --idv-warning: #E8A33D;
+  --idv-danger: #C2410C;
+
+  /* Tipografia */
+  --idv-font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --idv-h1: 2rem;
+  --idv-h2: 1.5rem;
+  --idv-h3: 1.25rem;
+  --idv-h4: 1.125rem;
+
+  /* Raios e espaçamentos */
+  --idv-radius-sm: 4px;
+  --idv-radius-md: 8px;
+  --idv-radius-lg: 12px;
+  --idv-space-xs: 4px;
+  --idv-space-sm: 8px;
+  --idv-space-md: 16px;
+  --idv-space-lg: 24px;
+  --idv-space-xl: 32px;
+
+  /* Sombras (só elevação real: modal/dropdown) */
+  --idv-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+/* ============================================================
+   Base — aplicado ao conteúdo do dashboard (escopo local,
+   não interfere no chrome do Flask-Admin)
+   ============================================================ */
+.idv-dashboard {
+  font-family: var(--idv-font);
+  background: var(--idv-background);
+  color: var(--idv-text);
+  padding: var(--idv-space-lg);
+  min-height: 100vh;
+  max-width: 100%;
+}
+
+.idv-dashboard * { box-sizing: border-box; }
+
+/* Números tabulares SEMPRE (alinhamento + segurança OCR) */
+.idv-dashboard .num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ============================================================
+   Header (H1→H4 estilo Markdown)
+   ============================================================ */
+.idv-header { margin-bottom: var(--idv-space-lg); }
+
+.idv-h1 {
+  font-size: var(--idv-h1);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--idv-space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--idv-space-sm);
+}
+
+.idv-h1 svg { color: var(--idv-primary); flex-shrink: 0; }
+
+.idv-sub { color: var(--idv-text-muted); margin: 0; font-size: 0.95rem; }
+
+.idv-h3 {
+  font-size: var(--idv-h3);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 var(--idv-space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--idv-space-sm);
+}
+
+.idv-h3 svg { color: var(--idv-primary); flex-shrink: 0; }
+
+/* ============================================================
+   Stat cards (linha de cima)
+   ============================================================ */
+.idv-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--idv-space-md);
+  margin-bottom: var(--idv-space-lg);
+}
+
+.idv-stat {
+  background: var(--idv-surface);
+  border: 1px solid var(--idv-border);
+  border-radius: var(--idv-radius-md);
+  padding: var(--idv-space-lg);
+  text-align: center;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.idv-stat:hover {
+  border-color: var(--idv-primary);
+  transform: translateY(-2px);
+}
+
+.idv-stat-icon {
+  width: 44px; height: 44px;
+  margin: 0 auto var(--idv-space-sm);
+  border-radius: var(--idv-radius-lg);
+  background: var(--idv-primary-soft);
+  color: var(--idv-primary);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.idv-stat-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--idv-text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.idv-stat-label { color: var(--idv-text-muted); margin-top: var(--idv-space-xs); font-size: 0.9rem; }
+
+/* ============================================================
+   Alerta (aviso âmbar — sempre com ícone, nunca cor sozinha)
+   ============================================================ */
+.idv-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--idv-space-sm);
+  background: #FBF0DC;
+  border: 1px solid #F0DCA8;
+  border-radius: var(--idv-radius-md);
+  color: #7A5300;
+  padding: 12px var(--idv-space-md);
+  margin-bottom: var(--idv-space-lg);
+  font-size: 0.9rem;
+}
+
+.idv-alert svg { flex-shrink: 0; color: var(--idv-warning); }
+.idv-alert strong { font-weight: 600; }
+
+/* ============================================================
+   Grid de painéis
+   ============================================================ */
+.idv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--idv-space-md);
+  margin-bottom: var(--idv-space-md);
+}
+
+.idv-panel {
+  background: var(--idv-surface);
+  border: 1px solid var(--idv-border);
+  border-radius: var(--idv-radius-md);
+  padding: var(--idv-space-lg);
+}
+
+/* ============================================================
+   Tabelas — o coração do app
+   ============================================================ */
+.idv-table { width: 100%; border-collapse: collapse; font-size: 0.925rem; }
+
+.idv-table th {
+  text-align: left;
+  padding: var(--idv-space-sm);
+  background: var(--idv-primary-soft);
+  color: var(--idv-text);
+  font-weight: 600;
+  border-bottom: 1px solid var(--idv-border);
+  white-space: nowrap;
+}
+
+.idv-table th.numeric, .idv-table td.numeric { text-align: right; }
+
+.idv-table td {
+  padding: var(--idv-space-sm);
+  border-bottom: 1px solid #EEF2F6;
+  color: var(--idv-text);
+}
+
+.idv-table tr:last-child td { border-bottom: none; }
+
+.idv-table tbody tr { transition: background 150ms ease; }
+.idv-table tbody tr:hover { background: var(--idv-primary-soft); }
+
+.idv-table td.muted { color: var(--idv-text-muted); font-size: 0.85em; }
+.idv-table td.bold { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   Barras de progresso (distribuições)
+   ============================================================ */
+.idv-bar-row { display: flex; align-items: center; gap: var(--idv-space-sm); margin: var(--idv-space-sm) 0; }
+
+.idv-bar-label { width: 130px; flex-shrink: 0; font-size: 0.9rem; color: var(--idv-text); }
+
+.idv-bar-track {
+  flex: 1;
+  height: 20px;
+  background: #ECF0F4;
+  border-radius: var(--idv-radius-lg);
+  overflow: hidden;
+}
+
+.idv-bar-fill {
+  height: 100%;
+  background: var(--idv-primary);
+  border-radius: var(--idv-radius-lg);
+  transition: width 300ms ease;
+}
+
+.idv-bar-value { font-weight: 600; font-variant-numeric: tabular-nums; min-width: 32px; text-align: right; }
+
+/* ============================================================
+   Blocos "com sal / sem sal" (informativos)
+   ============================================================ */
+.idv-diet-block { display: flex; gap: var(--idv-space-lg); justify-content: center; margin: var(--idv-space-md) 0; }
+
+.idv-diet-item { text-align: center; }
+
+.idv-diet-icon {
+  width: 52px; height: 52px;
+  margin: 0 auto var(--idv-space-xs);
+  border-radius: var(--idv-radius-lg);
+  background: var(--idv-primary-soft);
+  color: var(--idv-primary);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.idv-diet-value { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.idv-diet-label { color: var(--idv-text-muted); font-size: 0.9rem; }
+
+.idv-diet-total { font-size: 0.85em; color: var(--idv-text-muted); text-align: center; }
+
+/* ============================================================
+   Rodapé
+   ============================================================ */
+.idv-footer {
+  margin-top: var(--idv-space-xl);
+  text-align: center;
+  color: var(--idv-text-muted);
+  font-size: 0.85em;
+  border-top: 1px solid var(--idv-border);
+  padding-top: var(--idv-space-md);
+}
+
+/* ============================================================
+   Motion: sutil, respeitando prefers-reduced-motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .idv-dashboard *, .idv-dashboard *::before, .idv-dashboard *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

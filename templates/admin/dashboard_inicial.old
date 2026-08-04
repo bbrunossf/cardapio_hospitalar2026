@@ -1,0 +1,128 @@
+
+{% extends 'admin/master.html' %}
+{% block body %}
+<style>
+  .container, .container-fluid { max-width: 100% !important; padding-left: 24px; padding-right: 24px; }
+</style>
+<div style="padding: 20px; width: 100%">
+  <h1>📊 Cardápio Hospitalar — Dashboard</h1>
+  <p style="color: #666;">Épico 1: Gestão de Dados Mestres</p>
+
+  <div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 25px 0;">
+    {% for label, count in [('🥩 Ingredientes', stats.ingredientes), ('🍽️ Pratos', stats.pratos), ('🥗 Dietas', stats.dietas), ('⏰ Refeições', stats.tipos_refeicao)] %}
+    <div style="flex: 1; min-width: 150px; background: #f8f9fa; border-radius: 10px; padding: 20px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <div style="font-size: 2.5em; font-weight: bold; color: #2c3e50;">{{ count }}</div>
+      <div style="color: #7f8c8d; margin-top: 5px;">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if stats.pratos_sem_composicao %}
+  <div style="margin-bottom: 20px; padding: 12px 20px; background: #fff3cd; border-radius: 8px; font-size: 0.9em;">
+    ⚠️ <strong>{{ stats.pratos_sem_composicao }} pratos</strong> ainda sem composição de ingredientes.
+  </div>
+  {% endif %}
+
+  <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>🔥 Pratos mais calóricos</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="border-bottom: 2px solid #eee;">
+          <th style="text-align: left; padding: 8px;">Prato</th>
+          <th style="text-align: right; padding: 8px;">Kcal</th>
+          <th style="text-align: right; padding: 8px;">Prot</th>
+        </tr>
+        {% for p in top_kcal %}
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+          <td style="padding: 6px;">{{ p.prato_nome }}</td>
+          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.0f"|format(p.energia_kcal|float) }}</td>
+          <td style="text-align: right; padding: 6px;">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>💪 Ingredientes + Proteicos</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="border-bottom: 2px solid #eee;">
+          <th style="text-align: left; padding: 8px;">Ingrediente</th>
+          <th style="text-align: right; padding: 8px;">Proteína</th>
+          <th style="text-align: left; padding: 8px;">Tipo</th>
+        </tr>
+        {% for p in top_prot %}
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+          <td style="padding: 6px;">{{ p.nome }}</td>
+          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.1f"|format(p.proteina_g|float) }}g</td>
+          <td style="padding: 6px; font-size: 0.85em; color: #666;">{{ p.tipo_alimento }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>🥧 Pratos por Tipo</h3>
+      {% for t in pratos_por_tipo %}
+      <div style="margin: 8px 0; display: flex; align-items: center;">
+        <span style="width: 150px;">{{ t.tipo_prato }}</span>
+        <div style="width: 100%; height: 20px; background: #ecf0f1; border-radius: 10px; margin: 0 10px;">
+          <div style="height: 100%; width: {{ (t.qtd / pratos_por_tipo|map(attribute='qtd')|sum * 100)|round }}%; background: #3498db; border-radius: 10px;"></div>
+        </div>
+        <span style="font-weight: bold;">{{ t.qtd }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="flex: 1; min-width: 300px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>📏 Maiores Porções</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr style="border-bottom: 2px solid #eee;">
+          <th style="text-align: left; padding: 8px;">Prato</th>
+          <th style="text-align: right; padding: 8px;">Porção (g)</th>
+        </tr>
+        {% for p in top_porcoes %}
+        <tr style="border-bottom: 1px solid #f0f0f0;">
+          <td style="padding: 6px;">{{ p.nome }}</td>
+          <td style="text-align: right; padding: 6px; font-weight: bold;">{{ "%.0f"|format(p.porcao_padrao_g|float) }}g</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+    <div style="flex: 1; min-width: 250px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>📦 Consistência dos Pratos</h3>
+      {% for c in consistencias %}
+      <div style="margin: 8px 0; display: flex; align-items: center;">
+        <span style="width: 100px;">{{ c.consistencia }}</span>
+        <div style="width: 100%; height: 20px; background: #ecf0f1; border-radius: 10px; margin: 0 10px;">
+          <div style="height: 100%; width: {{ (c.qtd / consistencias_total * 100)|round }}%; background: #3498db; border-radius: 10px;"></div>
+        </div>
+        <span style="font-weight: bold;">{{ c.qtd }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="flex: 1; min-width: 250px; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+      <h3>🥗 Dietas</h3>
+      <div style="display: flex; gap: 20px; justify-content: center; margin: 20px 0;">
+        {% for d in dietas_sal %}
+        <div style="text-align: center;">
+          <div style="font-size: 2em;">{{ '🧂' if d.com_sal else '🚫' }}</div>
+          <div style="font-size: 1.5em; font-weight: bold;">{{ d.qtd }}</div>
+          <div style="color: #666;">{{ 'Com sal' if d.com_sal else 'Sem sal' }}</div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="font-size: 0.85em; color: #7f8c8d; text-align: center;">
+        {{ dietas_sal|map(attribute='qtd')|sum }} dietas no total
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 30px; text-align: center; color: #95a5a6; font-size: 0.85em;">
+    <p>Use o menu acima para navegar entre as tabelas e gerenciar os dados.</p>
+  </div>
+</div>
+{% endblock %}

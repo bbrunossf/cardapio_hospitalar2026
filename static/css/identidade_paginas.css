@@ -1,0 +1,321 @@
+/* ============================================================
+   Identidade Visual Bruno — Páginas standalone
+   (composicao.html, otimizacao_form, otimizacao_retrato, paisagem)
+   Espelha DESIGN.md · NHS Blue · off-white · IBM Plex Sans
+   ATENÇÃO: mantém os nomes de variáveis que o JS inline usa
+   (--bg, --surface, --primary, --danger...) — só mudaram os valores.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Tokens (espelham DESIGN.md) */
+  --bg: #F4F7FA;            /* off-white — fundo de página */
+  --surface: #FFFFFF;       /* cards, painéis */
+  --surface2: #E6F0FA;      /* primary-soft — hover, badges, seleção */
+  --text: #1F2933;
+  --text2: #5C6B7A;
+  --primary: #005EB8;       /* NHS Blue */
+  --primary-hover: #004E99;
+  --success: #0B7A75;       /* teal — NUNCA verde puro */
+  --danger: #C2410C;        /* laranja queimado — NUNCA vermelho puro */
+  --warning: #E8A33D;       /* âmbar */
+  --border: #D9E1E8;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Números tabulares SEMPRE */
+.num, .valor, .metrica .valor, .prato-item .badge, td, .porcao-row input,
+.stat-value, .idv-diet-value {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ============================================================
+   HEADER (composicao)
+   ============================================================ */
+header {
+  background: var(--surface);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+header h1 { font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+header h1 svg { color: var(--primary); flex-shrink: 0; }
+header a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
+header a:hover { text-decoration: underline; }
+
+/* ============================================================
+   COMPOSICAO — layout 2 painéis
+   ============================================================ */
+.container { display: flex; flex: 1; overflow: hidden; height: calc(100vh - 60px); }
+
+.panel-left {
+  width: 380px; min-width: 280px;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.panel-right { flex: 1; padding: 24px; overflow-y: auto; }
+
+.search-box { padding: 12px; border-bottom: 1px solid var(--border); }
+.search-box input {
+  width: 100%; padding: 10px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 0.9rem; outline: none; font-family: var(--font);
+}
+.search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.12); }
+
+.prato-list { flex: 1; overflow-y: auto; }
+
+.prato-item {
+  padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #EEF2F6;
+  display: flex; justify-content: space-between; align-items: center;
+  transition: background 150ms ease;
+}
+.prato-item:hover { background: var(--surface2); }
+.prato-item.active { background: var(--surface2); border-left: 3px solid var(--primary); }
+.prato-item .nome { font-size: 0.9rem; }
+.prato-item .tipo { font-size: 0.75rem; color: var(--text2); }
+.prato-item .badge {
+  font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 12px;
+  background: var(--surface2); color: var(--primary); white-space: nowrap;
+}
+.prato-item .badge.ok { background: #DDF0EE; color: #065F5A; }
+.prato-item .badge.warn { background: #FBF0DC; color: #7A5300; }
+.prato-item .badge.empty { background: var(--surface2); color: var(--primary); }
+
+.prato-detail h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+.prato-detail .subtitulo { font-size: 0.85rem; color: var(--text2); margin-bottom: 20px; }
+
+.porcao-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+  padding: 16px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.porcao-row label { font-size: 0.85rem; color: var(--text2); }
+.porcao-row input[type="number"] {
+  width: 100px; padding: 8px 12px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 1rem; text-align: center; font-family: var(--font);
+}
+.porcao-row .status { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
+.porcao-row .status.ok { color: var(--success); }
+.porcao-row .status.warn { color: #7A5300; }
+.porcao-row .diferenca { font-weight: 600; }
+
+.btn {
+  padding: 8px 16px; border-radius: var(--radius); border: none;
+  cursor: pointer; font-size: 0.85rem; font-weight: 600;
+  font-family: var(--font); transition: background 150ms ease, opacity 150ms ease;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn:hover { opacity: 0.88; }
+.btn-primary { background: var(--primary); color: #FFFFFF; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-sm { padding: 4px 10px; font-size: 0.75rem; }
+.btn-danger { background: var(--danger); color: #FFFFFF; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 10px 12px; font-size: 0.8rem; font-weight: 600;
+  color: var(--text); background: var(--surface2);
+  border-bottom: 2px solid var(--border);
+}
+td { padding: 10px 12px; border-bottom: 1px solid #EEF2F6; font-size: 0.9rem; }
+td input[type="number"] {
+  width: 80px; padding: 6px 8px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); text-align: center; font-family: var(--font);
+}
+.ingrediente-nome { font-weight: 500; }
+.saved-msg { color: var(--success); font-size: 0.75rem; margin-left: 8px; opacity: 0; transition: opacity 0.3s; display: inline-flex; align-items: center; gap: 4px; }
+.saved-msg.show { opacity: 1; }
+.total-row td { border-top: 2px solid var(--border); font-weight: 700; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; color: var(--text2); text-align: center; gap: 12px;
+}
+.empty-state .icon { color: var(--primary); }
+.empty-state svg { color: var(--primary); }
+
+.loading { text-align: center; padding: 40px; color: var(--text2); }
+.loading::after { content: "..."; animation: dots 1.5s infinite; }
+@keyframes dots { 0%,20% { content: "."; } 40% { content: ".."; } 60%,100% { content: "..."; } }
+
+.stats-bar {
+  padding: 8px 16px; font-size: 0.75rem; color: var(--text2);
+  border-top: 1px solid var(--border); background: var(--surface);
+}
+
+/* ============================================================
+   OTIMIZACAO — formulário
+   ============================================================ */
+.pg-container {
+  max-width: 600px; width: 100%;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 32px; box-shadow: var(--shadow);
+}
+body.pg-form { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+.pg-container h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+.pg-container h1 svg { color: var(--primary); }
+.pg-container .subtitle { color: var(--text2); margin-bottom: 28px; font-size: 0.9rem; }
+.pg-container label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text2); font-weight: 500; }
+.pg-container input, .pg-container select {
+  width: 100%; padding: 10px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-size: 0.95rem; margin-bottom: 18px; outline: none; font-family: var(--font);
+}
+.pg-container input:focus, .pg-container select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 94, 184, 0.12); }
+.pg-container .btn {
+  width: 100%; padding: 12px; border-radius: var(--radius); border: none;
+  cursor: pointer; font-size: 1rem; font-weight: 600;
+  background: var(--primary); color: #FFFFFF; transition: background 150ms ease, opacity 200ms ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.pg-container .btn:hover { background: var(--primary-hover); }
+.pg-container .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.pg-container .row { display: flex; gap: 16px; }
+.pg-container .row > div { flex: 1; }
+.pg-container .back-link { display: block; margin-top: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; }
+.pg-container .back-link a { color: var(--primary); text-decoration: none; }
+.pg-container .back-link a:hover { text-decoration: underline; }
+.pg-container .erro {
+  padding: 12px; background: #F9E4DC; color: #9A3309; border: 1px solid #F0C8B8;
+  border-radius: var(--radius); margin-bottom: 16px; display: none;
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+   OTIMIZACAO — resultado retrato e paisagem
+   ============================================================ */
+body.pg-result { padding: 24px; }
+.pg-wrap { max-width: 1100px; margin: 0 auto; }
+
+h1.pg-h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+h1.pg-h1 svg { color: var(--primary); }
+.pg-wrap .subtitle { color: var(--text2); margin-bottom: 20px; font-size: 0.95rem; }
+
+.metricas { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+.metrica {
+  flex: 1; min-width: 130px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px; text-align: center;
+}
+.metrica .valor { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+.metrica .label { font-size: 0.75rem; color: var(--text2); margin-top: 4px; }
+
+.status-badge {
+  display: inline-block; padding: 4px 12px; border-radius: 4px;
+  font-size: 0.8rem; font-weight: 600;
+}
+.status-ok { background: #DDF0EE; color: #065F5A; }
+.status-warn { background: #FBF0DC; color: #7A5300; }
+
+.dia-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.dia-titulo {
+  font-size: 1.2rem; font-weight: 700; margin-bottom: 14px;
+  padding-bottom: 10px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.dia-titulo svg { color: var(--primary); }
+.refeicao { margin-bottom: 16px; }
+.refeicao-nome {
+  font-size: 0.95rem; color: var(--primary); font-weight: 600; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.refeicao-nome svg { color: var(--primary); }
+.tipo-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 0.75rem; font-weight: 600; background: var(--surface2); color: var(--primary);
+}
+
+.back-link { margin-top: 24px; text-align: center; color: var(--text2); font-size: 0.9rem; }
+.back-link a { color: var(--primary); text-decoration: none; }
+.back-link a:hover { text-decoration: underline; }
+
+/* ─── Tabela paisagem ─── */
+.table-wrapper {
+  overflow-x: auto;
+  margin: 20px 0 30px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.paisagem-table { border-collapse: collapse; font-size: 0.80rem; min-width: 100%; }
+.paisagem-table thead th {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--surface2);
+  padding: 10px 12px; text-align: center;
+  border-bottom: 2px solid var(--primary);
+  font-size: 0.85rem; font-weight: 600; white-space: nowrap;
+  color: var(--text);
+}
+.paisagem-table thead th.col-fixa {
+  position: sticky; left: 0; z-index: 4;
+  text-align: left; min-width: 150px;
+  background: var(--surface2);
+}
+.paisagem-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #EEF2F6;
+  border-right: 1px solid rgba(217, 225, 232, 0.5);
+  vertical-align: top; min-width: 200px; max-width: 280px;
+}
+.paisagem-table tbody td.col-fixa {
+  position: sticky; left: 0; z-index: 1;
+  background: var(--surface);
+  font-weight: 600; font-size: 0.82rem; color: var(--text);
+  display: flex; align-items: center; gap: 6px;
+}
+.paisagem-table tbody tr:nth-child(even) td { background: #FAFCFE; }
+.paisagem-table tbody tr:nth-child(even) td.col-fixa { background: var(--surface); }
+
+.celula-vazia { color: var(--text2); font-style: italic; font-size: 0.75rem; text-align: center; padding-top: 10px; }
+.celula-tipo {
+  font-size: 0.68rem; color: var(--primary); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.3px;
+  margin-top: 8px; margin-bottom: 2px; padding-bottom: 2px;
+  border-bottom: 1px dotted rgba(0, 94, 184, 0.25);
+}
+.celula-tipo:first-child { margin-top: 0; }
+.celula-prato { padding: 2px 0 2px 8px; font-size: 0.78rem; line-height: 1.4; color: var(--text); }
+.celula-prato .porcao { color: var(--text2); font-size: 0.72rem; }
+.celula-prato .kcal { color: var(--text2); font-size: 0.7rem; margin-left: 4px; }
+
+/* Saída JSON */
+.json-output {
+  padding: 20px; margin: 20px auto; max-width: 900px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 0.85rem; overflow-x: auto;
+}
+.json-back { text-align: center; padding: 10px; }
+.json-back a { color: var(--primary); }
+
+/* ============================================================
+   Motion sutil + prefers-reduced-motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

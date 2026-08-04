@@ -1,54 +1,17 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="dark">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Otimização de Cardápio</title>
-    <style>
-    :root {
-        --bg: #1a1a2e; --surface: #16213e; --surface2: #0f3460;
-        --text: #e0e0e0; --text2: #a0a0a0; --primary: #4fc3f7;
-        --success: #66bb6a; --warning: #ffa726;
-        --border: #2a2a4a; --radius: 8px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: var(--bg); color: var(--text);
-        display: flex; justify-content: center; align-items: center;
-        min-height: 100vh; padding: 20px;
-    }
-    .container {
-        max-width: 600px; width: 100%;
-        background: var(--surface); border-radius: 12px; padding: 32px;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.3);
-    }
-    h1 { font-size: 1.5rem; margin-bottom: 4px; }
-    .subtitle { color: var(--text2); margin-bottom: 28px; font-size: 0.9rem; }
-    label { display: block; margin-bottom: 6px; font-size: 0.85rem; color: var(--text2); }
-    input, select {
-        width: 100%; padding: 10px 14px; border-radius: var(--radius);
-        border: 1px solid var(--border); background: var(--bg);
-        color: var(--text); font-size: 0.95rem; margin-bottom: 18px; outline: none;
-    }
-    input:focus, select:focus { border-color: var(--primary); }
-    .btn {
-        width: 100%; padding: 12px; border-radius: var(--radius); border: none;
-        cursor: pointer; font-size: 1rem; font-weight: 600;
-        background: var(--primary); color: #000; transition: opacity 0.2s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .row { display: flex; gap: 16px; }
-    .row > div { flex: 1; }
-    .back-link { display: block; margin-top: 20px; text-align: center; color: var(--text2); font-size: 0.85rem; }
-    .back-link a { color: var(--primary); text-decoration: none; }
-    .erro { padding: 12px; background: #3e1a1a; color: #ef5350; border-radius: var(--radius); margin-bottom: 16px; display: none; }
-    </style>
-    </head>
-<body>
-    <div class="container">
-    <h1>🔬 Otimização de Cardápio</h1>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+</head>
+<body class="pg-form">
+    <div class="pg-container">
+    <h1>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        Otimização de Cardápio
+    </h1>
     <p class="subtitle">Gere um cardápio otimizado por refeição usando programação linear (PuLP + CBC)</p>
 
     <div class="erro" id="erroBox"></div>
@@ -79,7 +42,10 @@
         <option value="html_paisagem">Tabela HTML (paisagem — dias nas colunas)</option>
         </select>
 
-        <button type="submit" class="btn" id="btnExecutar">▶ Executar Otimização</button>
+        <button type="submit" class="btn" id="btnExecutar">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Executar Otimização
+        </button>
     </form>
 
     <div class="back-link"><a href="/admin/">← Voltar ao Admin</a></div>
@@ -91,7 +57,7 @@
     const btn = document.getElementById('btnExecutar');
     const erroBox = document.getElementById('erroBox');
     btn.disabled = true;
-    btn.textContent = '⏳ Executando... isso pode levar alguns segundos';
+    btn.innerHTML = 'Executando... isso pode levar alguns segundos';
     erroBox.style.display = 'none';
 
     const payload = {
@@ -116,17 +82,18 @@
             erroBox.textContent = 'Erro: ' + data.erro;
             erroBox.style.display = 'block';
             btn.disabled = false;
-            btn.textContent = '▶ Executar Otimização';
+            btn.innerHTML = 'Executar Otimização';
             return;
         }
-        document.body.innerHTML = '<pre style="padding:20px;color:#e0e0e0;background:#1a1a2e;">' +
-            JSON.stringify(data, null, 2) + '</pre><p style="text-align:center;padding:10px"><a href="/otimizacao" style="color:#4fc3f7;">← Nova consulta</a></p>';
+        document.body.innerHTML = '<div class="json-output">' +
+            JSON.stringify(data, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+            '</div><div class="json-back"><a href="/otimizacao">← Nova consulta</a></div>';
         }
     } catch (err) {
         erroBox.textContent = 'Erro de conexão: ' + err.message;
         erroBox.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = '▶ Executar Otimização';
+        btn.innerHTML = 'Executar Otimização';
     }
     });
     </script>

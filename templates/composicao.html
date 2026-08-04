@@ -1,128 +1,17 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="dark">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Composição de Pratos</title>
-<style>
-  :root {
-    --bg: #1a1a2e;
-    --surface: #16213e;
-    --surface2: #0f3460;
-    --text: #e0e0e0;
-    --text2: #a0a0a0;
-    --primary: #4fc3f7;
-    --success: #66bb6a;
-    --danger: #ef5350;
-    --warning: #ffa726;
-    --border: #2a2a4a;
-    --radius: 8px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--bg); color: var(--text); height: 100vh;
-    display: flex; flex-direction: column;
-  }
-  header {
-    background: var(--surface); padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  header h1 { font-size: 1.3rem; font-weight: 600; }
-  header a { color: var(--primary); text-decoration: none; font-size: 0.9rem; }
-  .container { display: flex; flex: 1; overflow: hidden; }
-  .panel-left {
-    width: 380px; min-width: 280px;
-    background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column;
-  }
-  .panel-right { flex: 1; padding: 24px; overflow-y: auto; }
-  .search-box {
-    padding: 12px; border-bottom: 1px solid var(--border);
-  }
-  .search-box input {
-    width: 100%; padding: 10px 14px; border-radius: var(--radius);
-    border: 1px solid var(--border); background: var(--bg);
-    color: var(--text); font-size: 0.9rem; outline: none;
-  }
-  .search-box input:focus { border-color: var(--primary); }
-  .prato-list { flex: 1; overflow-y: auto; }
-  .prato-item {
-    padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    transition: background 0.15s;
-  }
-  .prato-item:hover { background: var(--surface2); }
-  .prato-item.active { background: var(--surface2); border-left: 3px solid var(--primary); }
-  .prato-item .nome { font-size: 0.9rem; }
-  .prato-item .tipo { font-size: 0.75rem; color: var(--text2); }
-  .prato-item .badge {
-    font-size: 0.7rem; padding: 2px 8px; border-radius: 12px;
-    background: var(--surface2); color: var(--text2);
-  }
-  .prato-item .badge.ok { background: #1b5e20; color: var(--success); }
-  .prato-item .badge.warn { background: #e65100; color: var(--warning); }
-  .prato-item .badge.empty { background: #4a148c; color: #ce93d8; }
-
-  .prato-detail h2 {
-    font-size: 1.4rem; margin-bottom: 4px;
-  }
-  .prato-detail .subtitulo {
-    font-size: 0.85rem; color: var(--text2); margin-bottom: 20px;
-  }
-  .porcao-row {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
-    padding: 16px; background: var(--surface); border-radius: var(--radius);
-  }
-  .porcao-row label { font-size: 0.85rem; color: var(--text2); }
-  .porcao-row input[type="number"] {
-    width: 100px; padding: 8px 12px; border-radius: var(--radius);
-    border: 1px solid var(--border); background: var(--bg);
-    color: var(--text); font-size: 1rem; text-align: center;
-  }
-  .porcao-row .status { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
-  .porcao-row .status.ok { color: var(--success); }
-  .porcao-row .status.warn { color: var(--warning); }
-  .porcao-row .diferenca { font-weight: 600; }
-  .btn {
-    padding: 8px 16px; border-radius: var(--radius); border: none;
-    cursor: pointer; font-size: 0.85rem; font-weight: 500;
-    transition: opacity 0.15s;
-  }
-  .btn:hover { opacity: 0.85; }
-  .btn-primary { background: var(--primary); color: #000; }
-  .btn-sm { padding: 4px 10px; font-size: 0.75rem; }
-
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 10px 12px; font-size: 0.8rem; color: var(--text2); border-bottom: 2px solid var(--border); }
-  td { padding: 10px 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-  td input[type="number"] {
-    width: 80px; padding: 6px 8px; border-radius: var(--radius);
-    border: 1px solid var(--border); background: var(--bg);
-    color: var(--text); text-align: center;
-  }
-  .ingrediente-nome { font-weight: 500; }
-  .saved-msg { color: var(--success); font-size: 0.75rem; margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
-  .saved-msg.show { opacity: 1; }
-  .total-row td { border-top: 2px solid var(--border); font-weight: 600; }
-  .empty-state {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100%; color: var(--text2); text-align: center; gap: 12px;
-  }
-  .empty-state .icon { font-size: 3rem; }
-  .loading { text-align: center; padding: 40px; color: var(--text2); }
-  .loading::after { content: "..."; animation: dots 1.5s infinite; }
-  @keyframes dots { 0%,20% { content: "."; } 40% { content: ".."; } 60%,100% { content: "..."; } }
-  .stats-bar {
-    padding: 8px 16px; font-size: 0.75rem; color: var(--text2);
-    border-top: 1px solid var(--border); background: var(--surface);
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
 </head>
 <body>
 <header>
-  <h1>🍽️ Composição de Pratos</h1>
+  <h1>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+    Composição de Pratos
+  </h1>
   <a href="/admin/">&larr; Voltar ao Admin</a>
 </header>
 <div class="container">
@@ -137,7 +26,9 @@
   </div>
   <div class="panel-right" id="panelRight">
     <div class="empty-state">
-      <div class="icon">👈</div>
+      <div class="icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      </div>
       <p>Selecione um prato na lista ao lado<br>para ver sua composição</p>
     </div>
   </div>
@@ -165,8 +56,8 @@ function renderPratos(lista) {
     if (p.qtd_ingredientes > 0) {
       const diff = Math.abs(parseFloat(p.massa_total || 0) - parseFloat(p.porcao_padrao_g || 0));
       badge = diff < 0.01
-        ? '<span class="badge ok">✓ ok</span>'
-        : `<span class="badge warn">⚠ ${diff.toFixed(1)}g</span>`;
+        ? '<span class="badge ok">ok</span>'
+        : `<span class="badge warn">dif ${diff.toFixed(1)}g</span>`;
     }
     return `<div class="prato-item${pratoAtivo === p.id ? ' active' : ''}" onclick="selecionarPrato(${p.id})" data-nome="${p.nome.toLowerCase()}">
       <div><div class="nome">${p.nome}</div><div class="tipo">${p.tipo || ''}</div></div>
@@ -204,7 +95,9 @@ function renderComposicao(data) {
   const porcao = parseFloat(prato.porcao_padrao_g || 0);
 
   const statusClass = ok ? 'ok' : 'warn';
-  const statusIcon = ok ? '✅' : '⚠️';
+  const statusIcon = ok
+    ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
+    : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
   const statusText = ok ? 'Massas coincidem' : `Diferença de ${Math.abs(diferenca).toFixed(1)}g`;
 
   const panel = document.getElementById('panelRight');
@@ -222,12 +115,14 @@ function renderComposicao(data) {
           <span>— ${statusText}</span>
         </div>
         <button class="btn btn-primary btn-sm" onclick="salvarPorcao(${prato.id})">Salvar</button>
-        <span class="saved-msg" id="porcaoSaved">✓ salvo</span>
+        <span class="saved-msg" id="porcaoSaved">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
+        </span>
       </div>
 
       <table>
         <thead>
-          <tr><th>Ingrediente</th><th style="width:120px;text-align:center;">Quantidade (g)</th><th style="width:120px;"></th></tr>
+          <tr><th>Ingrediente</th><th style="width:120px;text-align:center;">Quantidade (g)</th><th style="width:140px;"></th></tr>
         </thead>
         <tbody>
           ${ingredientes.map(ing => `
@@ -239,8 +134,12 @@ function renderComposicao(data) {
               </td>
               <td>
                 <button class="btn btn-primary btn-sm" onclick="salvarComposicao(${prato.id}, ${ing.ingrediente_id})">Salvar</button>
-                <span class="saved-msg" id="saved_${ing.ingrediente_id}">✓</span>
-                <button class="btn btn-sm" style="background:var(--danger);color:#fff;margin-left:4px;" onclick="removerIngrediente(${prato.id}, ${ing.ingrediente_id}, '${ing.ingrediente}')">✕</button>
+                <span class="saved-msg" id="saved_${ing.ingrediente_id}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+                <button class="btn btn-sm btn-danger" style="margin-left:4px;" onclick="removerIngrediente(${prato.id}, ${ing.ingrediente_id}, '${ing.ingrediente}')">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
               </td>
             </tr>
           `).join('')}
@@ -254,13 +153,16 @@ function renderComposicao(data) {
         </tfoot>
       </table>
 
-      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border-radius: var(--radius);">
-        <h4 style="margin-bottom: 12px; font-size: 0.95rem;">➕ Adicionar Ingrediente</h4>
+      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+        <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          Adicionar Ingrediente
+        </h4>
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <input type="text" id="addIngSearch" placeholder="Buscar ingrediente..." oninput="filtrarIngredientesDisponiveis()"
-                 style="flex:1; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; outline: none;">
+                 style="flex:1; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; outline: none; font-family: var(--font);">
           <input type="number" id="addIngQtd" value="10" step="0.5" min="0.5"
-                 style="width: 80px; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; font-size: 0.9rem; outline: none;">
+                 style="width: 80px; padding: 10px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); text-align: center; font-size: 0.9rem; outline: none; font-family: var(--font);">
           <span style="color:var(--text2); display:flex; align-items:center; font-size:0.85rem;">g</span>
         </div>
         <div id="ingredientesDisponiveis" style="max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px;">
@@ -322,10 +224,10 @@ function filtrarIngredientesDisponiveis() {
   const q = document.getElementById('addIngSearch').value.toLowerCase();
   const idsNoPrato = new Set(
     Array.from(document.querySelectorAll('.prato-detail table tbody tr')).map(tr => {
-      const btn = tr.querySelector('button[style*="var(--danger)"]');
+      const btn = tr.querySelector('button.btn-danger');
       if (btn) {
-        const match = btn.getAttribute('onclick').match(/removerIngrediente\(\d+, (\d+)/);
-        return match ? parseInt(match[1]) : null;
+        const match = btn.getAttribute('onclick').match(/removerIngrediente\((\d+), (\d+)/);
+        return match ? parseInt(match[2]) : null;
       }
       return null;
     }).filter(Boolean)
