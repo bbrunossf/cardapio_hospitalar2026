@@ -12,6 +12,7 @@ def buscar_por_ean(ean: str) -> AlimentoIndustrializado | None:
     """Busca alimento pelo código de barras (exato)."""
     ean_limpo = "".join(c for c in str(ean) if c.isdigit())
     if not ean_limpo:
+        print("não achei no banco de dados local")
         return None
     return (
         db.session.query(AlimentoIndustrializado)

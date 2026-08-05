@@ -43,6 +43,24 @@
 
     <div id="mensagens"></div>
 
+    <div id="imagensProduto" class="section hidden">
+        <h3>Imagens do</h3> produto</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
+            <div id="imgFrontContainer" class="hidden">
+                <img id="imgFront" src="" alt="Foto do produto" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
+                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Foto do produto</p>
+            </div>
+            <div id="imgIngredientsContainer" class="hidden">
+                <img id="imgIngredients" src="" alt="Ingredientes" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
+                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Ingredientes</p>
+            </div>
+            <div id="imgNutritionContainer" class="hidden">
+                <img id="imgNutrition" src="" alt="Tabela nutricional" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
+                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Tabela nutricional</p>
+            </div>
+        </div>
+    </div>
+
     <div id="formulario" class="section hidden">
         <h2>Revisar dados</h2>
         <div class="grid">
@@ -151,6 +169,39 @@
             div.innerHTML = `<div class="${tipo}"><ul>${lista.map(m => `<li>${m}</li>`).join('')}</ul></div>`;
         }
 
+        function renderImagens(imagens) {
+            const secao = document.getElementById('imagensProduto');
+            const containers = {
+                front: 'imgFrontContainer',
+                ingredients: 'imgIngredientsContainer',
+                nutrition: 'imgNutritionContainer'
+            };
+
+            if (!imagens || Object.keys(imagens).length === 0) {
+                secao.classList.add('hidden');
+                return;
+            }
+
+            let temAlguma = false;
+            for (const [tipo, containerId] of Object.entries(containers)) {
+                const container = document.getElementById(containerId);
+                const img = document.getElementById('img' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
+                if (imagens[tipo]) {
+                    img.src = imagens[tipo];
+                    container.classList.remove('hidden');
+                    temAlguma = true;
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+
+            if (temAlguma) {
+                secao.classList.remove('hidden');
+            } else {
+                secao.classList.add('hidden');
+            }
+        }
+
         function preencherFormulario(resposta) {
             const dados = resposta.dados || {};
             dadosAtuais = resposta;
@@ -168,6 +219,7 @@
             document.getElementById('alergenos').value = (dados.alergenos || []).join(', ');
 
             renderNutrientes(dados.nutrientes || {});
+            renderImagens(resposta.imagens);
 
             // Destaca campos de revisão
             if (resposta.campos_revisao && resposta.campos_revisao.length > 0) {
@@ -263,11 +315,13 @@
         function processarResposta(json) {
             if (json.erro) {
                 mostrarMensagem('erros', [json.erro]);
+                document.getElementById('imagensProduto').classList.add('hidden');
                 return;
             }
             if (json.status === 'nao_encontrado') {
                 mostrarMensagem('avisos', ['EAN não encontrado. Envie a foto do rótulo.']);
                 document.getElementById('formulario').classList.add('hidden');
+                document.getElementById('imagensProduto').classList.add('hidden');
                 return;
             }
             preencherFormulario(json);

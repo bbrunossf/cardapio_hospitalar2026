@@ -1,6 +1,5 @@
 """Orquestrador do cadastro de alimentos por rótulo (seção 3 e 10.2)."""
 import json
-from sqlalchemy import func
 from extensions import db
 from models_rotulo import AlimentoIndustrializado, AlimentoVersao
 from .config import get_barcode_provider, get_vision_provider, get_ocr_provider
@@ -24,8 +23,64 @@ MAPA_NUTRIENTES = {
 }
 
 
+def _alimento_para_schema(alimento: AlimentoIndustrializado) -> dict:
+    """Converte um modelo AlimentoIndustrializado para o formato do schema JSON."""
+    def _float_or_none(valor):
+        if valor is None:
+            return None
+        try:
+            return float(valor)
+        except (ValueError, TypeError):
+            return None
+
+    nutrientes = {}
+    for nome, coluna in MAPA_NUTRIENTES.items():
+        unidade = "mg" if nome == "sodio_mg" else "kcal" if nome == "energia_kcal" else "g"
+        valor = _float_or_none(getattr(alimento, coluna))
+        nutrientes[nome] = {
+            "valor": valor,
+            "unidade": unidade,
+            "presente": valor is not None,
+        }
+
+    alergenos = []
+    if alimento.alergenos:
+        try:
+            alergenos = json.loads(alimento.alergenos)
+        except json.JSONDecodeError:
+            alergenos = []
+
+    return {
+        "codigo_barras": alimento.codigo_barras,
+        "nome": alimento.nome,
+        "marca": alimento.marca,
+        "fabricante": alimento.fabricante,
+        "peso_liquido": {
+            "valor": _float_or_none(alimento.peso_liquido),
+            "unidade": alimento.unidade_peso or "g",
+        },
+        "porcao": {
+            "valor": _float_or_none(alimento.porcao_qtd),
+            "unidade": alimento.porcao_unidade or "g",
+        },
+        "nutrientes": nutrientes,
+        "ingredientes_lista": alimento.ingredientes_lista,
+        "alergenos": alergenos,
+        "confianca_global": 1.0,
+        "campos_baixa_confianca": [],
+    }
+
+
 def cadastrar_por_codigo(ean: str):
     """Fluxo de cadastro a partir do código de barras."""
+    # 1. Busca no banco de dados local primeiro
+    existente = buscar_por_ean(ean)
+    if existente:
+        dados = _alimento_para_schema(existente)
+        dados["_fonte"] = existente.fonte or "manual"
+        return _preparar_resposta(dados)
+
+    # 2. Se não encontrou, busca na API externa
     provider = get_barcode_provider()
     dados = provider.buscar(ean)
 
@@ -38,9 +93,15 @@ def cadastrar_por_codigo(ean: str):
             "campos_revisao": [],
         }
 
+    # Preserva imagens antes da normalização (campos extras são descartados)
+    imagens = dados.pop("imagens", None)
+
     dados = normalizar_resposta(dados)
     dados["_fonte"] = "barcode"
-    return _preparar_resposta(dados)
+    resposta = _preparar_resposta(dados)
+    if imagens:
+        resposta["imagens"] = imagens
+    return resposta
 
 
 def cadastrar_por_imagem(imagem_bytes: bytes):
