@@ -7,6 +7,7 @@ from models import (
     RegraSensorialGeral, RegraVariedade, VwPratosNutricional
 )
 from models_rotulo import AlimentoIndustrializado, AlimentoVersao, VwAlimentosIndustrializados100g
+from models_paciente import Paciente
 from extensions import db, admin
 
 
@@ -205,6 +206,22 @@ class VwAlimentosIndustrializados100gView(BaseModelView):
     }
 
 
+class PacienteView(BaseModelView):
+    column_list = [
+        'nome', 'sexo', 'data_nascimento', 'peso_kg', 'altura_cm',
+        'cintura_cm', 'quadril_cm', 'objetivo', 'desativado'
+    ]
+    column_searchable_list = ['nome']
+    column_filters = ['sexo', 'objetivo', 'desativado']
+    form_excluded_columns = ['criado_em', 'editado_em']
+    column_labels = {
+        'nome': 'Nome', 'sexo': 'Sexo', 'data_nascimento': 'Nascimento',
+        'peso_kg': 'Peso (kg)', 'altura_cm': 'Altura (cm)',
+        'cintura_cm': 'Cintura (cm)', 'quadril_cm': 'Quadril (cm)',
+        'objetivo': 'Objetivo', 'desativado': 'Desativado'
+    }
+
+
 
 # ─── Função de setup ────────────────────────────────────────────────────
 def setup_admin():
@@ -228,3 +245,4 @@ def setup_admin():
     admin.add_view(VwPratosNutricionalView(VwPratosNutricional, db, name='📊 Nutrientes (view)', category='Consultas'))
     admin.add_view(VwAlimentosIndustrializados100gView(VwAlimentosIndustrializados100g, db, name='📊 Alimentos 100g (view)', category='Consultas'))
     admin.add_link(MenuLink(name='🍽️ Ajustar Composição', url='/composicao-view', category='Consultas'))
+    admin.add_view(PacienteView(Paciente, db, name='👤 Pacientes', endpoint="admin_paciente",))

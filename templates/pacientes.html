@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacientes — NutriClin</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#006d37",
+                        "primary-container": "#2ecc71",
+                        "on-primary": "#ffffff",
+                        "secondary": "#006397",
+                        "secondary-container": "#5cb8fd",
+                        "error": "#ba1a1a",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#3d4a3e",
+                        "outline-variant": "#bbcbbb",
+                        "surface-variant": "#e0e3e5",
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .card { box-shadow: 0px 4px 20px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-sans min-h-screen">
+    <!-- Header -->
+    <header class="bg-surface text-primary shadow-sm sticky top-0 z-50">
+        <div class="flex justify-between items-center max-w-5xl mx-auto px-4 md:px-8 h-16">
+            <div class="flex items-center gap-2 text-lg font-bold text-primary">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                NutriClin
+            </div>
+            <nav class="flex gap-6 items-center h-full">
+                <a href="/pacientes" class="text-primary font-bold border-b-2 border-primary h-full flex items-center px-2">Pacientes</a>
+                <a href="/admin" class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2">Admin</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <main class="max-w-5xl mx-auto px-4 md:px-8 py-10">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-semibold text-on-surface">Pacientes</h1>
+                <p class="text-on-surface-variant mt-2">Gerencie os pacientes para otimização de cardápios.</p>
+            </div>
+            <a href="/pacientes/novo"
+               class="bg-primary hover:bg-primary/90 text-on-primary px-5 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                Novo Paciente
+            </a>
+        </div>
+
+        <!-- Lista -->
+        <div id="listaPacientes" class="space-y-3">
+            <!-- preenchido via JS -->
+        </div>
+        <div id="listaVazia" class="text-center py-16 bg-surface-container-lowest rounded-xl card border border-surface-variant hidden">
+            <p class="text-on-surface-variant text-lg">Nenhum paciente cadastrado.</p>
+            <a href="/pacientes/novo" class="text-primary font-medium mt-2 inline-block">Cadastrar primeiro paciente →</a>
+        </div>
+    </main>
+
+    <script>
+        async function carregarLista() {
+            try {
+                const res = await fetch('/api/pacientes');
+                const pacientes = await res.json();
+                const container = document.getElementById('listaPacientes');
+                const vazia = document.getElementById('listaVazia');
+
+                if (!pacientes.length) {
+                    vazia.classList.remove('hidden');
+                    container.innerHTML = '';
+                    return;
+                }
+
+                vazia.classList.add('hidden');
+                container.innerHTML = pacientes.map(p => `
+                    <div class="bg-surface-container-lowest rounded-xl card border border-surface-variant p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-lg text-on-surface">${p.nome}</h3>
+                            <div class="flex flex-wrap gap-x-6 gap-y-1 mt-1 text-sm text-on-surface-variant">
+                                ${p.peso_kg ? `<span>Peso: <b>${p.peso_kg} kg</b></span>` : ''}
+                                ${p.altura_cm ? `<span>Altura: <b>${p.altura_cm} cm</b></span>` : ''}
+                                ${p.imc ? `<span>IMC: <b>${p.imc}</b></span>` : ''}
+                                <span>Objetivo: <b>${p.objetivo === 'ganhar' ? 'Ganhar Peso' : p.objetivo === 'perder' ? 'Perder Peso' : 'Manter'}</b></span>
+                            </div>
+                            ${p.observacoes ? `<p class="text-xs text-on-surface-variant mt-1">${p.observacoes}</p>` : ''}
+                        </div>
+                        <div class="flex gap-2 flex-shrink-0">
+                            <a href="/pacientes/${p.id}/editar"
+                               class="px-3 py-1.5 rounded-lg border border-outline-variant text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors">
+                                Editar
+                            </a>
+                            <button onclick="removerPaciente(${p.id}, '${p.nome}')"
+                               class="px-3 py-1.5 rounded-lg border border-red-200 text-sm text-error hover:bg-red-50 transition-colors">
+                                Remover
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function removerPaciente(id, nome) {
+            if (!confirm(`Remover paciente "${nome}"?`)) return;
+            try {
+                const res = await fetch(`/api/pacientes/${id}`, { method: 'DELETE' });
+                if (res.ok) carregarLista();
+            } catch (e) {
+                alert('Erro ao remover paciente.');
+            }
+        }
+
+        carregarLista();
+    </script>
+</body>
+</html>

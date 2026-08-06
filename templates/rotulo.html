@@ -19,6 +19,11 @@
         .revisao { background: #fff3cd; border: 1px solid #ffeeba; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
         .hidden { display: none; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal.hidden { display: none; }
+        .modal-content { background: #fff; border-radius: 8px; padding: 1.5rem; max-width: 520px; width: 94%; }
+        #reader video { width: 100% !important; border-radius: 6px; }
+        .botoes-ean { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -27,8 +32,13 @@
     <div class="section">
         <h2>1. Buscar por código de barras</h2>
         <label for="ean">EAN / Código de barras</label>
-        <input type="text" id="ean" placeholder="7891234567890">
-        <button class="primary" onclick="buscarEan()">Buscar</button>
+        <input type="text" id="ean" placeholder="7891234567890" autocomplete="off">
+        <div class="botoes-ean">
+            <button class="primary" onclick="buscarEan()">Buscar</button>
+            <button class="secondary" onclick="abrirScanner()">📷 Ler código</button>
+            <button class="secondary" onclick="enviarFotoCodigo()">🖼️ Foto do código</button>
+        </div>
+        <p style="font-size: 0.9em; color: #666;">Digite o EAN, leia com a câmera ou envie uma foto do código.</p>
     </div>
 
     <div class="section">
@@ -43,20 +53,16 @@
 
     <div id="mensagens"></div>
 
-    <div id="imagensProduto" class="section hidden">
-        <h3>Imagens do</h3> produto</h3>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
-            <div id="imgFrontContainer" class="hidden">
-                <img id="imgFront" src="" alt="Foto do produto" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
-                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Foto do produto</p>
-            </div>
-            <div id="imgIngredientsContainer" class="hidden">
-                <img id="imgIngredients" src="" alt="Ingredientes" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
-                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Ingredientes</p>
-            </div>
-            <div id="imgNutritionContainer" class="hidden">
-                <img id="imgNutrition" src="" alt="Tabela nutricional" style="max-width: 300px; border-radius: 8px; border: 1px solid #ddd;">
-                <p style="font-size: 0.85em; color: #666; text-align: center; margin: 0.25rem 0 0;">Tabela nutricional</p>
+    <input type="file" id="codigoFoto" accept="image/*" capture="environment" class="hidden" onchange="decodificarFoto(event)">
+
+    <div id="modalScanner" class="modal hidden" onclick="if (event.target === this) fecharScanner()">
+        <div class="modal-content">
+            <h3>📷 Ler código de barras</h3>
+            <div id="reader"></div>
+            <p id="statusScanner" style="font-size: 0.9em; color: #666;">Aponte a câmera para o código de barras do produto.</p>
+            <div class="botoes-ean">
+                <button class="secondary" onclick="fecharScanner()">Cancelar</button>
+                <button class="secondary" onclick="enviarFotoCodigo()">🖼️ Usar foto do código</button>
             </div>
         </div>
     </div>
@@ -115,6 +121,7 @@
         <button class="secondary hidden" id="btnAtualizar" onclick="salvar('atualizar')">Atualizar existente</button>
     </div>
 
+    <script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
     <script>
         let dadosAtuais = null;
         let alimentoAtualizarId = null;
@@ -169,39 +176,6 @@
             div.innerHTML = `<div class="${tipo}"><ul>${lista.map(m => `<li>${m}</li>`).join('')}</ul></div>`;
         }
 
-        function renderImagens(imagens) {
-            const secao = document.getElementById('imagensProduto');
-            const containers = {
-                front: 'imgFrontContainer',
-                ingredients: 'imgIngredientsContainer',
-                nutrition: 'imgNutritionContainer'
-            };
-
-            if (!imagens || Object.keys(imagens).length === 0) {
-                secao.classList.add('hidden');
-                return;
-            }
-
-            let temAlguma = false;
-            for (const [tipo, containerId] of Object.entries(containers)) {
-                const container = document.getElementById(containerId);
-                const img = document.getElementById('img' + tipo.charAt(0).toUpperCase() + tipo.slice(1));
-                if (imagens[tipo]) {
-                    img.src = imagens[tipo];
-                    container.classList.remove('hidden');
-                    temAlguma = true;
-                } else {
-                    container.classList.add('hidden');
-                }
-            }
-
-            if (temAlguma) {
-                secao.classList.remove('hidden');
-            } else {
-                secao.classList.add('hidden');
-            }
-        }
-
         function preencherFormulario(resposta) {
             const dados = resposta.dados || {};
             dadosAtuais = resposta;
@@ -219,7 +193,6 @@
             document.getElementById('alergenos').value = (dados.alergenos || []).join(', ');
 
             renderNutrientes(dados.nutrientes || {});
-            renderImagens(resposta.imagens);
 
             // Destaca campos de revisão
             if (resposta.campos_revisao && resposta.campos_revisao.length > 0) {
@@ -233,6 +206,7 @@
             renderDuplicatas(resposta.duplicatas || []);
 
             document.getElementById('formulario').classList.remove('hidden');
+            document.getElementById('formulario').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function renderDuplicatas(duplicatas) {
@@ -288,14 +262,244 @@
             };
         }
 
+        let buscando = false;
+
         async function buscarEan() {
+            if (buscando) return;
             const ean = document.getElementById('ean').value.trim();
             if (!ean) return alert('Informe o EAN.');
 
-            const res = await fetch(`/api/alimentos/consulta-ean?ean=${encodeURIComponent(ean)}`);
-            const json = await res.json();
-            processarResposta(json);
+            buscando = true;
+            try {
+                const res = await fetch(`/api/alimentos/consulta-ean?ean=${encodeURIComponent(ean)}`);
+                const json = await res.json();
+                processarResposta(json);
+            } finally {
+                buscando = false;
+            }
         }
+
+        // --- Leitura de código de barras (câmera / foto) ---
+        let scannerAtivo = null;
+
+        function abrirScanner() {
+            if (typeof Html5Qrcode === 'undefined') {
+                alert('Biblioteca de leitura não carregada. Use "Foto do código" ou digite o EAN.');
+                return;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Contexto não seguro (HTTP na LAN) ou browser sem suporte a câmera
+                alert('Câmera indisponível neste acesso (requer HTTPS). Use "Foto do código".');
+                enviarFotoCodigo();
+                return;
+            }
+            document.getElementById('modalScanner').classList.remove('hidden');
+            document.getElementById('statusScanner').textContent =
+                'Aponte a câmera para o código de barras do produto.';
+
+            try {
+                scannerAtivo = new Html5Qrcode('reader', {
+                    verbose: false,
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.UPC_A,
+                        Html5QrcodeSupportedFormats.UPC_E,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                    ],
+                });
+                scannerAtivo.start(
+                    { facingMode: 'environment' },
+                    { fps: 10, qrbox: { width: 260, height: 120 } },
+                    (texto) => { if (texto) finalizarLeitura(texto); },
+                    () => {} // erros por frame são normais (código ainda não visível)
+                ).catch(err => {
+                    document.getElementById('statusScanner').textContent =
+                        'Erro ao abrir câmera: ' + (err && err.message ? err.message : err) +
+                        ' — use "Foto do código".';
+                });
+            } catch (e) {
+                document.getElementById('statusScanner').textContent = 'Erro: ' + e.message;
+            }
+        }
+
+        async function finalizarLeitura(texto) {
+            const ean = String(texto).replace(/\D/g, '');
+            if (!ean) return;
+            await fecharScanner();
+            document.getElementById('ean').value = ean;
+            if (!buscando) buscarEan();
+        }
+
+        async function fecharScanner() {
+            // Esconde o modal IMEDIATAMENTE (não espera a câmera parar)
+            const modal = document.getElementById('modalScanner');
+            if (modal) modal.classList.add('hidden');
+
+            const scanner = scannerAtivo;
+            scannerAtivo = null;
+            if (!scanner) return;
+
+            // Para a câmera em segundo plano, com timeout de segurança
+            // (stop() pode travar em alguns celulares — nunca pode prender a UI)
+            try {
+                if (typeof scanner.getState === 'function' && scanner.getState() === 2) {
+                    await Promise.race([
+                        scanner.stop(),
+                        new Promise(res => setTimeout(res, 3000)),
+                    ]);
+                }
+            } catch (e) { /* já estava parado */ }
+            try { await scanner.clear(); } catch (e) {}
+        }
+
+        async function enviarFotoCodigo() {
+            await fecharScanner();
+            const input = document.getElementById('codigoFoto');
+            input.value = '';
+            input.click();
+        }
+
+        async function decodificarFoto(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const ean = await lerCodigoDaImagem(file);
+            if (ean) {
+                document.getElementById('ean').value = ean;
+                if (!buscando) buscarEan();
+            } else {
+                mostrarMensagem('erros', [
+                    'Não consegui ler o código de barras da foto. ' +
+                    'Aproxime a câmera, evite reflexo e use boa luz — ou digite o EAN manualmente.'
+                ]);
+            }
+        }
+
+        async function lerCodigoDaImagem(file) {
+            // 1) BarcodeDetector nativo (Chrome/Android) — mais robusto que ZXing
+            if (typeof BarcodeDetector !== 'undefined') {
+                try {
+                    const bitmap = await createImageBitmap(file);
+                    let detector;
+                    try {
+                        detector = new BarcodeDetector({
+                            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'],
+                        });
+                    } catch (e) {
+                        detector = new BarcodeDetector();
+                    }
+                    const resultados = await detector.detect(bitmap);
+                    for (const r of resultados || []) {
+                        const ean = String(r.rawValue).replace(/\D/g, '');
+                        if (ean) return ean;
+                    }
+                } catch (e) { /* tenta o próximo método */ }
+            }
+
+            // 2) ZXing (html5-qrcode) — imagem original e depois com pré-processamento
+            if (typeof Html5Qrcode === 'undefined') return null;
+            
+            // Cria um elemento temporário invisível para evitar conflito com o reader do modal
+            const tempId = 'temp-reader-' + Date.now();
+            const tempDiv = document.createElement('div');
+            tempDiv.id = tempId;
+            tempDiv.style.display = 'none';
+            document.body.appendChild(tempDiv);
+            
+            let code;
+            try {
+                code = new Html5Qrcode(tempId, { verbose: false });
+                
+                // Tenta scanFileV2 (versões mais recentes)
+                if (typeof code.scanFileV2 === 'function') {
+                    try {
+                        const r1 = await code.scanFileV2(file, false);
+                        const ean = String(r1.decodedText).replace(/\D/g, '');
+                        if (ean) return ean;
+                    } catch (e) { /* segue para a versão processada */ }
+
+                    try {
+                        const processada = await processarImagem(file);
+                        if (processada) {
+                            const r2 = await code.scanFileV2(processada, false);
+                            const ean = String(r2.decodedText).replace(/\D/g, '');
+                            if (ean) return ean;
+                        }
+                    } catch (e) { }
+                } else if (typeof code.scanFile === 'function') {
+                    // Fallback para versões mais antigas do html5-qrcode
+                    try {
+                        const r1 = await code.scanFile(file, false);
+                        const ean = String(r1).replace(/\D/g, '');
+                        if (ean) return ean;
+                    } catch (e) { }
+                }
+            } finally {
+                if (code) {
+                    try { await code.clear(); } catch (e) {}
+                }
+                const el = document.getElementById(tempId);
+                if (el) el.remove();
+            }
+            return null;
+        }
+
+        function processarImagem(file) {
+            // Redimensiona (máx ~1600px) e aumenta contraste para ajudar o ZXing
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    try {
+                        const maxDim = 1600;
+                        const escala = Math.min(2, maxDim / Math.max(img.width, img.height));
+                        const canvas = document.createElement('canvas');
+                        canvas.width = Math.max(1, Math.round(img.width * escala));
+                        canvas.height = Math.max(1, Math.round(img.height * escala));
+                        const ctx = canvas.getContext('2d');
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+                        for (let i = 0; i < data.length; i += 4) {
+                            const cinza = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                            let v = (cinza - 128) * 1.5 + 128;
+                            v = v < 0 ? 0 : (v > 255 ? 255 : v);
+                            data[i] = data[i + 1] = data[i + 2] = v;
+                        }
+                        ctx.putImageData(imageData, 0, 0);
+
+                        canvas.toBlob((blob) => {
+                            URL.revokeObjectURL(url);
+                            resolve(blob ? new File([blob], 'codigo_processado.png', { type: 'image/png' }) : null);
+                        }, 'image/png');
+                    } catch (e) {
+                        URL.revokeObjectURL(url);
+                        resolve(null);
+                    }
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+                img.src = url;
+            });
+        }
+
+        // Auto-submit: 8/13 dígitos (EAN-8/EAN-13) ou Enter — também cobre leitores USB
+        document.getElementById('ean').addEventListener('input', function () {
+            const digitos = this.value.replace(/\D/g, '');
+            if ((digitos.length === 8 || digitos.length === 13) && !buscando) {
+                buscarEan();
+            }
+        });
+        document.getElementById('ean').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!buscando) buscarEan();
+            }
+        });
+
+        // Foco no campo EAN ao carregar (pronto para leitor USB)
+        document.getElementById('ean').focus();
 
         async function extrairRotulo() {
             const input = document.getElementById('imagem');
@@ -315,13 +519,11 @@
         function processarResposta(json) {
             if (json.erro) {
                 mostrarMensagem('erros', [json.erro]);
-                document.getElementById('imagensProduto').classList.add('hidden');
                 return;
             }
             if (json.status === 'nao_encontrado') {
                 mostrarMensagem('avisos', ['EAN não encontrado. Envie a foto do rótulo.']);
                 document.getElementById('formulario').classList.add('hidden');
-                document.getElementById('imagensProduto').classList.add('hidden');
                 return;
             }
             preencherFormulario(json);

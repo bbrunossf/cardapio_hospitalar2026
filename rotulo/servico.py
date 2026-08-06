@@ -107,15 +107,20 @@ def cadastrar_por_codigo(ean: str):
 def cadastrar_por_imagem(imagem_bytes: bytes):
     """Fluxo de cadastro a partir da foto do rótulo."""
     # 1. Tenta LLM multimodal
-    vision = get_vision_provider()
-    dados = vision.extrair(imagem_bytes)
+    dados = {}
+    try:
+        vision = get_vision_provider()
+        dados = vision.extrair(imagem_bytes)
+    except Exception:
+        # Provider de visão não configurado ou indisponível
+        pass
 
-    status_interno = dados.get("_status", "falhou")
-
-    if status_interno == "ok" and _campos_essenciais_presentes(dados):
-        dados = normalizar_resposta(dados)
-        dados["_fonte"] = "ia"
-        return _preparar_resposta(dados, status="ia")
+    if dados:
+        status_interno = dados.get("_status", "falhou")
+        if status_interno == "ok" and _campos_essenciais_presentes(dados):
+            dados = normalizar_resposta(dados)
+            dados["_fonte"] = "ia"
+            return _preparar_resposta(dados, status="ia")
 
     # 2. Fallback OCR
     ocr = get_ocr_provider()
