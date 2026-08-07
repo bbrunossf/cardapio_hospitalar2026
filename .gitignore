@@ -1,3 +1,5 @@
 __pycache__/
 teste_embeddings.py
 .env
+usage.db*
+.understand-anything/

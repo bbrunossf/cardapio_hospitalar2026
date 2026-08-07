@@ -13,6 +13,7 @@ from api.composicao import composicao_bp
 from api.otimizacao import otimizacao_bp
 from api.rotulo import rotulo_bp
 from api.paciente import paciente_bp
+from usage_monitor import register_usage
 
 
 def create_app():
@@ -29,6 +30,9 @@ def create_app():
     for bp in [composicao_bp, otimizacao_bp, rotulo_bp, paciente_bp]:
         if bp.name not in app.blueprints:
             app.register_blueprint(bp)
+
+    # Monitor de uso por rota (server-side, SQLite separado via USAGE_DB_PATH)
+    register_usage(app)
 
 
     print("Blueprints registrados:")
