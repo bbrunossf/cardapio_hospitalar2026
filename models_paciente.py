@@ -20,6 +20,7 @@ class Paciente(db.Model):
     cintura_cm = db.Column(db.Numeric(6, 2))
     quadril_cm = db.Column(db.Numeric(6, 2))
     objetivo = db.Column(db.String(20), default="manter")  # ganhar | perder | manter
+    nivel_atividade_fisica = db.Column(db.String(20))  # sedentario | leve | moderado | intenso
     observacoes = db.Column(db.Text)
     criado_em = db.Column(db.DateTime, server_default=func.now())
     editado_em = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now())
@@ -49,6 +50,7 @@ class Paciente(db.Model):
             "cintura_cm": float(self.cintura_cm) if self.cintura_cm is not None else None,
             "quadril_cm": float(self.quadril_cm) if self.quadril_cm is not None else None,
             "objetivo": self.objetivo,
+            "nivel_atividade_fisica": self.nivel_atividade_fisica,
             "imc": self.imc,
             "observacoes": self.observacoes,
             "criado_em": str(self.criado_em) if self.criado_em else None,

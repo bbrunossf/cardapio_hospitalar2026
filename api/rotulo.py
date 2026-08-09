@@ -9,8 +9,34 @@ from rotulo import (
     cadastrar_por_imagem,
     confirmar_cadastro,
 )
+from rotulo.duplicidade import buscar_por_ean
 
 rotulo_bp = Blueprint("rotulo", __name__, template_folder="../templates")
+
+
+@rotulo_bp.route("/api/alimentos/existe-ean")
+def api_existe_ean():
+    """Verifica se um EAN já existe localmente (sem consultar API externa).
+
+    Usado pelo formulário de revisão para decidir criar vs. atualizar
+    automaticamente ao preencher o código de barras.
+    """
+    ean = request.args.get("ean", "").strip()
+    ean_limpo = "".join(c for c in ean if c.isdigit())
+    if not ean_limpo:
+        return jsonify({"encontrado": False})
+
+    existente = buscar_por_ean(ean_limpo)
+    if not existente:
+        return jsonify({"encontrado": False})
+
+    return jsonify({
+        "encontrado": True,
+        "alimento_id": existente.id,
+        "nome": existente.nome,
+        "marca": existente.marca,
+        "fonte": existente.fonte,
+    })
 
 
 @rotulo_bp.route("/api/alimentos/consulta-ean")

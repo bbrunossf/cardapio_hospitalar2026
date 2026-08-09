@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cardapio.nome }} — v{{ cardapio.versao }} — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        .dia-card { border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; overflow: hidden; background: #fff; }
+        .dia-header { background: #f8fafc; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #e2e8f0; }
+        .dia-header h3 { margin: 0; font-size: 15px; }
+        .dia-header .kcal { font-size: 13px; color: #64748b; }
+        .dia-header .kcal b { color: #1e293b; }
+        .refeicao { padding: 12px 20px; border-bottom: 1px solid #f1f5f9; }
+        .refeicao:last-child { border-bottom: none; }
+        .refeicao-nome { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #2563eb; margin-bottom: 6px; }
+        .refeicao-pratos { display: flex; flex-wrap: wrap; gap: 8px; }
+        .prato-chip { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 12px; font-size: 13px; color: #334155; }
+        .meta-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin: 20px 0; }
+        .meta-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; text-align: center; }
+        .meta-card b { display: block; font-size: 20px; color: #1e293b; }
+        .meta-card small { color: #64748b; font-size: 12px; }
+        .voltar { display: inline-block; margin-bottom: 12px; font-size: 13px; color: #2563eb; text-decoration: none; }
+        .voltar:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <a href="{{ url_for('plano.pagina_plano', plano_id=cardapio.plano_id) }}" class="voltar">← Voltar ao plano #{{ cardapio.plano_id }}</a>
+
+        <div class="page-title">
+            <h1>{{ cardapio.nome }} <span style="font-size:14px; color:#64748b; font-weight:400;">— v{{ cardapio.versao }}</span></h1>
+            <p>
+                {% if paciente %}{{ paciente.nome }} · {% endif %}
+                {{ cardapio.dias }} dias · {{ cardapio.data_inicio.strftime('%d/%m/%Y') if cardapio.data_inicio else '' }}
+                {% if plano %} · Meta do plano: {{ '%.0f'|format(plano.meta_kcal|float) if plano.meta_kcal else '--' }} kcal/dia{% endif %}
+            </p>
+        </div>
+
+        <!-- Métricas -->
+        <div class="meta-strip">
+            <div class="meta-card">
+                <b>{{ '%.0f'|format(media_energia) }}</b>
+                <small>média kcal/dia</small>
+            </div>
+            <div class="meta-card">
+                <b>{{ '%.0f'|format(total_energia) }}</b>
+                <small>total {{ cardapio.dias }} dias</small>
+            </div>
+            <div class="meta-card">
+                <b>{{ dias_view|length }}</b>
+                <small>dias gerados</small>
+            </div>
+            {% if plano and plano.meta_kcal %}
+            <div class="meta-card">
+                <b>{{ '%.0f'|format(plano.meta_kcal|float) }}</b>
+                <small>meta do plano (kcal)</small>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Dias -->
+        {% for dia in dias_view %}
+        <div class="dia-card">
+            <div class="dia-header">
+                <h3>Dia {{ dia.dia_numero }}</h3>
+                <span class="kcal">⚡ <b>{{ '%.0f'|format(dia.energia_kcal_total) if dia.energia_kcal_total else '--' }}</b> kcal</span>
+            </div>
+            {% for tipo in dia.tipos %}
+            <div class="refeicao">
+                <div class="refeicao-nome">{{ tipo.tipo_nome }}</div>
+                <div class="refeicao-pratos">
+                    {% for r in tipo.pratos %}
+                    <span class="prato-chip">{{ r.prato_nome }}{% if r.porcao_g %} · {{ '%.0f'|format(r.porcao_g|float) }}g{% endif %}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#64748b; text-align:center; padding:40px;">Este cardápio não tem dias registrados.</p>
+        {% endfor %}
+    </main>
+</body>
+</html>

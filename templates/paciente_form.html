@@ -4,203 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if paciente %}Editar{% else %}Novo{% endif %} Paciente — NutriClin</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#006d37",
-                        "primary-container": "#2ecc71",
-                        "on-primary": "#ffffff",
-                        "secondary": "#006397",
-                        "secondary-container": "#5cb8fd",
-                        "error": "#ba1a1a",
-                        "error-container": "#ffdad6",
-                        "background": "#f7f9fb",
-                        "surface": "#f7f9fb",
-                        "surface-container-lowest": "#ffffff",
-                        "surface-container-low": "#f2f4f6",
-                        "surface-container-high": "#e6e8ea",
-                        "on-surface": "#191c1e",
-                        "on-surface-variant": "#3d4a3e",
-                        "outline-variant": "#bbcbbb",
-                        "surface-variant": "#e0e3e5",
-                    },
-                    fontFamily: {
-                        sans: ["Inter", "sans-serif"],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .card { box-shadow: 0px 4px 20px rgba(0,0,0,0.05); }
-        input:focus, select:focus, textarea:focus {
-            border-color: #006d37 !important;
-            box-shadow: 0 0 0 3px rgba(46,204,113,0.3) !important;
-        }
-        input[type="radio"]:checked + div {
-            border-color: #006d37;
-            background-color: rgba(46,204,113,0.08);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
 </head>
-<body class="bg-background text-on-surface font-sans min-h-screen">
-    <header class="bg-surface text-primary shadow-sm sticky top-0 z-50">
-        <div class="flex justify-between items-center max-w-4xl mx-auto px-4 md:px-8 h-16">
-            <div class="flex items-center gap-2 text-lg font-bold text-primary">
-                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                NutriClin
-            </div>
-            <a href="/pacientes" class="text-on-surface-variant hover:text-primary transition-colors px-3 py-2">
-                ← Voltar
-            </a>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <div class="page-title">
+            <h1>{% if paciente %}Editar Paciente{% else %}Cadastro de Paciente{% endif %}</h1>
+            <p>Preencha os dados do paciente para a otimização do cardápio.</p>
         </div>
-    </header>
 
-    <main class="max-w-4xl mx-auto px-4 md:px-8 py-10">
-        <h1 class="text-3xl font-semibold text-on-surface mb-2">
-            {% if paciente %}Editar Paciente{% else %}Cadastro de Paciente{% endif %}
-        </h1>
-        <p class="text-on-surface-variant mb-8">Preencha os dados do paciente para a otimização do cardápio.</p>
-
-        <div class="grid grid-cols-1 lg:grid-cols-7 gap-6">
+        <div class="form-layout" style="margin-top: 24px;">
             <!-- Formulário -->
-            <form id="formPaciente" class="lg:col-span-5 bg-surface-container-lowest rounded-xl card border border-surface-variant p-6 space-y-5">
+            <form id="formPaciente" class="form-card">
                 <!-- ID oculto -->
                 <input type="hidden" id="pacienteId" value="{{ paciente.id if paciente else '' }}">
 
                 <!-- Nome -->
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-medium text-on-surface-variant">Nome completo *</label>
-                    <input id="nome" type="text" value="{{ paciente.nome or '' }}" required
-                           class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"
+                <div class="field">
+                    <label for="nome" class="req">Nome completo</label>
+                    <input id="nome" type="text" value="{{ paciente.nome or '' }}" required class="input"
                            placeholder="Nome do paciente"/>
                 </div>
 
                 <!-- Sexo e Nascimento -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Sexo</label>
-                        <select id="sexo" class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base">
+                <div class="form-row">
+                    <div class="field">
+                        <label for="sexo">Sexo</label>
+                        <select id="sexo" class="select">
                             <option value="">Não informado</option>
                             <option value="M" {% if paciente and paciente.sexo == 'M' %}selected{% endif %}>Masculino</option>
                             <option value="F" {% if paciente and paciente.sexo == 'F' %}selected{% endif %}>Feminino</option>
                         </select>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Data de nascimento</label>
+                    <div class="field">
+                        <label for="data_nascimento">Data de nascimento</label>
                         <input id="data_nascimento" type="date"
                                value="{{ paciente.data_nascimento.isoformat() if paciente and paciente.data_nascimento else '' }}"
-                               class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"/>
+                               class="input"/>
                     </div>
                 </div>
 
                 <!-- Peso e Altura -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Peso (kg)</label>
+                <div class="form-row">
+                    <div class="field">
+                        <label for="peso_kg">Peso (kg)</label>
                         <input id="peso_kg" type="number" step="0.1"
                                value="{{ '%.1f'|format(paciente.peso_kg|float) if paciente and paciente.peso_kg else '' }}"
-                               class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"
-                               placeholder="Ex: 70.5"/>
+                               class="input" placeholder="Ex: 70.5"/>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Altura (cm)</label>
+                    <div class="field">
+                        <label for="altura_cm">Altura (cm)</label>
                         <input id="altura_cm" type="number" step="0.1"
                                value="{{ '%.1f'|format(paciente.altura_cm|float) if paciente and paciente.altura_cm else '' }}"
-                               class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"
-                               placeholder="Ex: 175"/>
+                               class="input" placeholder="Ex: 175"/>
                     </div>
                 </div>
 
                 <!-- IMC calculado -->
-                <div id="imcDisplay" class="bg-surface-container-low rounded-lg p-4 border border-outline-variant flex justify-between items-center">
-                    <span class="text-on-surface-variant">IMC (calculado automaticamente)</span>
-                    <span id="imcValor" class="text-xl font-bold text-primary">--</span>
+                <div class="imc-display">
+                    <span>IMC (calculado automaticamente)</span>
+                    <span id="imcValor" class="valor">--</span>
                 </div>
 
                 <!-- Cintura e Quadril -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-surface-variant">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Cintura (cm)</label>
+                <div class="form-row form-divider">
+                    <div class="field">
+                        <label for="cintura_cm">Cintura (cm)</label>
                         <input id="cintura_cm" type="number" step="0.1"
                                value="{{ '%.1f'|format(paciente.cintura_cm|float) if paciente and paciente.cintura_cm else '' }}"
-                               class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"
-                               placeholder="Ex: 80"/>
+                               class="input" placeholder="Ex: 80"/>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-sm font-medium text-on-surface-variant">Quadril (cm)</label>
+                    <div class="field">
+                        <label for="quadril_cm">Quadril (cm)</label>
                         <input id="quadril_cm" type="number" step="0.1"
                                value="{{ '%.1f'|format(paciente.quadril_cm|float) if paciente and paciente.quadril_cm else '' }}"
-                               class="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface outline-none text-base"
-                               placeholder="Ex: 95"/>
+                               class="input" placeholder="Ex: 95"/>
                     </div>
                 </div>
 
                 <!-- Observações -->
-                <div class="flex flex-col gap-1">
-                    <label class="text-sm font-medium text-on-surface-variant">Observações</label>
-                    <textarea id="observacoes" rows="3"
-                              class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface outline-none text-base"
+                <div class="field">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" rows="3" class="textarea"
                               placeholder="Alergias, restrições, condições relevantes...">{{ paciente.observacoes or '' }}</textarea>
                 </div>
 
                 <!-- Ações -->
-                <div class="flex justify-end gap-3 pt-4 border-t border-surface-variant">
-                    <a href="/pacientes"
-                       class="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors text-sm font-medium">
-                        Cancelar
-                    </a>
-                    <button type="submit"
-                       class="bg-primary hover:bg-primary/90 text-on-primary px-6 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <div class="form-acoes">
+                    <a href="/pacientes" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 13l4 4L19 7"/>
+                        </svg>
                         Salvar
                     </button>
                 </div>
             </form>
 
             <!-- Sidebar — Objetivo -->
-            <aside class="lg:col-span-2 space-y-4">
-                <div class="bg-surface-container-lowest rounded-xl card border border-surface-variant p-5">
-                    <h3 class="text-sm font-semibold text-on-surface mb-4 uppercase tracking-wide">Objetivo</h3>
-                    <div class="flex flex-col gap-3" id="objetivoGroup">
-                        <label class="cursor-pointer">
+            <aside class="sidebar">
+                <div class="side-card">
+                    <h3>Objetivo</h3>
+                    <div class="field" id="objetivoGroup" style="gap: 12px;">
+                        <label class="radio-option">
                             <input type="radio" name="objetivo" value="ganhar"
-                                   {% if paciente and paciente.objetivo == 'ganhar' %}checked{% endif %}
-                                   class="sr-only peer"/>
-                            <div class="w-full p-3 rounded-lg border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/10 transition-all flex items-center gap-3">
-                                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-                                <span class="font-semibold text-on-surface">Ganhar Peso</span>
+                                   {% if paciente and paciente.objetivo == 'ganhar' %}checked{% endif %}/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 15l7-7 7 7"/>
+                                </svg>
+                                <span>Ganhar Peso</span>
                             </div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="radio-option">
                             <input type="radio" name="objetivo" value="perder"
-                                   {% if paciente and paciente.objetivo == 'perder' %}checked{% endif %}
-                                   class="sr-only peer"/>
-                            <div class="w-full p-3 rounded-lg border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/10 transition-all flex items-center gap-3">
-                                <svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                                <span class="font-semibold text-on-surface">Perder Peso</span>
+                                   {% if paciente and paciente.objetivo == 'perder' %}checked{% endif %}/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M19 9l-7 7-7-7"/>
+                                </svg>
+                                <span>Perder Peso</span>
                             </div>
                         </label>
-                        <label class="cursor-pointer">
+                        <label class="radio-option">
                             <input type="radio" name="objetivo" value="manter"
-                                   {% if not paciente or paciente.objetivo == 'manter' %}checked{% endif %}
-                                   class="sr-only peer"/>
-                            <div class="w-full p-3 rounded-lg border-2 border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/10 transition-all flex items-center gap-3">
-                                <svg class="w-8 h-8 text-on-surface-variant" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
-                                <span class="font-semibold text-on-surface">Manter</span>
+                                   {% if not paciente or paciente.objetivo == 'manter' %}checked{% endif %}/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M5 12h14"/>
+                                </svg>
+                                <span>Manter</span>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <!-- Métricas rápidas -->
-                <div class="bg-surface-container-lowest rounded-xl card border border-surface-variant p-5 space-y-3">
-                    <h3 class="text-sm font-semibold text-on-surface uppercase tracking-wide">Resumo</h3>
-                    <div id="resumoMetricas" class="space-y-2 text-sm text-on-surface-variant">
+                <div class="side-card">
+                    <h3>Resumo</h3>
+                    <div id="resumoMetricas" class="resumo-texto">
                         <p>Preencha peso e altura para ver o IMC.</p>
                     </div>
                 </div>

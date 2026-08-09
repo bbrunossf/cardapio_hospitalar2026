@@ -13,6 +13,7 @@ from api.composicao import composicao_bp
 from api.otimizacao import otimizacao_bp
 from api.rotulo import rotulo_bp
 from api.paciente import paciente_bp
+from api.plano import plano_bp
 from usage_monitor import register_usage
 
 
@@ -27,7 +28,7 @@ def create_app():
     setup_admin()
 
     # Registra blueprints de forma idempotente (evita erro no reloader)
-    for bp in [composicao_bp, otimizacao_bp, rotulo_bp, paciente_bp]:
+    for bp in [composicao_bp, otimizacao_bp, rotulo_bp, paciente_bp, plano_bp]:
         if bp.name not in app.blueprints:
             app.register_blueprint(bp)
 
@@ -50,6 +51,12 @@ def create_app():
     @app.route('/')
     def root():
         return redirect(url_for('admin.index'))
+
+    # Injeta o objeto admin em todos os templates (para a navbar standalone
+    # renderizar o mesmo menu do Flask-Admin fora das rotas /admin)
+    @app.context_processor
+    def inject_admin():
+        return {"admin": admin}
 
     return app
 

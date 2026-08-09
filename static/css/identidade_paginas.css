@@ -162,12 +162,13 @@ td input[type="number"] {
 /* ============================================================
    OTIMIZACAO — formulário
    ============================================================ */
+body.pg-form { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 0 20px 20px; }
 .pg-container {
   max-width: 600px; width: 100%;
+  margin: auto;              /* centraliza no espaço restante abaixo da navbar */
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 32px; box-shadow: var(--shadow);
 }
-body.pg-form { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
 .pg-container h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
 .pg-container h1 svg { color: var(--primary); }
 .pg-container .subtitle { color: var(--text2); margin-bottom: 28px; font-size: 0.9rem; }

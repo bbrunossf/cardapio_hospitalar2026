@@ -156,9 +156,24 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False
 # MODELAGEM MATEMÁTICA (PuLP)
 # ══════════════════════════════════════════════════════════════════
 
-def criar_modelo_otimizacao(dados, dias=5):
-    """Monta o modelo de programação linear inteira."""
-    problema = pulp.LpProblem("Cardapio_Hospitalar_Maximizar_Energia", pulp.LpMaximize)
+def criar_modelo_otimizacao(dados, dias=5, overrides=None, objetivo='max_energia'):
+    """
+    Monta o modelo de programação linear inteira.
+
+    Parâmetros extras (plano nutricional do paciente):
+      overrides: dict {nutriente: (min, max)} mesclado nas restrições
+                 nutricionais (ex: energia_kcal, proteina_g, carboidrato_g,
+                 lipidios_g) — faixas mais restritivas que as da dieta.
+      objetivo:  'max_energia' (padrão) ou 'target' — quando há meta_kcal
+                 no overrides, minimiza o desvio absoluto da meta em vez de
+                 maximizar energia (importante para plano de perda de peso).
+    """
+    overrides = overrides or {}
+    meta_kcal = overrides.get('meta_kcal')
+    usar_target = objetivo == 'target' and meta_kcal is not None
+
+    nome_problema = "Cardapio_Hospitalar_Target" if usar_target else "Cardapio_Hospitalar_Maximizar_Energia"
+    problema = pulp.LpProblem(nome_problema, pulp.LpMinimize if usar_target else pulp.LpMaximize)
 
     pratos_ids = [p['id'] for p in dados['pratos']]
     tipos_prato_ids = list(dados['tipos_prato'].keys())
@@ -175,13 +190,29 @@ def criar_modelo_otimizacao(dados, dias=5):
         cat='Binary'
     )
 
-    # Função objetivo: Maximizar Energia Total
-    problema += pulp.lpSum(
-        p['energia_kcal'] * X[p['id']][r][d]
-        for p in dados['pratos']
-        for r in refeicoes_ids
-        for d in dias_range
-    ), "Maximizar_Energia_Total"
+    if usar_target:
+        # Variáveis de desvio (positivo/negativo) por dia para minimizar
+        # |energia_total_dia - meta_kcal|
+        desv_pos = pulp.LpVariable.dicts("DesvPos", dias_range, lowBound=0)
+        desv_neg = pulp.LpVariable.dicts("DesvNeg", dias_range, lowBound=0)
+        for d in dias_range:
+            soma_energia_dia = pulp.lpSum(
+                p['energia_kcal'] * X[p['id']][r][d]
+                for p in dados['pratos']
+                for r in refeicoes_ids
+            )
+            problema += soma_energia_dia - desv_pos[d] + desv_neg[d] == meta_kcal, \
+                f"Target_Energia_Dia{d}"
+        problema += pulp.lpSum(desv_pos[d] + desv_neg[d] for d in dias_range), \
+            "Minimizar_Desvio_Meta"
+    else:
+        # Função objetivo: Maximizar Energia Total
+        problema += pulp.lpSum(
+            p['energia_kcal'] * X[p['id']][r][d]
+            for p in dados['pratos']
+            for r in refeicoes_ids
+            for d in dias_range
+        ), "Maximizar_Energia_Total"
 
     # Um prato não pode ser usado em duas refeições no mesmo dia
     for p in dados['pratos']:
@@ -228,9 +259,14 @@ def criar_modelo_otimizacao(dados, dias=5):
                     soma = pulp.lpSum(X[pid][r][d] for pid in pratos_por_tipo[t])
                     problema += soma == 0, f"Bloq_R{r}_T{t}_Dia{d}"
 
-    # Restrições Nutricionais
+    # Restrições Nutricionais (da dieta base)
+    # Nutrientes cobertos pelos overrides do plano são SUBSTITUÍDOS (a meta
+    # individual do paciente prevalece sobre a faixa genérica da dieta)
+    nutrientes_override = {n for n in overrides if n != 'meta_kcal'}
     for rest in dados['restricoes_nutricionais']:
         nutriente = rest['nutriente']
+        if nutriente in nutrientes_override:
+            continue
         col = COLUNAS_NUTRIENTES.get(nutriente)
         if not col:
             continue
@@ -244,6 +280,26 @@ def criar_modelo_otimizacao(dados, dias=5):
                 problema += soma_nutriente >= rest['valor_minimo'], f"Nut_Min_{nutriente}_Dia{d}"
             if rest['valor_maximo'] is not None:
                 problema += soma_nutriente <= rest['valor_maximo'], f"Nut_Max_{nutriente}_Dia{d}"
+
+    # Overrides do plano do paciente (mesclados às restrições da dieta —
+    # faixas mais restritivas valem, o solver respeita a interseção)
+    for nutriente, faixa in overrides.items():
+        if nutriente == 'meta_kcal':
+            continue
+        col = COLUNAS_NUTRIENTES.get(nutriente)
+        if not col:
+            continue
+        vmin, vmax = faixa
+        for d in dias_range:
+            soma_nutriente = pulp.lpSum(
+                p[col] * X[p['id']][r][d]
+                for p in dados['pratos']
+                for r in refeicoes_ids
+            )
+            if vmin is not None:
+                problema += soma_nutriente >= vmin, f"Override_Min_{nutriente}_Dia{d}"
+            if vmax is not None:
+                problema += soma_nutriente <= vmax, f"Override_Max_{nutriente}_Dia{d}"
 
     # Restrições de Elegibilidade
     for regra in dados['regras_elegibilidade']:

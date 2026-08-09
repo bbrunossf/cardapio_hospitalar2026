@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Plano Nutricional — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        .aviso-dados { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; border-radius: 10px; padding: 12px 14px; font-size: 13px; margin-bottom: 16px; display: none; }
+        .aviso-dados.visivel { display: block; }
+        .dados-paciente { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #475569; display: none; }
+        .dados-paciente.visivel { display: block; }
+        .dados-paciente b { color: #1e293b; }
+        .campo-destaque { border-color: #f59e0b !important; background: #fffbeb !important; }
+    </style>
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <div class="page-title">
+            <h1>Novo Plano Nutricional</h1>
+            <p>Defina o objetivo e o cálculo WolframAlpha dimensiona o plano do paciente.</p>
+        </div>
+
+        <div class="form-layout" style="margin-top: 24px;">
+            <!-- Formulário -->
+            <form id="formPlano" class="form-card">
+                <!-- Paciente -->
+                <div class="field">
+                    <label for="pacienteId" class="req">Paciente</label>
+                    <select id="pacienteId" class="select" required>
+                        <option value="">Selecione o paciente...</option>
+                        {% for p in pacientes %}
+                        <option value="{{ p.id }}" data-peso="{{ '%.2f'|format(p.peso_kg|float) if p.peso_kg else '' }}" data-altura="{{ '%.2f'|format(p.altura_cm|float) if p.altura_cm else '' }}" {% if paciente_id == p.id %}selected{% endif %}>
+                            {{ p.nome }} — {{ '%.1f'|format(p.peso_kg|float) if p.peso_kg else '?' }} kg / {{ '%.0f'|format(p.altura_cm|float) if p.altura_cm else '?' }} cm
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Dados do paciente (preenchidos ao selecionar) -->
+                <div id="dadosPaciente" class="dados-paciente"></div>
+
+                <!-- Aviso de dados faltantes -->
+                <div id="avisoDados" class="aviso-dados">
+                    ⚠️ Este paciente está sem <b>peso</b> e/ou <b>altura</b> no cadastro.
+                    Preencha abaixo — os valores serão salvos no cadastro do paciente.
+                </div>
+
+                <!-- Peso e Altura (editáveis — salvos no cadastro do paciente) -->
+                <div class="form-row">
+                    <div class="field">
+                        <label for="pesoKg">Peso (kg)</label>
+                        <input id="pesoKg" type="number" step="0.1" min="1" class="input" placeholder="Ex: 78.5"/>
+                    </div>
+                    <div class="field">
+                        <label for="alturaCm">Altura (cm)</label>
+                        <input id="alturaCm" type="number" step="0.1" min="50" class="input" placeholder="Ex: 175"/>
+                    </div>
+                </div>
+
+                <!-- Objetivo -->
+                <div class="field">
+                    <label class="req">Objetivo</label>
+                    <div id="objetivoGroup" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <label class="radio-option">
+                            <input type="radio" name="objetivo" value="perder" checked/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 9l-7 7-7-7"/></svg>
+                                <span>Perder Peso</span>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="objetivo" value="ganhar"/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 15l7-7 7 7"/></svg>
+                                <span>Ganhar Peso</span>
+                            </div>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="objetivo" value="manter"/>
+                            <div class="radio-card">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+                                <span>Manter</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Peso alvo -->
+                <div class="form-row">
+                    <div class="field">
+                        <label for="pesoAlvo">Peso alvo (kg)</label>
+                        <input id="pesoAlvo" type="number" step="0.1" class="input" placeholder="Ex: 80"/>
+                    </div>
+                    <div class="field">
+                        <label for="prazoDias">Prazo (dias)</label>
+                        <input id="prazoDias" type="number" step="1" min="7" class="input" placeholder="Ex: 56"/>
+                    </div>
+                </div>
+
+                <!-- Nível de atividade -->
+                <div class="field">
+                    <label for="nivelAtividade">Nível de atividade física</label>
+                    <select id="nivelAtividade" class="select">
+                        <option value="sedentario">Sedentário</option>
+                        <option value="leve">Leve</option>
+                        <option value="moderado" selected>Moderado</option>
+                        <option value="intenso">Intenso</option>
+                    </select>
+                </div>
+
+                <!-- Perfil de macros -->
+                <div class="field">
+                    <label for="perfilMacro">Perfil de macronutrientes</label>
+                    <select id="perfilMacro" class="select">
+                        <option value="equilibrado">Equilibrado (30/40/30)</option>
+                        <option value="hipocalorico">Hipocalórico / Low carb (30/30/40)</option>
+                        <option value="hiperproteico">Hiperproteico (35/35/30)</option>
+                        <option value="hipolipidico">Hipolipídico (25/50/25)</option>
+                    </select>
+                </div>
+
+                <!-- Ações -->
+                <div class="form-acoes">
+                    <a href="/planos" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary" id="btnCalcular">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 2v20M2 12h20" transform="rotate(45 12 12)"/>
+                        </svg>
+                        Calcular e Salvar Plano
+                    </button>
+                </div>
+            </form>
+
+            <!-- Sidebar — Resultado -->
+            <aside class="sidebar">
+                <div class="side-card">
+                    <h3>Resumo do cálculo</h3>
+                    <div id="resumoResultado" class="resumo-texto">
+                        <p>Selecione o paciente, confira peso/altura (puxados do cadastro) e clique em <b>Calcular</b>. O WolframAlpha vai estimar TMB, GET e a meta calórica (com fallback clínico local se a API falhar).</p>
+                    </div>
+                </div>
+                <div class="side-card">
+                    <h3>Sobre</h3>
+                    <p class="resumo-texto" style="font-size: 13px; color: var(--texto-secundario, #666);">
+                        O plano é salvo com os resultados (fonte: wolfram ou fallback) e fica disponível
+                        para gerar cardápios otimizados por paciente, com faixas de energia ±10% e macros ±15%.
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        const inputPeso = document.getElementById('pesoKg');
+        const inputAltura = document.getElementById('alturaCm');
+        const aviso = document.getElementById('avisoDados');
+        const dadosBox = document.getElementById('dadosPaciente');
+        const selectPaciente = document.getElementById('pacienteId');
+
+        function marcarCamposFaltantes() {
+            const pesoOk = parseFloat(inputPeso.value) > 0;
+            const altOk = parseFloat(inputAltura.value) > 0;
+            inputPeso.classList.toggle('campo-destaque', !pesoOk);
+            inputAltura.classList.toggle('campo-destaque', !altOk);
+            aviso.classList.toggle('visivel', !(pesoOk && altOk));
+        }
+
+        async function carregarPaciente(id) {
+            if (!id) {
+                dadosBox.classList.remove('visivel');
+                aviso.classList.remove('visivel');
+                inputPeso.value = '';
+                inputAltura.value = '';
+                return;
+            }
+            try {
+                const res = await fetch(`/api/pacientes/${id}`);
+                if (!res.ok) return;
+                const p = await res.json();
+
+                // Puxa do cadastro (ou mantém o que estava digitado se o cadastro não tem)
+                inputPeso.value = p.peso_kg ?? '';
+                inputAltura.value = p.altura_cm ?? '';
+
+                // Nível de atividade do cadastro
+                if (p.nivel_atividade_fisica) {
+                    document.getElementById('nivelAtividade').value = p.nivel_atividade_fisica;
+                }
+                // Objetivo do cadastro
+                const obj = p.objetivo;
+                if (obj && ['perder', 'ganhar', 'manter'].includes(obj)) {
+                    document.querySelector(`input[name="objetivo"][value="${obj}"]`).checked = true;
+                }
+
+                // Resumo dos dados vindos do cadastro
+                const imc = p.imc ? ` · IMC ${p.imc}` : '';
+                dadosBox.innerHTML = `<b>${p.nome}</b> — sexo: ${p.sexo || '?'} · nasc: ${p.data_nascimento || '?'}${imc}`;
+                dadosBox.classList.add('visivel');
+
+                // Sugere peso alvo razoável (mesmo peso se não souber)
+                if (!document.getElementById('pesoAlvo').value && p.peso_kg) {
+                    document.getElementById('pesoAlvo').placeholder = `Ex: ${p.peso_kg}`;
+                }
+                marcarCamposFaltantes();
+            } catch (e) {
+                console.error('Erro ao carregar paciente', e);
+            }
+        }
+
+        selectPaciente.addEventListener('change', () => carregarPaciente(selectPaciente.value));
+        inputPeso.addEventListener('input', marcarCamposFaltantes);
+        inputAltura.addEventListener('input', marcarCamposFaltantes);
+
+        // Carrega se já veio com paciente selecionado
+        if (selectPaciente.value) {
+            carregarPaciente(selectPaciente.value);
+        }
+
+        document.getElementById('formPlano').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const pacienteId = selectPaciente.value;
+            if (!pacienteId) {
+                alert('Selecione um paciente.');
+                return;
+            }
+
+            const peso = parseFloat(inputPeso.value);
+            const altura = parseFloat(inputAltura.value);
+            if (!peso || !altura) {
+                alert('Peso e altura são obrigatórios para o cálculo (e serão salvos no cadastro do paciente).');
+                return;
+            }
+
+            const nivel = document.getElementById('nivelAtividade').value;
+            const objetivo = document.querySelector('input[name="objetivo"]:checked')?.value || 'manter';
+
+            const btn = document.getElementById('btnCalcular');
+            btn.disabled = true;
+            btn.textContent = 'Consultando WolframAlpha...';
+
+            try {
+                // 1. Atualiza peso/altura/atividade/objetivo no cadastro do paciente
+                const resPac = await fetch(`/api/pacientes/${pacienteId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        peso_kg: peso,
+                        altura_cm: altura,
+                        nivel_atividade_fisica: nivel,
+                        objetivo: objetivo
+                    })
+                });
+                if (!resPac.ok) {
+                    const err = await resPac.json();
+                    alert(err.erro || 'Erro ao atualizar dados do paciente.');
+                    return;
+                }
+
+                // 2. Cria o plano
+                const res = await fetch('/api/planos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paciente_id: parseInt(pacienteId),
+                        objetivo: objetivo,
+                        peso_alvo_kg: parseFloat(document.getElementById('pesoAlvo').value) || null,
+                        prazo_dias: parseInt(document.getElementById('prazoDias').value) || null,
+                        perfil_macro: document.getElementById('perfilMacro').value,
+                    })
+                });
+
+                const body = await res.json();
+                if (res.ok) {
+                    mostrarResultado(body);
+                    btn.textContent = 'Plano salvo! Criar outro?';
+                    btn.disabled = false;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    alert(body.erro || 'Erro ao criar plano.');
+                    btn.textContent = 'Calcular e Salvar Plano';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('Erro de conexão: ' + err.message);
+                btn.textContent = 'Calcular e Salvar Plano';
+                btn.disabled = false;
+            }
+        });
+
+        function mostrarResultado(p) {
+            const el = document.getElementById('resumoResultado');
+            const alertas = p.alertas ? p.alertas.split('\n').filter(Boolean) : [];
+            const fonte = p.fonte === 'wolfram' ? '✅ WolframAlpha' : '⚠️ Fallback local';
+
+            el.innerHTML = `
+                <p><b>Objetivo:</b> ${p.objetivo} (plano #${p.id})</p>
+                <p><b>TMB:</b> ${p.tmb_kcal ?? '--'} kcal/dia</p>
+                <p><b>GET:</b> ${p.get_kcal ?? '--'} kcal/dia</p>
+                <p><b>Meta:</b> ${p.meta_kcal ?? '--'} kcal/dia</p>
+                <p><b>Déficit/superávit:</b> ${p.deficit_diario_kcal ?? '--'} kcal/dia</p>
+                <p><b>Prazo:</b> ${p.prazo_dias ?? '--'} dias</p>
+                <p><b>Macros (P/C/L):</b> ${p.proteinas_g ?? '--'} / ${p.carboidratos_g ?? '--'} / ${p.lipidios_g ?? '--'} g</p>
+                <p><b>Fonte:</b> ${fonte}</p>
+                ${alertas.length ? `<p style="margin-top:8px;"><b>Alertas:</b></p><ul style="font-size:13px; padding-left:18px;">${alertas.map(a => `<li>${a}</li>`).join('')}</ul>` : ''}
+                <p style="margin-top:12px;">
+                    <a href="/planos/${p.id}" class="btn btn-primary" style="font-size:13px; text-decoration:none;">Ver plano e gerar cardápio →</a>
+                </p>
+            `;
+        }
+    </script>
+</body>
+</html>

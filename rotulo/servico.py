@@ -220,6 +220,13 @@ def confirmar_cadastro(payload: dict) -> dict:
     dados = payload.get("dados", {})
     dados, erros, avisos = validar_dados(dados)
 
+    # Dupla barreira: EAN obrigatório para NOVOS cadastros (o front também valida).
+    # Valida no payload BRUTO — o validar_dados normaliza via limpar_ean e zera
+    # EANs inválidos, o que mascararia o motivo do erro ("obrigatório" vs "tamanho").
+    if acao == "criar":
+        erros_ean = _validar_ean(payload.get("dados", {}).get("codigo_barras"))
+        erros = erros_ean + erros
+
     if erros:
         return {"sucesso": False, "erros": erros, "avisos": avisos, "alimento_id": None}
 
@@ -255,6 +262,16 @@ def confirmar_cadastro(payload: dict) -> dict:
     return {"sucesso": True, "erros": [], "avisos": avisos, "alimento_id": alimento.id}
 
 
+def _validar_ean(ean) -> list[str]:
+    """Retorna lista de erros (vazia se ok). Aceita EAN-8, UPC-A, EAN-13, GTIN-14 (8-14 dígitos)."""
+    if not ean:
+        return ["Código de barras é obrigatório para novos cadastros."]
+    digitos = "".join(c for c in str(ean) if c.isdigit())
+    if not (8 <= len(digitos) <= 14):
+        return ["Código de barras deve ter entre 8 e 14 dígitos."]
+    return []
+
+
 def _novo_alimento(dados: dict) -> AlimentoIndustrializado:
     return AlimentoIndustrializado(
         codigo_barras=dados.get("codigo_barras"),
@@ -273,6 +290,8 @@ def _novo_alimento(dados: dict) -> AlimentoIndustrializado:
 
 
 def _atualizar_alimento(alimento: AlimentoIndustrializado, dados: dict) -> None:
+    # EAN do registro existente é preservado se o payload vier sem (ex: edição por rótulo)
+    alimento.codigo_barras = dados.get("codigo_barras") or alimento.codigo_barras
     alimento.nome = dados["nome"]
     alimento.marca = dados.get("marca")
     alimento.fabricante = dados.get("fabricante")

@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Resultado - Cardápio Otimizado</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
 </head>
 <body class="pg-result">
+{% set nav_active = '/otimizacao' %}
+{% from 'admin/_navbar_standalone.html' import navbar with context %}
+{{ navbar(admin) }}
 <div class="pg-wrap">
   <h1 class="pg-h1">
     <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>

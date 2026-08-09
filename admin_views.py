@@ -19,7 +19,7 @@ class BaseModelView(ModelView):
     can_export = True
     create_modal = False
     edit_modal = False
-    page_size = 40
+    page_size = 6
     column_display_pk = False
     column_hide_backrefs = False
 
@@ -45,10 +45,31 @@ class IngredienteView(BaseModelView):
     column_editable_list = ['disponibilidade', 'custo_por_100g']
     form_excluded_columns = ['criado_em', 'editado_em']
 
+    # Labels com \n = quebra de linha no header (nome na 1ª linha, unidade na 2ª).
+    # \u00a0 = espaço não-quebrável: nomes compostos não quebram no meio.
+    # No form de edição o \n vira espaço normal ("Carboidrato (g)"), sem efeito visual.
     column_labels = {
-        'nome': 'Nome', 'tipo_alimento': 'Tipo', 'qtde': 'Qtde_medida', 'unidade_medida': 'unidade', 'energia_kcal': 'Kcal', 'carboidrato_g': 'Carboidrato (g)',
-        'proteina_g': 'Proteína (g)', 'lipidios_g': 'Lipídios (g)',
-         'custo_por_100g': 'Custo R$', 'disponibilidade': 'Disponível'
+        'nome': 'Nome', 'tipo_alimento': 'Tipo',
+        'qtde': 'Qtde', 'unidade_medida': 'Unidade',
+        'energia_kcal': 'Energia\n(kcal)',
+        'carboidrato_g': 'Carboidrato\n(g)',
+        'proteina_g': 'Proteína\n(g)',
+        'lipidios_g': 'Lipídios\n(g)',
+        'fibra_alimentar_g': 'Fibra\u00a0Alimentar\n(g)',
+        'calcio_mg': 'Cálcio\n(mg)',
+        'ferro_mg': 'Ferro\n(mg)',
+        'sodio_mg': 'Sódio\n(mg)',
+        'potassio_mg': 'Potássio\n(mg)',
+        'fosforo_mg': 'Fósforo\n(mg)',
+        'vit_c_mg': 'Vitamina\u00a0C\n(mg)',
+        'vit_a_mg': 'Vitamina\u00a0A\n(mg)',
+        'gordura_saturada_g': 'Gordura\u00a0Saturada\n(g)',
+        'colesterol_mg': 'Colesterol\n(mg)',
+        'custo_por_100g': 'Custo\n(R$/100g)',
+        'disponibilidade': 'Disponível',
+        'observacoes': 'Observações',
+        'fonte': 'Fonte',
+        'desativado': 'Inativo'
     }
 # class IngredienteView(ModelView):
     # pass
@@ -81,12 +102,15 @@ class DietaView(BaseModelView):
 
 class PratoComposicaoView(BaseModelView):
     column_list = ['prato', 'ingrediente', 'quantidade_g', 'desativado']
+    column_searchable_list = ['prato.nome', 'ingrediente.nome']
     column_filters = ['desativado']
     column_editable_list = ['quantidade_g', 'desativado']
     form_excluded_columns = ['criado_em', 'editado_em', 'prato', 'ingrediente']
     column_labels = {
         'prato': 'Prato', 'ingrediente': 'Ingrediente',
-        'quantidade_g': 'Quantidade (g)', 'desativado': 'Inativo'
+        'quantidade_g': 'Quantidade (g)', 'desativado': 'Inativo',
+        # labels dos campos de busca (placeholder limpo da caixa de pesquisa)
+        'prato.nome': 'Prato', 'ingrediente.nome': 'Ingrediente',
     }
     column_sortable_list = ['quantidade_g', 'desativado']
 
@@ -242,7 +266,12 @@ def setup_admin():
     admin.add_view(PratoComposicaoView(PratoComposicao, db, name='Composição de Pratos'))
     admin.add_view(AlimentoIndustrializadoView(AlimentoIndustrializado, db, name='Alimentos Industrializados'))
     admin.add_view(AlimentoVersaoView(AlimentoVersao, db, name='Versões de Alimentos'))
-    admin.add_view(VwPratosNutricionalView(VwPratosNutricional, db, name='📊 Nutrientes (view)', category='Consultas'))
-    admin.add_view(VwAlimentosIndustrializados100gView(VwAlimentosIndustrializados100g, db, name='📊 Alimentos 100g (view)', category='Consultas'))
-    admin.add_link(MenuLink(name='🍽️ Ajustar Composição', url='/composicao-view', category='Consultas'))
-    admin.add_view(PacienteView(Paciente, db, name='👤 Pacientes', endpoint="admin_paciente",))
+    admin.add_view(VwPratosNutricionalView(VwPratosNutricional, db, name='Nutrientes (view)', category='Consultas'))
+    admin.add_view(VwAlimentosIndustrializados100gView(VwAlimentosIndustrializados100g, db, name='Alimentos 100g (view)', category='Consultas'))
+    admin.add_link(MenuLink(name='Ajustar Composição', url='/composicao-view', category='Consultas'))
+    admin.add_view(PacienteView(Paciente, db, name='Pacientes (tabela)', endpoint="admin_paciente",))
+
+    # Ferramentas — páginas standalone (fora do chrome do admin)
+    admin.add_link(MenuLink(name='Pacientes', url='/pacientes', category='Ferramentas'))
+    admin.add_link(MenuLink(name='Cadastro por Rótulo', url='/rotulo', category='Ferramentas'))
+    admin.add_link(MenuLink(name='Otimização de Cardápio', url='/otimizacao', category='Ferramentas'))

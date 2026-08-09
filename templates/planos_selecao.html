@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos por Paciente — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        .selecao-container { max-width: 640px; margin: 32px auto 0; }
+        .selecao-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; }
+        .selecao-card h2 { margin: 0 0 6px; font-size: 18px; }
+        .selecao-card p { margin: 0 0 20px; font-size: 13px; color: #64748b; }
+        .paciente-option { display: block; width: 100%; text-align: left; padding: 14px 16px; margin-bottom: 8px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; cursor: pointer; transition: all 150ms ease; text-decoration: none; color: inherit; font-family: inherit; }
+        .paciente-option:hover { border-color: var(--primary, #2563eb); background: #eff6ff; }
+        .paciente-option b { font-size: 15px; display: block; }
+        .paciente-option small { color: #64748b; font-size: 12px; }
+        .vazio { text-align: center; padding: 32px 16px; color: #64748b; }
+        .vazio a { color: var(--primary, #2563eb); }
+    </style>
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <div class="page-title">
+            <h1>Planos por Paciente</h1>
+            <p>Selecione o paciente para ver os planos nutricionais dele.</p>
+        </div>
+
+        <div class="selecao-container">
+            <div class="selecao-card">
+                <h2>Escolha o paciente</h2>
+                <p>Você verá somente os planos do paciente selecionado.</p>
+
+                {% if pacientes %}
+                    {% for p in pacientes %}
+                    <a class="paciente-option" href="/pacientes/{{ p.id }}/planos">
+                        <b>{{ p.nome }}</b>
+                        <small>
+                            {{ '%.1f'|format(p.peso_kg|float) if p.peso_kg else '?' }} kg ·
+                            {{ '%.0f'|format(p.altura_cm|float) if p.altura_cm else '?' }} cm ·
+                            {{ p.objetivo or 'manter' }}
+                        </small>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="vazio">
+                        <p>Nenhum paciente cadastrado.</p>
+                        <p><a href="/pacientes/novo">Cadastrar primeiro paciente →</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Otimização de Cardápio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
 </head>
 <body class="pg-form">
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
     <div class="pg-container">
     <h1>
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -48,7 +52,6 @@
         </button>
     </form>
 
-    <div class="back-link"><a href="/admin/">← Voltar ao Admin</a></div>
     </div>
 
     <script>

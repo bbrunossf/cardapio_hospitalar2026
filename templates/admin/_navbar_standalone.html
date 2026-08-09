@@ -1,0 +1,35 @@
+{# ============================================================
+   Navbar standalone — mesmo menu do Flask-Admin, fora do admin.
+   Uso:
+     {% from 'admin/_navbar_standalone.html' import navbar with context %}
+     {{ navbar(admin) }}
+   Opcional: {% set nav_active = '/otimizacao' %} antes do include
+   para forçar o item ativo (ex: páginas de resultado de otimização).
+   ============================================================ #}
+{% macro navbar(admin) -%}
+{%- set active_url = nav_active if nav_active is defined and nav_active else request.path -%}
+<nav class="idv-nav" aria-label="Menu principal">
+  <a class="idv-nav-brand" href="{{ admin.url }}">{{ admin.name }}</a>
+  <ul class="idv-nav-list">
+    {%- for item in admin.menu() %}
+      {%- if item.is_category() %}
+      <li class="idv-nav-dd">
+        <a class="idv-nav-link idv-nav-toggle" href="javascript:void(0)" aria-haspopup="true">{{ item.name }}</a>
+        <ul class="idv-nav-sub">
+          {%- for child in item.get_children() %}
+          {%- set child_url = child.get_url() %}
+          <li><a class="{{ 'active' if active_url == child_url or (child_url and active_url.startswith(child_url)) }}" href="{{ child_url }}">{{ child.name }}</a></li>
+          {%- endfor %}
+        </ul>
+      </li>
+      {%- else %}
+      {%- set item_url = item.get_url() %}
+      <li><a class="idv-nav-link {{ 'active' if active_url == item_url or (item_url and item_url != '/admin/' and active_url.startswith(item_url)) }}" href="{{ item_url }}">{{ item.name }}</a></li>
+      {%- endif %}
+    {%- endfor %}
+    {# Acessos rápidos fora do menu do Flask-Admin #}
+    <li><a class="idv-nav-link {{ 'active' if active_url == '/planos' or active_url.startswith('/planos/') }}" href="/planos">Planos</a></li>
+    <li><a class="idv-nav-link {{ 'active' if active_url == '/pacientes' or active_url.startswith('/pacientes/') }}" href="/pacientes">Pacientes</a></li>
+  </ul>
+</nav>
+{%- endmacro %}

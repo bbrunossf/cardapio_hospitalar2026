@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano #{{ plano.id }} — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <div class="page-title">
+            <h1>Plano #{{ plano.id }} — {{ paciente.nome if paciente else 'Paciente ' ~ plano.paciente_id }}</h1>
+            <p>Resultado do dimensionamento (WolframAlpha ou fallback local) e cardápios gerados.</p>
+        </div>
+
+        <!-- Cards de métricas -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0;">
+            <div class="side-card" style="text-align:center;">
+                <h3>TMB</h3>
+                <p style="font-size: 22px; font-weight: 700;">{{ '%.0f'|format(plano.tmb_kcal|float) if plano.tmb_kcal else '--' }}</p>
+                <small>kcal/dia</small>
+            </div>
+            <div class="side-card" style="text-align:center;">
+                <h3>GET</h3>
+                <p style="font-size: 22px; font-weight: 700;">{{ '%.0f'|format(plano.get_kcal|float) if plano.get_kcal else '--' }}</p>
+                <small>kcal/dia</small>
+            </div>
+            <div class="side-card" style="text-align:center;">
+                <h3>Meta</h3>
+                <p style="font-size: 22px; font-weight: 700;">{{ '%.0f'|format(plano.meta_kcal|float) if plano.meta_kcal else '--' }}</p>
+                <small>kcal/dia</small>
+            </div>
+            <div class="side-card" style="text-align:center;">
+                <h3>Déficit</h3>
+                <p style="font-size: 22px; font-weight: 700;">{{ '%.0f'|format(plano.deficit_diario_kcal|float) if plano.deficit_diario_kcal else '--' }}</p>
+                <small>kcal/dia</small>
+            </div>
+        </div>
+
+        <div class="form-layout" style="margin-top: 8px;">
+            <!-- Detalhes -->
+            <div class="form-card">
+                <h3 style="margin-top:0;">Detalhes do plano</h3>
+                <table style="width:100%; border-collapse:collapse; font-size:14px;">
+                    <tbody>
+                        <tr><td style="padding:6px 0; color:#666;">Objetivo</td><td style="padding:6px 0;"><b>{{ plano.objetivo }}</b></td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Peso alvo</td><td style="padding:6px 0;">{{ '%.1f'|format(plano.peso_alvo_kg|float) if plano.peso_alvo_kg else '--' }} kg</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Prazo</td><td style="padding:6px 0;">{{ plano.prazo_dias or '--' }} dias</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Atividade</td><td style="padding:6px 0;">{{ plano.nivel_atividade or '--' }}</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Perfil de macros</td><td style="padding:6px 0;">{{ plano.perfil_macro or '--' }}</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Macros (P/C/L)</td><td style="padding:6px 0;">{{ '%.1f'|format(plano.proteinas_g|float) if plano.proteinas_g else '--' }} / {{ '%.1f'|format(plano.carboidratos_g|float) if plano.carboidratos_g else '--' }} / {{ '%.1f'|format(plano.lipidios_g|float) if plano.lipidios_g else '--' }} g</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Fonte</td><td style="padding:6px 0;">{{ '✅ WolframAlpha' if plano.fonte == 'wolfram' else '⚠️ Fallback local' }}</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Status</td><td style="padding:6px 0;"><b>{{ plano.status }}</b></td></tr>
+                        {% if plano.alertas %}
+                        <tr>
+                            <td style="padding:6px 0; color:#666; vertical-align:top;">Alertas</td>
+                            <td style="padding:6px 0;">
+                                <ul style="margin:0; padding-left:18px; font-size:13px;">
+                                    {% for a in plano.alertas.split('\n') if a %}
+                                    <li>{{ a }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+
+                <div class="form-acoes" style="margin-top:16px;">
+                    <a href="/pacientes" class="btn btn-secondary">← Pacientes</a>
+                    <button class="btn btn-primary" onclick="gerarCardapio()">Gerar Cardápio (PuLP)</button>
+                </div>
+            </div>
+
+            <!-- Cardápios salvos -->
+            <aside class="sidebar">
+                <div class="side-card">
+                    <h3>Cardápios deste plano</h3>
+                    {% if cardapios %}
+                    <ul style="list-style:none; padding:0; margin:0;">
+                        {% for c in cardapios %}
+                        <li style="padding:10px 0; border-bottom:1px solid #eee;">
+                            <a href="/cardapios/{{ c.id }}" style="text-decoration:none; color:inherit;">
+                                <b>v{{ c.versao }}</b> — {{ c.nome }}<br>
+                                <small>{{ c.dias }} dias · {{ c.criado_em.strftime('%d/%m/%Y %H:%M') if c.criado_em else '' }} → ver cardápio</small>
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="resumo-texto">Nenhum cardápio gerado ainda. Clique em <b>Gerar Cardápio</b>.</p>
+                    {% endif %}
+                </div>
+                <div class="side-card">
+                    <h3>Pré-visualização</h3>
+                    <div id="previewCardapio" class="resumo-texto">
+                        <p>Aguardando geração...</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <script>
+        async function gerarCardapio() {
+            const dias = prompt('Quantos dias de cardápio? (1-30)', '7');
+            if (dias === null) return;
+            const nDias = parseInt(dias);
+            if (!nDias || nDias < 1 || nDias > 30) { alert('Dias inválido.'); return; }
+
+            try {
+                const res = await fetch('/api/planos/{{ plano.id }}/cardapio', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ dieta: 'LIVRE', dias: nDias })
+                });
+                const body = await res.json();
+                if (!res.ok) {
+                    alert(body.erro || 'Erro ao gerar cardápio.');
+                    return;
+                }
+
+                const r = body.resultado;
+                const m = r.metricas;
+                const el = document.getElementById('previewCardapio');
+                el.innerHTML = `
+                    <p><b>Cardápio v${body.versao} gerado!</b></p>
+                    <p>Status: ${r.status}</p>
+                    <p>Média energia: ${m.media_energia_diaria_kcal} kcal/dia</p>
+                    <p>Média proteína: ${m.media_proteina_diaria_g} g/dia</p>
+                    <p>Pratos: ${m.total_pratos_selecionados}</p>
+                `;
+                location.reload();
+            } catch (e) {
+                alert('Erro de conexão: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>

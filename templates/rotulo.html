@@ -4,29 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro por Rótulo Nutricional</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
     <style>
-        body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-        h1 { color: #333; }
-        .section { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; }
-        label { display: block; margin-top: 1rem; font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
-        button { margin-top: 1rem; padding: 0.6rem 1.2rem; cursor: pointer; }
-        .primary { background: #007bff; color: white; border: none; border-radius: 4px; }
-        .secondary { background: #6c757d; color: white; border: none; border-radius: 4px; }
-        .avisos { background: #fff3cd; color: #856404; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
-        .erros { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
-        .duplicata { border: 1px solid #ccc; padding: 0.75rem; border-radius: 4px; margin-top: 0.5rem; }
-        .revisao { background: #fff3cd; border: 1px solid #ffeeba; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-        .hidden { display: none; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .modal.hidden { display: none; }
-        .modal-content { background: #fff; border-radius: 8px; padding: 1.5rem; max-width: 520px; width: 94%; }
-        #reader video { width: 100% !important; border-radius: 6px; }
-        .botoes-ean { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    h1 { color: #1F2933; font-size: 1.5rem; margin-bottom: 1rem; }
+    h2 { color: #1F2933; font-size: 1.1rem; margin-bottom: 0.5rem; }
+    h3 { color: #1F2933; margin: 0.5rem 0 0.25rem; }
+    .section { border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; background: var(--surface); box-shadow: var(--shadow); }
+    label { display: block; margin-top: 1rem; font-weight: 500; color: var(--text2); font-size: 0.85rem; }
+    input, select, textarea { width: 100%; padding: 0.6rem 0.75rem; margin-top: 0.25rem; box-sizing: border-box; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-family: inherit; font-size: 0.95rem; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,94,184,0.12); outline: none; }
+    button { margin-top: 1rem; padding: 0.6rem 1.2rem; cursor: pointer; border: none; border-radius: 4px; font-weight: 600; font-family: inherit; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; transition: background 150ms ease; }
+    .primary { background: var(--primary); color: white; }
+    .primary:hover { background: var(--primary-hover); }
+    .secondary { background: var(--surface2); color: var(--primary-hover); }
+    .secondary:hover { background: #D3E4F4; }
+    .avisos { background: #FBF0DC; color: #7A5300; border: 1px solid #F0DCA8; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
+    .erros { background: #F9E4DC; color: #9A3309; border: 1px solid #F0C8B8; padding: 0.75rem; border-radius: 4px; margin-top: 1rem; }
+    .duplicata { border: 1px solid var(--border); padding: 0.75rem; border-radius: 8px; margin-top: 0.5rem; background: var(--surface); }
+    .revisao { background: #FBF0DC; border: 1px solid #F0DCA8; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .hidden { display: none; }
+    .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal.hidden { display: none; }
+    .modal-content { background: var(--surface); border-radius: 8px; padding: 1.5rem; max-width: 520px; width: 94%; box-shadow: var(--shadow); }
+    #reader video { width: 100% !important; border-radius: 6px; }
+    .botoes-ean { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .hint { font-size: 0.9em; color: var(--text2); }
+    .modal-content h3 { display: flex; align-items: center; gap: 8px; }
+    .modal-content h3 svg { color: var(--primary); }
     </style>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
 </head>
-<body>
+<body class="pg-result">
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+    <div class="pg-wrap">
+
     <h1>Cadastro de Alimento Industrializado</h1>
 
     <div class="section">
@@ -35,10 +49,10 @@
         <input type="text" id="ean" placeholder="7891234567890" autocomplete="off">
         <div class="botoes-ean">
             <button class="primary" onclick="buscarEan()">Buscar</button>
-            <button class="secondary" onclick="abrirScanner()">📷 Ler código</button>
-            <button class="secondary" onclick="enviarFotoCodigo()">🖼️ Foto do código</button>
+            <button class="secondary" onclick="abrirScanner()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código</button>
+            <button class="secondary" onclick="enviarFotoCodigo()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Foto do código</button>
         </div>
-        <p style="font-size: 0.9em; color: #666;">Digite o EAN, leia com a câmera ou envie uma foto do código.</p>
+        <p class="hint">Digite o EAN, leia com a câmera ou envie uma foto do código.</p>
     </div>
 
     <div class="section">
@@ -46,7 +60,7 @@
         <label for="imagem">Imagem do rótulo</label>
         <input type="file" id="imagem" accept="image/*">
         <button class="primary" onclick="extrairRotulo()">Extrair rótulo</button>
-        <p style="font-size: 0.9em; color: #666;">
+        <p class="hint">
             A imagem é usada apenas para extração e não é armazenada.
         </p>
     </div>
@@ -57,12 +71,12 @@
 
     <div id="modalScanner" class="modal hidden" onclick="if (event.target === this) fecharScanner()">
         <div class="modal-content">
-            <h3>📷 Ler código de barras</h3>
+            <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código de barras</h3>
             <div id="reader"></div>
-            <p id="statusScanner" style="font-size: 0.9em; color: #666;">Aponte a câmera para o código de barras do produto.</p>
+            <p id="statusScanner" class="hint">Aponte a câmera para o código de barras do produto.</p>
             <div class="botoes-ean">
                 <button class="secondary" onclick="fecharScanner()">Cancelar</button>
-                <button class="secondary" onclick="enviarFotoCodigo()">🖼️ Usar foto do código</button>
+                <button class="secondary" onclick="enviarFotoCodigo()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Usar foto do código</button>
             </div>
         </div>
     </div>
@@ -71,8 +85,13 @@
         <h2>Revisar dados</h2>
         <div class="grid">
             <div>
-                <label for="codigo_barras">Código de barras</label>
-                <input type="text" id="codigo_barras">
+                <label for="codigo_barras">Código de barras *</label>
+                <input type="text" id="codigo_barras" placeholder="Digite ou leia o código do produto" autocomplete="off" required>
+                <div class="botoes-ean" style="margin-top: 0.35rem;">
+                    <button class="secondary" onclick="abrirScannerForm()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código</button>
+                    <button class="secondary" onclick="enviarFotoCodigoForm()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Foto do código</button>
+                </div>
+                <p class="hint" id="dicaEanForm">Obrigatório para novos cadastros — evita duplicidade por código de barras.</p>
             </div>
             <div>
                 <label for="nome">Nome *</label>
@@ -117,14 +136,19 @@
 
         <div id="duplicatas"></div>
 
-        <button class="primary" onclick="salvar('criar')">Salvar novo</button>
+        <button class="primary" id="btnCriar" onclick="salvar('criar')">Salvar novo</button>
         <button class="secondary hidden" id="btnAtualizar" onclick="salvar('atualizar')">Atualizar existente</button>
+    </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/html5-qrcode.min.js') }}"></script>
     <script>
         let dadosAtuais = null;
         let alimentoAtualizarId = null;
+
+        // Campo alvo da leitura de código: 'topo' (busca por EAN) ou 'form' (formulário de revisão)
+        let campoEanAtivo = 'topo';
+        let verificandoEanForm = false;
 
         const nutrientesConfig = [
             { nome: 'energia_kcal', label: 'Energia (kcal)' },
@@ -205,24 +229,40 @@
             mostrarMensagem('avisos', resposta.avisos);
             renderDuplicatas(resposta.duplicatas || []);
 
+            // EAN obrigatório para novos cadastros: destaca o campo se a extração não trouxe o código
+            const eanCampo = document.getElementById('codigo_barras');
+            if (!eanCampo.value) {
+                eanCampo.classList.add('revisao');
+                eanCampo.focus();
+                mostrarMensagem('avisos', (resposta.avisos || []).concat([
+                    'O rótulo não contém código de barras. Leia ou digite o EAN do produto para concluir o cadastro.'
+                ]));
+            } else {
+                eanCampo.classList.remove('revisao');
+                verificarEanNoForm();
+            }
+
             document.getElementById('formulario').classList.remove('hidden');
             document.getElementById('formulario').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function renderDuplicatas(duplicatas) {
             const div = document.getElementById('duplicatas');
-            if (duplicatas.length === 0) {
+            if (!duplicatas || duplicatas.length === 0) {
                 div.innerHTML = '';
-                document.getElementById('btnAtualizar').classList.add('hidden');
+                if (alimentoAtualizarId === null) {
+                    document.getElementById('btnAtualizar').classList.add('hidden');
+                }
                 return;
             }
 
             let html = '<h3>Possíveis duplicatas</h3>';
             duplicatas.forEach(d => {
+                const pct = d.similaridade !== undefined ? `<br>Similaridade: ${(d.similaridade * 100).toFixed(0)}%` : '';
+                const ean = d.codigo_barras ? `<br><span class="hint">EAN: ${d.codigo_barras}</span>` : '';
                 html += `
                     <div class="duplicata">
-                        <strong>${d.nome}</strong> ${d.marca ? '(' + d.marca + ')' : ''}<br>
-                        Similaridade: ${(d.similaridade * 100).toFixed(0)}%<br>
+                        <strong>${d.nome}</strong> ${d.marca ? '(' + d.marca + ')' : ''}${ean}${pct}<br>
                         <button class="secondary" onclick="escolherAtualizar(${d.id})">Atualizar este</button>
                     </div>
                 `;
@@ -235,6 +275,55 @@
             alimentoAtualizarId = id;
             document.getElementById('btnAtualizar').classList.remove('hidden');
             alert('Modo atualizar selecionado. Clique em "Atualizar existente" para confirmar.');
+        }
+
+        // --- EAN obrigatório + atualizar automático no formulário de revisão ---
+        function abrirScannerForm() {
+            campoEanAtivo = 'form';
+            abrirScanner();
+        }
+
+        function enviarFotoCodigoForm() {
+            campoEanAtivo = 'form';
+            enviarFotoCodigo();
+        }
+
+        async function verificarEanNoForm() {
+            const eanInput = document.getElementById('codigo_barras');
+            const ean = eanInput.value.replace(/\D/g, '');
+            if (ean.length < 8 || ean.length > 14) return;
+            if (verificandoEanForm) return;
+
+            eanInput.classList.remove('revisao');
+            verificandoEanForm = true;
+            try {
+                const res = await fetch(`/api/alimentos/existe-ean?ean=${encodeURIComponent(ean)}`);
+                const json = await res.json();
+
+                if (json.encontrado) {
+                    // EAN já existe → muda para modo ATUALIZAR automaticamente
+                    alimentoAtualizarId = json.alimento_id;
+                    document.getElementById('btnCriar').classList.add('hidden');
+                    document.getElementById('btnAtualizar').classList.remove('hidden');
+                    document.getElementById('dicaEanForm').style.display = 'none';
+                    mostrarMensagem('avisos', [
+                        `EAN já cadastrado em "${json.nome}"${json.marca ? ' (' + json.marca + ')' : ''}. ` +
+                        'Salvar vai ATUALIZAR esse registro — os dados do rótulo preencherão as lacunas.'
+                    ]);
+                } else {
+                    // EAN novo → garante modo CRIAR
+                    if (alimentoAtualizarId !== null && !document.getElementById('duplicatas').innerHTML.includes('Atualizar este')) {
+                        alimentoAtualizarId = null;
+                    }
+                    document.getElementById('btnCriar').classList.remove('hidden');
+                    document.getElementById('btnAtualizar').classList.add('hidden');
+                    document.getElementById('dicaEanForm').style.display = '';
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                verificandoEanForm = false;
+            }
         }
 
         function coletarPayload() {
@@ -327,8 +416,13 @@
             const ean = String(texto).replace(/\D/g, '');
             if (!ean) return;
             await fecharScanner();
-            document.getElementById('ean').value = ean;
-            if (!buscando) buscarEan();
+            if (campoEanAtivo === 'form') {
+                document.getElementById('codigo_barras').value = ean;
+                verificarEanNoForm();
+            } else {
+                document.getElementById('ean').value = ean;
+                if (!buscando) buscarEan();
+            }
         }
 
         async function fecharScanner() {
@@ -365,8 +459,13 @@
             if (!file) return;
             const ean = await lerCodigoDaImagem(file);
             if (ean) {
-                document.getElementById('ean').value = ean;
-                if (!buscando) buscarEan();
+                if (campoEanAtivo === 'form') {
+                    document.getElementById('codigo_barras').value = ean;
+                    verificarEanNoForm();
+                } else {
+                    document.getElementById('ean').value = ean;
+                    if (!buscando) buscarEan();
+                }
             } else {
                 mostrarMensagem('erros', [
                     'Não consegui ler o código de barras da foto. ' +
@@ -501,6 +600,45 @@
         // Foco no campo EAN ao carregar (pronto para leitor USB)
         document.getElementById('ean').focus();
 
+        // --- Formulário de revisão: verificação de EAN e duplicatas por nome ---
+        document.getElementById('codigo_barras').addEventListener('input', function () {
+            const digitos = this.value.replace(/\D/g, '');
+            if (digitos.length >= 8 && digitos.length <= 14) {
+                verificarEanNoForm();
+            }
+        });
+        document.getElementById('codigo_barras').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verificarEanNoForm();
+            }
+        });
+
+        // Reforço: ao preencher o nome, sugere registros parecidos (rede de segurança
+        // para o caso do produto cadastrado antes sem EAN)
+        let timeoutNome = null;
+        document.getElementById('nome').addEventListener('input', function () {
+            clearTimeout(timeoutNome);
+            timeoutNome = setTimeout(buscarDuplicatasPorNome, 600);
+        });
+
+        async function buscarDuplicatasPorNome() {
+            const q = document.getElementById('nome').value.trim();
+            if (q.length < 4) return;
+            try {
+                const res = await fetch(`/api/alimentos/busca?q=${encodeURIComponent(q)}`);
+                const lista = await res.json();
+                const dups = (lista || [])
+                    .filter(a => a.id !== alimentoAtualizarId)
+                    .slice(0, 5);
+                renderDuplicatas(dups.map(d => ({
+                    id: d.id, nome: d.nome, marca: d.marca, codigo_barras: d.codigo_barras
+                })));
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
         async function extrairRotulo() {
             const input = document.getElementById('imagem');
             if (!input.files || input.files.length === 0) return alert('Selecione uma imagem.');
@@ -530,6 +668,15 @@
         }
 
         async function salvar(acao) {
+            if (acao === 'criar') {
+                // Dupla barreira no front: EAN obrigatório (o servidor também valida)
+                const ean = document.getElementById('codigo_barras').value.replace(/\D/g, '');
+                if (ean.length < 8 || ean.length > 14) {
+                    alert('Código de barras é obrigatório para novos cadastros (8 a 14 dígitos). Leia com a câmera, use foto do código ou digite o EAN.');
+                    document.getElementById('codigo_barras').focus();
+                    return;
+                }
+            }
             if (acao === 'atualizar') {
                 if (!alimentoAtualizarId) {
                     alert('Selecione uma duplicata para atualizar.');

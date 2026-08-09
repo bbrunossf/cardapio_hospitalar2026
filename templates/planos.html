@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos Nutricionais — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        .plano-card { border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+        .plano-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+        .plano-info h3 { margin: 0 0 4px; font-size: 16px; }
+        .plano-info p { margin: 2px 0; font-size: 13px; color: #64748b; }
+        .plano-meta { display: flex; gap: 20px; font-size: 13px; color: #475569; flex-wrap: wrap; }
+        .plano-meta b { color: #1e293b; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+        .badge-ativo { background: #dbeafe; color: #1e40af; }
+        .badge-concluido { background: #dcfce7; color: #166534; }
+        .badge-cancelado { background: #f1f5f9; color: #64748b; }
+        .badge-wolfram { background: #eff6ff; color: #1d4ed8; }
+        .badge-fallback { background: #fef3c7; color: #92400e; }
+        .vazio { text-align: center; padding: 48px 20px; color: #64748b; }
+        .vazio a { color: var(--primario, #2563eb); }
+    </style>
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content">
+        <div class="page-title" style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h1>{% if paciente %}Planos de {{ paciente.nome }}{% else %}Planos Nutricionais{% endif %}</h1>
+                <p>
+                    {% if paciente %}
+                        Planos deste paciente — crie um novo ou abra um existente para gerar cardápios.
+                    {% else %}
+                        Planos dimensionados com WolframAlpha — gere cardápios otimizados por paciente.
+                    {% endif %}
+                </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                {% if paciente %}
+                <a href="/pacientes" class="btn btn-secondary">← Pacientes</a>
+                <a href="/planos/novo?paciente_id={{ paciente.id }}" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px; margin-right:6px;"><path d="M12 5v14M5 12h14"/></svg>
+                    Novo Plano
+                </a>
+                {% else %}
+                <a href="/planos/novo" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px; margin-right:6px;"><path d="M12 5v14M5 12h14"/></svg>
+                    Novo Plano
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if planos %}
+        <div style="margin-top: 20px;">
+            {% for p in planos %}
+            <a href="/planos/{{ p.id }}" style="text-decoration:none; color:inherit;">
+                <div class="plano-card">
+                    <div class="plano-info">
+                        <h3>{{ p.paciente_nome }}
+                            <span class="badge badge-{{ p.status }}">{{ p.status }}</span>
+                            <span class="badge badge-{{ 'wolfram' if p.fonte == 'wolfram' else 'fallback' }}">
+                                {{ 'Wolfram' if p.fonte == 'wolfram' else 'Fallback' }}
+                            </span>
+                        </h3>
+                        <p>Objetivo: <b>{{ p.objetivo }}</b> · criado em {{ p.criado_em[:10] if p.criado_em else '--' }}</p>
+                    </div>
+                    <div class="plano-meta">
+                        <span>Meta: <b>{{ '%.0f'|format(p.meta_kcal|float) if p.meta_kcal else '--' }} kcal</b></span>
+                        <span>GET: <b>{{ '%.0f'|format(p.get_kcal|float) if p.get_kcal else '--' }}</b></span>
+                        <span>Déficit: <b>{{ '%.0f'|format(p.deficit_diario_kcal|float) if p.deficit_diario_kcal else '--' }}</b></span>
+                        <span>Prazo: <b>{{ p.prazo_dias or '--' }} dias</b></span>
+                        <span>Macros: <b>{{ '%.0f'|format(p.proteinas_g|float) if p.proteinas_g else '--' }} / {{ '%.0f'|format(p.carboidratos_g|float) if p.carboidratos_g else '--' }} / {{ '%.0f'|format(p.lipidios_g|float) if p.lipidios_g else '--' }}</b> g</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="vazio">
+            <p style="font-size:18px; margin-bottom:8px;">Nenhum plano criado ainda.</p>
+            <p>Crie o primeiro em <a href="/planos/novo">Novo Plano</a> — o WolframAlpha dimensiona TMB, GET e meta calórica do paciente.</p>
+        </div>
+        {% endif %}
+    </main>
+</body>
+</html>

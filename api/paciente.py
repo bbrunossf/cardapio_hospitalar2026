@@ -100,6 +100,7 @@ def _preencher_paciente(paciente: Paciente, dados: dict) -> Paciente:
     paciente.cintura_cm = dados.get("cintura_cm")
     paciente.quadril_cm = dados.get("quadril_cm")
     paciente.objetivo = dados.get("objetivo", paciente.objetivo or "manter")
+    paciente.nivel_atividade_fisica = dados.get("nivel_atividade_fisica", paciente.nivel_atividade_fisica)
     paciente.observacoes = dados.get("observacoes")
     return paciente
 

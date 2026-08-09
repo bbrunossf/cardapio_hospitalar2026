@@ -1,0 +1,243 @@
+/* ============================================================
+   Identidade Visual Bruno — Chrome do Flask-Admin + list views
+   Fonte da verdade: novo_cardapio/DESIGN.md (tokens canônicos)
+   Carregado via templates/admin/master.html (bloco head_css)
+   Escopo: navbar, título, tabs, tabelas de listagem, botões,
+   paginação, forms, flash messages — TUDO dentro do admin.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --idv-primary: #005EB8;
+  --idv-primary-hover: #004E99;
+  --idv-primary-soft: #E6F0FA;
+  --idv-background: #F4F7FA;
+  --idv-surface: #FFFFFF;
+  --idv-text: #1F2933;
+  --idv-text-muted: #5C6B7A;
+  --idv-border: #D9E1E8;
+  --idv-danger: #C2410C;
+  --idv-danger-hover: #9A3309;
+}
+
+/* ============================================================
+   Base — tipografia, fundo off-white, largura máxima
+   ============================================================ */
+body {
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--idv-background);
+  color: var(--idv-text);
+}
+
+.container, .container-fluid {
+  max-width: 100% !important;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+a { color: var(--idv-primary); }
+a:hover { color: var(--idv-primary-hover); }
+
+/* ============================================================
+   Navbar — NHS Blue (driver de interação)
+   ============================================================ */
+.navbar.bg-dark {
+  background: var(--idv-primary) !important;
+  border-radius: 8px;
+  margin-top: 8px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.navbar .navbar-brand {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.navbar .nav-link {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.925rem;
+  border-radius: 4px;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link:focus { color: #FFFFFF; background: rgba(255, 255, 255, 0.12); }
+
+.navbar .dropdown-menu {
+  border: 1px solid var(--idv-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+.navbar .dropdown-item { color: var(--idv-text); font-size: 0.925rem; }
+.navbar .dropdown-item:hover { background: var(--idv-primary-soft); color: var(--idv-primary-hover); }
+.navbar .dropdown-item.active { background: var(--idv-primary); color: #FFFFFF; }
+
+/* ============================================================
+   Título da página
+   ============================================================ */
+h4.mb-4 { font-weight: 700; color: var(--idv-text); }
+h4.mb-4 .fa { color: var(--idv-primary); }
+
+/* ============================================================
+   Nav-tabs (List / Create / Filters / Actions)
+   ============================================================ */
+.nav-tabs { border-bottom: 1px solid var(--idv-border); margin-bottom: 16px; }
+.nav-tabs .nav-link {
+  color: var(--idv-text-muted);
+  border: 1px solid transparent;
+  border-radius: 8px 8px 0 0;
+}
+.nav-tabs .nav-link:hover { color: var(--idv-primary); border-color: transparent; }
+.nav-tabs .nav-link.active {
+  background: var(--idv-primary-soft);
+  color: var(--idv-primary-hover);
+  border: 1px solid var(--idv-border);
+  border-bottom-color: var(--idv-primary-soft);
+  font-weight: 600;
+}
+
+/* ============================================================
+   Tabela de listagem — o coração do admin
+   ============================================================ */
+.model-list {
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--idv-surface);
+  border: 1px solid var(--idv-border);
+  border-radius: 8px;
+  font-size: 0.925rem;
+}
+
+.model-list thead th {
+  background: var(--idv-primary-soft);
+  color: var(--idv-text);
+  font-weight: 600;
+  border-bottom: 2px solid var(--idv-border);
+  /* pre-line: quebra apenas nos \n dos labels (ex: "Carboidrato" / "(g)").
+     Seguro porque o header é renderizado numa única linha (override de
+     templates/admin/model/list.html) e nomes compostos usam \u00a0 (NBSP). */
+  white-space: pre-line;
+  padding: 10px 12px;
+  font-variant-numeric: tabular-nums;
+}
+.model-list thead th a { color: inherit; }
+.model-list thead th a:hover { color: var(--idv-primary); }
+
+.model-list tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #EEF2F6;
+  font-variant-numeric: tabular-nums;
+}
+
+/* zebra SUTIL (nunca forte) + hover na cor da identidade */
+.model-list.table-striped tbody tr:nth-of-type(odd) { background: #FAFCFE; }
+.model-list tbody tr:hover { background: var(--idv-primary-soft) !important; }
+
+.model-list.table-bordered th,
+.model-list.table-bordered td { border-color: #EEF2F6; }
+.model-list tbody tr:last-child td { border-bottom: none; }
+
+/* coluna de ações (editar/excluir) */
+.list-buttons-column a { color: var(--idv-text-muted); }
+.list-buttons-column a:hover { color: var(--idv-primary); }
+
+/* ============================================================
+   Texto longo nas células — truncar com reticências
+   Ex: 'fonte' dos Ingredientes chega a 250+ chars no BD (SQLite
+   não impõe o VARCHAR(20) do modelo). A classe col-<campo> é
+   gerada automaticamente pelo Flask-Admin em td.
+   ============================================================ */
+.model-list td.col-fonte {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   Botões
+   ============================================================ */
+.btn-primary,
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:not(:disabled):not(.disabled).active {
+  background: var(--idv-primary);
+  border-color: var(--idv-primary);
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus {
+  background: var(--idv-primary-hover);
+  border-color: var(--idv-primary-hover);
+}
+
+/* perigo = laranja queimado (token erro da identidade, não vermelho puro) */
+.btn-danger,
+.btn-danger:not(:disabled):not(.disabled):active {
+  background: var(--idv-danger);
+  border-color: var(--idv-danger);
+}
+.btn-danger:hover,
+.btn-danger:focus {
+  background: var(--idv-danger-hover);
+  border-color: var(--idv-danger-hover);
+}
+
+.btn-outline-primary { color: var(--idv-primary); border-color: var(--idv-primary); }
+.btn-outline-primary:hover {
+  background: var(--idv-primary);
+  border-color: var(--idv-primary);
+  color: #FFFFFF;
+}
+.btn-secondary { background: var(--idv-text-muted); border-color: var(--idv-text-muted); }
+.btn-secondary:hover { background: #4A5866; border-color: #4A5866; }
+
+/* ============================================================
+   Paginação
+   ============================================================ */
+.pagination .page-link { color: var(--idv-primary); border-color: var(--idv-border); }
+.pagination .page-link:hover { background: var(--idv-primary-soft); border-color: var(--idv-border); color: var(--idv-primary-hover); }
+.pagination .page-item.active .page-link {
+  background: var(--idv-primary);
+  border-color: var(--idv-primary);
+  color: #FFFFFF;
+}
+
+/* ============================================================
+   Forms (create/edit) + select2
+   ============================================================ */
+.form-control {
+  border-color: var(--idv-border);
+  color: var(--idv-text);
+  font-size: 0.925rem;
+  border-radius: 4px;
+}
+.form-control:focus {
+  border-color: var(--idv-primary);
+  box-shadow: 0 0 0 0.2rem rgba(0, 94, 184, 0.15);
+}
+
+.select2-container .select2-selection--single,
+.select2-container .select2-selection--multiple {
+  border-color: var(--idv-border) !important;
+  border-radius: 4px !important;
+  min-height: 38px;
+}
+
+/* ============================================================
+   Flash messages — semânticas com as cores da identidade
+   ============================================================ */
+.alert-success { background: #DDF0EE; border-color: #0B7A75; color: #065F5A; }
+.alert-warning { background: #FBF0DC; border-color: #E8A33D; color: #7A5300; }
+.alert-danger  { background: #F9E4DC; border-color: #C2410C; color: #9A3309; }
+.alert-info    { background: var(--idv-primary-soft); border-color: var(--idv-primary); color: var(--idv-primary-hover); }
+
+/* ============================================================
+   Motion: sutil, respeitando prefers-reduced-motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

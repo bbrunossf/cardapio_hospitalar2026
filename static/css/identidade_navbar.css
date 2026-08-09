@@ -1,0 +1,101 @@
+/* ============================================================
+   Identidade Visual Bruno — Navbar standalone
+   Barra de navegação das páginas FORA do admin (pacientes,
+   rotulo, otimizacao). Mesmo visual da navbar do Flask-Admin
+   (NHS Blue) sem Bootstrap — dropdowns via CSS puro.
+   Usada junto com identidade_paginas.css.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+.idv-nav {
+  background: #005EB8;              /* NHS Blue — driver de interação */
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 0 16px;
+  border-radius: 8px;
+  margin: 8px 16px 0;
+  min-height: 52px;
+  font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  position: relative;
+  z-index: 50;
+}
+
+.idv-nav-brand {
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: none;
+  padding: 12px 8px;
+  margin-right: 12px;
+}
+
+.idv-nav-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.idv-nav-list li { position: relative; }
+
+.idv-nav-link {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.88);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 4px;
+  transition: background 150ms ease, color 150ms ease;
+  white-space: nowrap;
+}
+.idv-nav-link:hover,
+.idv-nav-link:focus { color: #FFFFFF; background: rgba(255, 255, 255, 0.12); }
+.idv-nav-link.active { color: #FFFFFF; font-weight: 600; background: rgba(255, 255, 255, 0.18); }
+
+.idv-nav-toggle::after {
+  content: '';
+  display: inline-block;
+  margin-left: 6px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid currentColor;
+  vertical-align: middle;
+}
+
+/* Dropdown por categoria — CSS puro (hover + focus-within p/ teclado) */
+.idv-nav-sub {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 230px;
+  background: #FFFFFF;
+  border: 1px solid #D9E1E8;
+  border-radius: 8px;
+  padding: 6px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  list-style: none;
+  margin: 0;
+  z-index: 60;
+}
+.idv-nav-dd:hover .idv-nav-sub,
+.idv-nav-dd:focus-within .idv-nav-sub { display: block; }
+
+.idv-nav-sub a {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #1F2933;
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 150ms ease, color 150ms ease;
+}
+.idv-nav-sub a:hover { background: #E6F0FA; color: #004E99; }
+.idv-nav-sub a.active { background: #005EB8; color: #FFFFFF; font-weight: 600; }
