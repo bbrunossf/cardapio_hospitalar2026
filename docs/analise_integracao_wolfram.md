@@ -234,7 +234,7 @@ CREATE TABLE cardapio_refeicoes (
 
 ### Concluído e testado ✅
 
-- **`wolfram_client.py`** (461+ linhas): cliente completo com Short Answers + Full Results,
+- **`wolfram_client.py`**: cliente completo com Short Answers + Full Results,
   cache TTL, retry com backoff, hierarquia de exceções, fallbacks clínicos e auditoria
   (`consultas` → `wolfram_consultas`).
 - **`models_plano.py`**: 6 modelos SQLAlchemy (PlanoNutricional, WolframConsulta,
@@ -244,11 +244,24 @@ CREATE TABLE cardapio_refeicoes (
   - `GET /api/pacientes/<id>/planos` — lista planos do paciente
   - `GET/DELETE /api/planos/<id>` — detalhe / cancelar
   - `POST /api/planos/<id>/cardapio` — PuLP com overrides + salva versionado
-  - `GET /api/cardapios/<id>` — cardápio salvo completo
-  - `GET /planos/novo` e `GET /planos/<id>` — páginas HTML
+  - `GET /api/cardapios/<id>` — cardápio salvo completo (JSON)
+  - `GET /planos` — **seleção de paciente** (nunca lista geral; redireciona com `?paciente_id=`)
+  - `GET /pacientes/<id>/planos` — página com planos **somente** daquele paciente
+  - `GET /planos/novo` — form (puxa peso/altura do cadastro; permite preencher se faltar)
+  - `GET /planos/<id>` — detalhe do plano + cardápios linkados
+  - `GET /cardapios/<id>` — **página de visualização** do cardápio (dias × refeições × pratos)
 - **`api/otimizacao.py`**: `criar_modelo_otimizacao(dados, dias, overrides, objetivo)`
   — objetivo `target` (minimiza desvio da meta) e overrides por nutriente que
   **substituem** as faixas genéricas da dieta (meta individual prevalece).
+- **`api/paciente.py`**: corrigido `_preencher_paciente` para salvar
+  `nivel_atividade_fisica` (antes o PUT ignorava o campo).
+- **Templates**: `planos.html` (lista por paciente), `planos_selecao.html` (escolha
+  do paciente), `plano_form.html` (com dados do cadastro + aviso de campos faltantes),
+  `plano_detalhe.html`, `cardapio_detalhe.html`.
+- **Navbar standalone**: itens fixos "Planos" e "Pacientes" fora do menu do Flask-Admin.
+- **UX decidida (a pedido do usuário)**: planos são SEMPRE vistos por paciente —
+  seleciona o paciente primeiro (`/planos` ou botão "Planos" no card de `/pacientes`),
+  depois vê somente os planos dele. Não existe lista geral de planos.
 
 ### Corrigido durante a implementação (descobertas da API, 09/08/2026)
 
@@ -265,6 +278,12 @@ CREATE TABLE cardapio_refeicoes (
 5. **Bug do PuLP**: overrides interseccionavam com restrições da dieta (proteína
    50-100g da LIVRE vs 123-166g do plano → Infeasible). Corrigido: overrides
    **substituem** a restrição da dieta para o mesmo nutriente.
+6. **Form de plano**: paciente sem peso/altura no cadastro bloqueava o cálculo sem
+   explicação. Corrigido: o form puxa os dados do cadastro via `/api/pacientes/<id>`,
+   mostra aviso + campos destacados quando faltam, e salva os valores no cadastro
+   (PUT) antes de criar o plano.
+7. **`nivel_atividade_fisica`**: era enviado pelo form mas ignorado pelo backend
+   (`_preencher_paciente` não copiava o campo) — corrigido.
 
 ### Teste de fumaça (paciente #1 Bruno Oliveira)
 
@@ -274,11 +293,16 @@ CREATE TABLE cardapio_refeicoes (
   meta), energia diária 1906-1945 (faixa ±10%), 108 refeições salvas.
 - `wolfram_consultas`: 8 registros de auditoria (TMB via Short Answers ok;
   GET/meta via Full Results ok; macros fallback).
+- Plano #3 após a correção do form: TMB 1678, GET 2601, meta 1860 kcal/dia
+  (peso atualizado para 78.5 kg no cadastro via PUT).
 
 ### Pendências
 
 - `restricoes_paciente` (tabela criada, sem rota CRUD ainda) — plugar na elegibilidade
   do PuLP (futuro).
-- Template de cardápio salvo (hoje retorna JSON; a página `/planos/<id>` lista versões).
 - `peso_historico` (evolução do paciente) — opcional.
 - Atualizar README com as novas rotas.
+- Dados de teste no banco (3 planos + 4 cardápios do paciente #1) — aguardando
+  decisão de limpar ou manter como exemplo.
+- Servidor Flask roda como processo gerenciado (porta 5000); para persistência
+  independente, rodar como serviço ou no terminal do usuário.
