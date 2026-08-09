@@ -10,6 +10,15 @@ import json
 import pulp
 import os
 
+# Mapeamento de atributos sensoriais das regras de elegibilidade para colunas do banco
+# (a coluna da cor é 'cor_predominante', mas as regras usam 'cor')
+MAP_ATRIBUTOS = {
+    'cor': 'cor_predominante',
+    'consistencia': 'consistencia',
+    'textura': 'textura',
+    'temperatura_servimento': 'temperatura_servimento',
+}
+
 # ==========================================
 # 1. CONEXÃO E CARREGAMENTO DE DADOS
 # ==========================================
@@ -198,7 +207,7 @@ def criar_modelo_otimizacao(dados, dias=5):
     # 3.5. Restrições de Elegibilidade (consistência/cor por dieta)
     for regra in dados['regras_elegibilidade']:
         valores = json.loads(regra['valores_permitidos'])
-        attr = regra['atributo']
+        attr = MAP_ATRIBUTOS.get(regra['atributo'], regra['atributo'])
         operador = regra['operador']
 
         for d in dias_range:

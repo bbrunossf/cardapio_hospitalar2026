@@ -1,0 +1,57 @@
+Blueprints registrados:
+ - composicao
+ - otimizacao
+ - rotulo
+ - paciente
+ - usage_monitor
+
+Views do Flask-Admin:
+AdminIndexView -> admin
+IngredienteView -> ingrediente
+TipoPratoView -> tipoprato
+PratoView -> prato
+DietaView -> dieta
+TipoRefeicaoView -> tiporefeicao
+RegraComposicaoView -> regracomposicao
+DietaRefeicaoView -> dietarefeicao
+RegraElegibilidadeDietaView -> regraelegibilidadedieta
+RestricaoNutricionalDietaView -> restricaonutricionaldieta
+RegraSensorialGeralView -> regrasensorialgeral
+RegraVariedadeView -> regravariedade
+PratoComposicaoView -> pratocomposicao
+AlimentoIndustrializadoView -> alimentoindustrializado
+AlimentoVersaoView -> alimentoversao
+VwPratosNutricionalView -> vwpratosnutricional
+VwAlimentosIndustrializados100gView -> vwalimentosindustrializados100g
+PacienteView -> admin_paciente
+ * Serving Flask app 'app2.py'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.0.0.6:5000
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [08/Aug/2026 22:06:54] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [08/Aug/2026 22:06:54] "[32mGET / HTTP/1.1[0m" 302 -
+127.0.0.1 - - [08/Aug/2026 22:06:54] "GET /admin/ HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "[32mGET / HTTP/1.1[0m" 302 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/ HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/admin/css/bootstrap4/admin.css?v=1.1.1 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/bootstrap/bootstrap4/swatch/default/bootstrap.min.css?v=4.6.2 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/bootstrap/bootstrap4/css/font-awesome.min.css?v=4.7.0 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/bootstrap/bootstrap4/css/bootstrap.min.css?v=4.6.2 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/jquery.min.js?v=3.5.1 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/bootstrap/bootstrap4/js/popper.min.js HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/bootstrap/bootstrap4/js/bootstrap.min.js?v=4.6.2 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/moment.min.js?v=2.9.4 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/bootstrap4/util.js?v=4.3.1 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/bootstrap4/dropdown.js?v=4.3.1 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/select2/select2.min.js?v=4.2.1 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/vendor/multi-level-dropdowns-bootstrap/bootstrap4-dropdown-ml-hack.js HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "GET /admin/static/admin/js/helpers.js?v=1.0.0 HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+127.0.0.1 - - [08/Aug/2026 22:07:15] "POST /api/otimizacao/executar HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:28] "GET /otimizacao HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:28] "GET /static/css/identidade_paginas.css HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:57] "POST /api/otimizacao/executar HTTP/1.1" 200 -
+172.17.0.5 - - [08/Aug/2026 22:07:57] "[36mGET /static/css/identidade_paginas.css HTTP/1.1[0m" 304 -
