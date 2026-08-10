@@ -1,14 +1,16 @@
 """
-Blueprint de Planos Nutricionais por Paciente + Integração WolframAlpha.
+Blueprint de Planos Nutricionais por Paciente.
 
 Fluxo:
   1. Nutricionista cadastra o paciente (api/paciente.py) e informa o objetivo.
-  2. POST /api/planos → calcula TMB/GET/meta/macros via WolframDietClient
-     (com fallbacks locais) e salva o plano em planos_nutricionais.
+  2. POST /api/planos → calcula TMB/GET/meta/macros via cálculo LOCAL
+     (calculo_nutricional — default, determinístico) ou WolframAlpha
+     (FONTE_CALCULO=wolfram, benchmark opcional) e salva o plano.
   3. POST /api/planos/<id>/cardapio → roda o PuLP com overrides do plano
      (energia ±10%, macros ±15%, objetivo TARGET) e salva o cardápio
      versionado (cardapios_salvos → dias → refeicoes).
 """
+import os
 from datetime import date
 
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
@@ -39,8 +41,8 @@ def _calcular_idade(paciente: Paciente) -> int | None:
     return hoje.year - nasc.year - ((hoje.month, hoje.day) < (nasc.month, nasc.day))
 
 
-def _dados_wolfram(paciente: Paciente) -> dict:
-    """Monta o dict de entrada do WolframDietClient a partir do paciente."""
+def _dados_para_calculo(paciente: Paciente) -> dict:
+    """Monta o dict de entrada do cálculo (local ou Wolfram) a partir do paciente."""
     return {
         "sexo": paciente.sexo or "M",
         "idade": _calcular_idade(paciente) or 30,
@@ -48,6 +50,29 @@ def _dados_wolfram(paciente: Paciente) -> dict:
         "peso_kg": float(paciente.peso_kg or 0),
         "nivel_atividade_fisica": paciente.nivel_atividade_fisica or "moderado",
     }
+
+
+def _fonte_calculo() -> str:
+    """
+    Fonte de cálculo do plano: 'local' (default) ou 'wolfram'.
+
+    Lê FONTE_CALCULO do ambiente (o CLI do flask carrega .env). Se não estiver
+    no ambiente, lê direto do arquivo .env — robustez caso o app rode fora do
+    `flask run` (ex: gunicorn sem load_dotenv).
+    """
+    valor = os.environ.get("FONTE_CALCULO")
+    if not valor:
+        try:
+            env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+            with open(env_path, encoding="utf-8") as fh:
+                for linha in fh:
+                    linha = linha.strip()
+                    if linha.startswith("FONTE_CALCULO="):
+                        valor = linha.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        except OSError:
+            pass
+    return (valor or "local").strip().lower()
 
 
 def _overrides_do_plano(plano: PlanoNutricional) -> dict:
@@ -170,14 +195,23 @@ def api_criar_plano():
     }
 
     try:
-        cliente = WolframDietClient()
+        fonte_calculo = _fonte_calculo()
+        if fonte_calculo == "wolfram":
+            cliente = WolframDietClient()
+            try:
+                resultado = cliente.calcular_plano_completo(_dados_para_calculo(paciente), meta)
+            except Exception as e:  # rede/quota — não derruba a API
+                return jsonify({"erro": f"Falha ao consultar WolframAlpha: {e}"}), 502
+            consultas = cliente.consultas
+        else:
+            from calculo_nutricional import calcular_plano_completo as calcular_plano_local
+            try:
+                resultado = calcular_plano_local(_dados_para_calculo(paciente), meta)
+            except (TypeError, ValueError) as e:
+                return jsonify({"erro": f"Dados inválidos para o cálculo: {e}"}), 400
+            consultas = resultado.get("consultas", [])
     except ErroConfiguracao as e:
         return jsonify({"erro": str(e)}), 500
-
-    try:
-        resultado = cliente.calcular_plano_completo(_dados_wolfram(paciente), meta)
-    except Exception as e:  # rede/quota — não derruba a API
-        return jsonify({"erro": f"Falha ao consultar WolframAlpha: {e}"}), 502
 
     plano = PlanoNutricional(
         paciente_id=paciente_id,
@@ -203,8 +237,8 @@ def api_criar_plano():
     db.session.add(plano)
     db.session.flush()  # garante plano.id
 
-    # Auditoria das consultas à API (wolfram_consultas)
-    for consulta in cliente.consultas:
+    # Auditoria das consultas (wolfram_consultas — fonte 'local' ou API)
+    for consulta in consultas:
         db.session.add(WolframConsulta(
             plano_id=plano.id,
             query=consulta.get("query", "")[:500],
