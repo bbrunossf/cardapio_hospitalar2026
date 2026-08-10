@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador — Plano #{{ plano.id }} — NutriClin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        .sim-metricas { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
+        .sim-card { background: #fff; border: 1px solid #d6e2f0; border-radius: 10px; padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(21,67,96,.08); }
+        .sim-card h3 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: #5d6d7e; }
+        .sim-card .valor { font-size: 22px; font-weight: 700; color: #154360; }
+        .sim-card small { color: #85929e; }
+        .sim-card.aviso { border-color: #d4ac0d; background: #fef9e7; }
+        .sim-card.aviso .valor { color: #b9770e; }
+        .sim-controles { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; padding: 14px 18px; }
+        .sim-controles label { font-size: 14px; color: #1b2631; cursor: pointer; }
+        .sim-controles input[type=radio] { accent-color: #1a5276; margin-right: 4px; }
+        #grafico { width: 100%; overflow-x: auto; }
+        #grafico svg { display: block; margin: 0 auto; }
+        .sim-legenda { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: #1b2631; margin-top: 10px; }
+        .sim-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+        .sim-legenda .sw { display: inline-block; width: 22px; height: 4px; border-radius: 2px; }
+        .sim-tooltip { position: absolute; background: #fff; border: 1px solid #aed6f1; border-radius: 8px;
+                       padding: 10px 12px; font-size: 13px; color: #1b2631; pointer-events: none;
+                       box-shadow: 0 4px 12px rgba(21,67,96,.18); opacity: 0; transition: opacity .1s; z-index: 10; }
+        .sim-tooltip b { color: #154360; }
+        #sim-mensagem { margin-top: 14px; padding: 12px 16px; border-radius: 8px; display: none; font-size: 14px; }
+        #sim-mensagem.ok { display: block; background: #eaf2f8; border: 1px solid #2e86c1; color: #1a5276; }
+        #sim-mensagem.erro { display: block; background: #fef9e7; border: 1px solid #d4ac0d; color: #7d6608; }
+        .eixo-label { font-size: 12px; fill: #5d6d7e; }
+        .handle { cursor: ns-resize; }
+    </style>
+</head>
+<body>
+    {% from 'admin/_navbar_standalone.html' import navbar with context %}
+    {{ navbar(admin) }}
+
+    <main class="content" style="position:relative;">
+        <div class="page-title">
+            <h1>Simulador de estratégia — Plano #{{ plano.id }}</h1>
+            <p>
+                {% if paciente %}{{ paciente.nome }} · {% endif %}
+                Objetivo: <b>{{ plano.objetivo }}</b> · Prazo: <b>{{ plano.prazo_dias or '--' }} dias</b> ·
+                Arraste a curva de ingestão (ou o peso-alvo) e veja a projeção ao vivo.
+            </p>
+        </div>
+
+        <div id="sim-metricas" class="sim-metricas">
+            <div class="sim-card"><h3>GET</h3><div class="valor" id="m-get">--</div><small>kcal/dia (gasto)</small></div>
+            <div class="sim-card"><h3>Ingestão média</h3><div class="valor" id="m-meta">--</div><small>kcal/dia</small></div>
+            <div class="sim-card"><h3>Balanço diário</h3><div class="valor" id="m-deficit">--</div><small>kcal/dia (vs GET)</small></div>
+            <div class="sim-card"><h3>Peso atual</h3><div class="valor" id="m-peso-atual">--</div><small>kg</small></div>
+            <div class="sim-card"><h3>Peso projetado</h3><div class="valor" id="m-peso-fim">--</div><small>kg ao final do prazo</small></div>
+            <div class="sim-card"><h3>Taxa semanal</h3><div class="valor" id="m-taxa">--</div><small>kg/semana</small></div>
+        </div>
+
+        <div class="form-card sim-controles">
+            <label><input type="radio" name="modo" value="ingestao" checked> Arrastar <b>ingestão</b> (kcal/dia)</label>
+            <label><input type="radio" name="modo" value="alvo"> Arrastar <b>peso-alvo</b> (kg)</label>
+            <span style="margin-left:auto; font-size:13px; color:#5d6d7e;" id="sim-prazo-info">Carregando...</span>
+        </div>
+
+        <div class="form-card">
+            <div id="grafico"></div>
+            <div class="sim-legenda">
+                <span><span class="sw" style="background:#1a5276;"></span> Ingestão (arrastável)</span>
+                <span><span class="sw" style="background:#2e86c1;"></span> Peso projetado</span>
+                <span><span class="sw" style="background:#85929e; border-top:2px dashed #85929e; height:0;"></span> GET (gasto energético)</span>
+                <span><span class="sw" style="background:#aed6f1; opacity:.7; height:10px;"></span> Faixa de balanço seguro</span>
+            </div>
+        </div>
+
+        <div class="form-acoes" style="margin-top:16px;">
+            <a href="/planos/{{ plano.id }}" class="btn btn-secondary">← Voltar ao plano</a>
+            <button class="btn btn-secondary" onclick="Simulador.restaurar()">Restaurar valores do plano</button>
+            <button class="btn btn-primary" onclick="Simulador.aplicar()">Aplicar estratégia ao plano</button>
+        </div>
+        <div id="sim-mensagem"></div>
+    </main>
+
+    <div class="sim-tooltip" id="sim-tooltip"></div>
+
+    <script src="{{ url_for('static', filename='vendor/d3.v7.min.js') }}"></script>
+    <script>
+        window.SIMULADOR = {
+            planoId: {{ plano.id }},
+            dadosUrl: "/api/planos/{{ plano.id }}/simulador/dados",
+            patchUrl: "/api/planos/{{ plano.id }}"
+        };
+    </script>
+    <script src="{{ url_for('static', filename='js/simulador.js') }}"></script>
+</body>
+</html>

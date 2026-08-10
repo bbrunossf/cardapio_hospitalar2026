@@ -15,7 +15,7 @@
     <main class="content">
         <div class="page-title">
             <h1>Plano #{{ plano.id }} — {{ paciente.nome if paciente else 'Paciente ' ~ plano.paciente_id }}</h1>
-            <p>Resultado do dimensionamento (WolframAlpha ou fallback local) e cardápios gerados.</p>
+            <p>Resultado do dimensionamento (cálculo local ou WolframAlpha) e cardápios gerados.</p>
         </div>
 
         <!-- Cards de métricas -->
@@ -54,7 +54,7 @@
                         <tr><td style="padding:6px 0; color:#666;">Atividade</td><td style="padding:6px 0;">{{ plano.nivel_atividade or '--' }}</td></tr>
                         <tr><td style="padding:6px 0; color:#666;">Perfil de macros</td><td style="padding:6px 0;">{{ plano.perfil_macro or '--' }}</td></tr>
                         <tr><td style="padding:6px 0; color:#666;">Macros (P/C/L)</td><td style="padding:6px 0;">{{ '%.1f'|format(plano.proteinas_g|float) if plano.proteinas_g else '--' }} / {{ '%.1f'|format(plano.carboidratos_g|float) if plano.carboidratos_g else '--' }} / {{ '%.1f'|format(plano.lipidios_g|float) if plano.lipidios_g else '--' }} g</td></tr>
-                        <tr><td style="padding:6px 0; color:#666;">Fonte</td><td style="padding:6px 0;">{{ '✅ WolframAlpha' if plano.fonte == 'wolfram' else '⚠️ Fallback local' }}</td></tr>
+                        <tr><td style="padding:6px 0; color:#666;">Fonte</td><td style="padding:6px 0;">{{ '✅ Cálculo local' if plano.fonte == 'local' else ('✅ WolframAlpha' if plano.fonte == 'wolfram' else '⚠️ Fallback') }}</td></tr>
                         <tr><td style="padding:6px 0; color:#666;">Status</td><td style="padding:6px 0;"><b>{{ plano.status }}</b></td></tr>
                         {% if plano.alertas %}
                         <tr>
@@ -73,6 +73,7 @@
 
                 <div class="form-acoes" style="margin-top:16px;">
                     <a href="/pacientes" class="btn btn-secondary">← Pacientes</a>
+                    <a href="/planos/{{ plano.id }}/simulador" class="btn btn-secondary" style="margin-left:8px;">📈 Simulador interativo</a>
                     <button class="btn btn-primary" onclick="gerarCardapio()">Gerar Cardápio (PuLP)</button>
                 </div>
             </div>

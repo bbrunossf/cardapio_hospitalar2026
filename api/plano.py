@@ -294,6 +294,103 @@ def api_cancelar_plano(plano_id):
 
 
 # ---------------------------------------------------------------------------
+# API REST — Simulador interativo (Fase 2, d3.js)
+# ---------------------------------------------------------------------------
+
+@plano_bp.route("/planos/<int:plano_id>/simulador")
+def pagina_simulador(plano_id):
+    """Página do simulador de estratégia (arrastar ingestão/peso-alvo)."""
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return "Plano não encontrado.", 404
+    paciente = db.session.get(Paciente, plano.paciente_id)
+    return render_template("simulador.html", plano=plano, paciente=paciente)
+
+
+@plano_bp.route("/api/planos/<int:plano_id>/simulador/dados")
+def api_dados_simulador(plano_id):
+    """Dados iniciais do simulador: plano + projeção semanal (7700 kcal/kg)."""
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return jsonify({"erro": "Plano não encontrado."}), 404
+    paciente = db.session.get(Paciente, plano.paciente_id)
+
+    get_kcal = float(plano.get_kcal or 0)
+    meta_kcal = float(plano.meta_kcal or get_kcal)
+    peso_atual = float(paciente.peso_kg or 0) if paciente else 0.0
+    peso_alvo = float(plano.peso_alvo_kg or peso_atual)
+    prazo_dias = plano.prazo_dias or 56
+
+    from calculo_nutricional import projecao_peso
+    projecao = projecao_peso(peso_atual, meta_kcal, get_kcal, prazo_dias)
+
+    return jsonify({
+        "plano_id": plano.id,
+        "paciente": {"id": paciente.id, "nome": paciente.nome} if paciente else None,
+        "objetivo": plano.objetivo,
+        "peso_atual_kg": peso_atual,
+        "peso_alvo_kg": peso_alvo,
+        "prazo_dias": prazo_dias,
+        "get_kcal": get_kcal,
+        "meta_kcal": meta_kcal,
+        "deficit_diario_kcal": float(plano.deficit_diario_kcal or 0),
+        "perfil_macro": plano.perfil_macro or "equilibrado",
+        "projecao": projecao,
+    })
+
+
+@plano_bp.route("/api/planos/<int:plano_id>", methods=["PATCH"])
+def api_ajustar_plano(plano_id):
+    """
+    Ajusta campos do plano a partir do simulador.
+
+    Campos aceitos: peso_alvo_kg, prazo_dias, meta_kcal, deficit_diario_kcal,
+    perfil_macro. Se meta_kcal mudar e macros não forem enviadas, recalcula
+    as macros pelo perfil (calculo_nutricional.distribuir_macros).
+    """
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return jsonify({"erro": "Plano não encontrado."}), 404
+    if plano.status != "ativo":
+        return jsonify({"erro": "Plano não está ativo."}), 400
+
+    payload = request.get_json(silent=True) or {}
+    permitidos = {"peso_alvo_kg", "prazo_dias", "meta_kcal",
+                  "deficit_diario_kcal", "perfil_macro"}
+    extras = set(payload) - permitidos
+    if extras:
+        return jsonify({"erro": f"Campos não permitidos: {sorted(extras)}"}), 400
+
+    meta_antiga = float(plano.meta_kcal) if plano.meta_kcal is not None else None
+    perfil = payload.get("perfil_macro") or plano.perfil_macro or "equilibrado"
+
+    for campo in permitidos:
+        if campo not in payload:
+            continue
+        valor = payload[campo]
+        if campo == "prazo_dias":
+            valor = int(valor) if valor is not None else None
+        elif campo in ("peso_alvo_kg", "meta_kcal", "deficit_diario_kcal"):
+            valor = float(valor) if valor is not None else None
+        setattr(plano, campo, valor)
+
+    # Recalcula macros se a meta mudou (macros não são enviadas pelo simulador)
+    nova_meta = float(plano.meta_kcal) if plano.meta_kcal is not None else None
+    if nova_meta is not None and (meta_antiga is None or meta_antiga != nova_meta):
+        from calculo_nutricional import distribuir_macros
+        mac = distribuir_macros(nova_meta, perfil)
+        plano.proteinas_pct = mac["proteinas_pct"]
+        plano.carboidratos_pct = mac["carboidratos_pct"]
+        plano.lipidios_pct = mac["lipidios_pct"]
+        plano.proteinas_g = mac["proteinas_g"]
+        plano.carboidratos_g = mac["carboidratos_g"]
+        plano.lipidios_g = mac["lipidios_g"]
+
+    db.session.commit()
+    return jsonify(plano.to_dict())
+
+
+# ---------------------------------------------------------------------------
 # API REST — Cardápio do plano
 # ---------------------------------------------------------------------------
 
