@@ -23,7 +23,7 @@
 
     // ── Geometria ─────────────────────────────────────────────────────
     const margin = { top: 30, right: 85, bottom: 45, left: 70 };
-    const W = 940, H = 440;
+    const W = 800, H = 440;
     const innerW = W - margin.left - margin.right;
     const innerH = H - margin.top - margin.bottom;
 
@@ -189,10 +189,10 @@
             .curve(d3.curveMonotoneX);
 
         camadas.ingestao.append("path").datum(pontos)
-            .attr("d", area).attr("fill", "rgba(26,82,118,0.10)");
+            .attr("d", area).attr("fill", "rgba(26,82,118,0.10)").attr("pointer-events", "none");
         camadas.ingestao.append("path").datum(pontos)
             .attr("d", linha).attr("fill", "none")
-            .attr("stroke", "#1a5276").attr("stroke-width", 2.6);
+            .attr("stroke", "#1a5276").attr("stroke-width", 2.6).attr("pointer-events", "none");
 
         if (modo === "ingestao") {
             const drag = d3.drag()
@@ -217,12 +217,12 @@
 
         camadas.peso.append("path").datum(serie)
             .attr("d", linha).attr("fill", "none")
-            .attr("stroke", "#2e86c1").attr("stroke-width", 2.2);
+            .attr("stroke", "#2e86c1").attr("stroke-width", 2.2).attr("pointer-events", "none");
         camadas.peso.selectAll("circle.peso-pt")
             .data(serie).join("circle")
             .attr("class", "peso-pt")
             .attr("cx", d => x(d.semana)).attr("cy", d => yPeso(d.peso))
-            .attr("r", 3.2).attr("fill", "#2e86c1");
+            .attr("r", 3.2).attr("fill", "#2e86c1").attr("pointer-events", "none");
 
         if (modo === "alvo") {
             const fim = serie[serie.length - 1];
@@ -268,25 +268,25 @@
         camadas = {
             zona: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
             get: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
+            overlay: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
             ingestao: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
             peso: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
             eixos: svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`),
         };
 
         // Tooltip: semana mais próxima do mouse
-        svg.append("rect")
-            .attr("transform", `translate(${margin.left},${margin.top})`)
+        camadas.overlay.append("rect")
             .attr("width", innerW).attr("height", innerH)
             .attr("fill", "transparent")
             .on("mousemove", (ev) => {
                 const [mx] = d3.pointer(ev);
-                const sem = Math.round(x.invert(mx - margin.left));
-                const dia = Math.round(sem * 7);
+                const sem = Math.max(0, Math.round(x.invert(mx)));
+                const dia = Math.min(state.prazo_dias, Math.round(sem * 7));
                 const kcal = kcalNoDia(dia);
                 const peso = pesoProjetadoNoDia(dia);
                 tooltip
-                    .style("left", (ev.offsetX + 16) + "px")
-                    .style("top", (ev.offsetY + 8) + "px")
+                    .style("left", (ev.pageX + 16) + "px")
+                    .style("top", (ev.pageY + 8) + "px")
                     .style("opacity", 1)
                     .html(
                         `<b>Semana ${sem}</b> (dia ${dia})<br>` +
