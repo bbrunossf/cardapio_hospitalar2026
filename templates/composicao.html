@@ -3,16 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Composição de Pratos</title>
+<title>Ficha Técnica das Preparações</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+<style>
+  /* Print: ficha limpa, sem controles de edição */
+  @media print {
+    body { background: #fff; }
+    header .voltar, .panel-left, .search-box, .stats-bar,
+    .btn, .saved-msg, .empty-state, .add-ingrediente-box { display: none !important; }
+    .container { display: block !important; }
+    .panel-right { width: 100% !important; padding: 0 !important; }
+    .prato-detail { box-shadow: none !important; border: none !important; }
+    input[type="number"], input[type="text"] {
+      border: none !important; background: transparent !important;
+      font-weight: 600; color: #000 !important;
+    }
+    .nutri-grid { display: grid !important; }
+  }
+</style>
 </head>
 <body>
 <header>
   <h1>
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
-    Composição de Pratos
+    Ficha Técnica das Preparações
   </h1>
-  <a href="/admin/">&larr; Voltar ao Admin</a>
+  <a class="voltar" href="/admin/">&larr; Voltar ao Admin</a>
 </header>
 <div class="container">
   <div class="panel-left">
@@ -29,7 +45,7 @@
       <div class="icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
       </div>
-      <p>Selecione um prato na lista ao lado<br>para ver sua composição</p>
+      <p>Selecione um prato na lista ao lado<br>para ver a ficha técnica</p>
     </div>
   </div>
 </div>
@@ -37,6 +53,10 @@
 let pratos = [];
 let pratoAtivo = null;
 let ingredientesCache = {};
+
+function escAttr(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
 async function carregarPratos() {
   const r = await fetch('/api/pratos');
@@ -77,7 +97,7 @@ async function selecionarPrato(id) {
   renderPratos(pratos);
 
   const panel = document.getElementById('panelRight');
-  panel.innerHTML = '<div class="loading">Carregando composição</div>';
+  panel.innerHTML = '<div class="loading">Carregando ficha técnica</div>';
 
   const r = await fetch(`/api/pratos/${id}/composicao`);
   const data = await r.json();
@@ -91,8 +111,9 @@ async function selecionarPrato(id) {
 }
 
 function renderComposicao(data) {
-  const { prato, ingredientes, massa_calculada, diferenca, ok } = data;
+  const { prato, ingredientes, modo_preparo, nutrientes, massa_calculada, diferenca, ok } = data;
   const porcao = parseFloat(prato.porcao_padrao_g || 0);
+  const temComposicao = massa_calculada > 0;
 
   const statusClass = ok ? 'ok' : 'warn';
   const statusIcon = ok
@@ -100,24 +121,65 @@ function renderComposicao(data) {
     : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
   const statusText = ok ? 'Massas coincidem' : `Diferença de ${Math.abs(diferenca).toFixed(1)}g`;
 
+  // Resumo nutricional por porção (read-only)
+  const fmt = (v, d = 1) => temComposicao ? (v ?? 0).toFixed(d) : '—';
+  const nutriCards = [
+    ['Energia', 'kcal', fmt(nutrientes.energia_kcal, 0)],
+    ['Proteína', 'g', fmt(nutrientes.proteina_g)],
+    ['Carboidratos', 'g', fmt(nutrientes.carboidrato_g)],
+    ['Lipídios', 'g', fmt(nutrientes.lipidios_g)],
+    ['Fibra', 'g', fmt(nutrientes.fibra_alimentar_g)],
+    ['Sódio', 'mg', fmt(nutrientes.sodio_mg, 0)],
+    ['Potássio', 'mg', fmt(nutrientes.potassio_mg, 0)],
+  ].map(([label, unid, val]) => `
+    <div style="background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius); padding:10px 12px; text-align:center;">
+      <div style="font-size:1.05rem; font-weight:600; color:var(--primary);">${val}</div>
+      <div style="font-size:0.75rem; color:var(--text2);">${label} (${unid})</div>
+    </div>`).join('');
+
+  // Passos do modo de preparo
+  const passosHtml = (modo_preparo || []).map(passo => `
+    <div class="passo-row" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+      <span style="font-weight:600; color:var(--primary); min-width:22px; text-align:right;">${passo.ordem}.</span>
+      <input type="text" id="passo_${passo.id}" value="${escAttr(passo.descricao)}"
+             style="flex:1; padding:8px 12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:0.9rem; outline:none; font-family:var(--font);">
+      <button class="btn btn-primary btn-sm" onclick="salvarPasso(${passo.id})">Salvar</button>
+      <span class="saved-msg" id="savedPasso_${passo.id}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      </span>
+      <button class="btn btn-sm btn-danger" onclick="removerPasso(${passo.id})">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>`).join('');
+
   const panel = document.getElementById('panelRight');
   panel.innerHTML = `
     <div class="prato-detail">
       <h2>${prato.nome}</h2>
       <div class="subtitulo">${prato.tipo || ''} &middot; ${prato.consistencia || '—'} &middot; ${prato.temperatura_servimento || '—'}</div>
 
-      <div class="porcao-row">
-        <label>Porção padrão (g)</label>
-        <input type="number" step="0.5" id="porcaoInput" value="${porcao}" onchange="salvarPorcao(${prato.id})">
-        <div class="status ${statusClass}">
-          <span>${statusIcon}</span>
-          <span class="diferenca">${massa_calculada.toFixed(1)}g calculados</span>
-          <span>— ${statusText}</span>
+      <div style="display:flex; gap:24px; flex-wrap:wrap; margin-bottom:16px;">
+        <div class="porcao-row" style="flex:1; min-width:220px;">
+          <label>Porção padrão (g)</label>
+          <input type="number" step="0.5" id="porcaoInput" value="${porcao}" onchange="salvarPorcao(${prato.id})">
+          <div class="status ${statusClass}">
+            <span>${statusIcon}</span>
+            <span class="diferenca">${massa_calculada.toFixed(1)}g calculados</span>
+            <span>— ${statusText}</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="salvarPorcao(${prato.id})">Salvar</button>
+          <span class="saved-msg" id="porcaoSaved">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
+          </span>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="salvarPorcao(${prato.id})">Salvar</button>
-        <span class="saved-msg" id="porcaoSaved">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
-        </span>
+        <div class="tempo-row" style="flex:1; min-width:220px;">
+          <label>Tempo de preparo (min)</label>
+          <input type="number" min="0" step="1" id="tempoInput" value="${prato.tempo_producao_min ?? ''}" placeholder="—" onchange="salvarPreparo(${prato.id})">
+          <button class="btn btn-primary btn-sm" onclick="salvarPreparo(${prato.id})">Salvar</button>
+          <span class="saved-msg" id="tempoSaved">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
+          </span>
+        </div>
       </div>
 
       <table>
@@ -153,7 +215,7 @@ function renderComposicao(data) {
         </tfoot>
       </table>
 
-      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+      <div class="add-ingrediente-box" style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
         <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
           Adicionar Ingrediente
@@ -167,6 +229,31 @@ function renderComposicao(data) {
         </div>
         <div id="ingredientesDisponiveis" style="max-height: 200px; overflow-y: auto; display: flex; flex-wrap: wrap; gap: 4px;">
           <div style="color: var(--text2); font-size: 0.85rem; padding: 8px;">Carregando...</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+        <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          Modo de Preparo
+        </h4>
+        <div id="passosList">
+          ${passosHtml || '<div style="color:var(--text2); font-size:0.85rem; padding:4px;">Nenhum passo cadastrado</div>'}
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <input type="text" id="novoPassoInput" placeholder="Novo passo..."
+                 style="flex:1; padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem; outline: none; font-family: var(--font);">
+          <button class="btn btn-primary btn-sm" onclick="adicionarPasso(${prato.id})">+ Adicionar passo</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
+        <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          Valores Nutricionais por Porção
+        </h4>
+        <div class="nutri-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">
+          ${temComposicao ? nutriCards : '<div style="color:var(--text2); font-size:0.85rem; padding:4px;">Sem composição cadastrada</div>'}
         </div>
       </div>
     </div>
@@ -190,6 +277,78 @@ async function salvarPorcao(pratoId) {
     // Recarrega para mostrar status atualizado
     selecionarPrato(pratoId);
     carregarPratos(); // atualiza lista
+  }
+}
+
+async function salvarPreparo(pratoId) {
+  const input = document.getElementById('tempoInput');
+  const val = input.value;
+  const r = await fetch(`/api/pratos/${pratoId}/preparo`, {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ tempo_producao_min: val === '' ? null : parseInt(val, 10) })
+  });
+  const data = await r.json();
+  if (data.success) {
+    const msg = document.getElementById('tempoSaved');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+  } else {
+    alert(data.error || 'Erro ao salvar tempo de preparo');
+  }
+}
+
+async function adicionarPasso(pratoId) {
+  const input = document.getElementById('novoPassoInput');
+  const descricao = input.value.trim();
+  if (!descricao) return;
+  const r = await fetch(`/api/pratos/${pratoId}/modo-preparo`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ descricao })
+  });
+  if (r.ok) {
+    selecionarPrato(pratoId);
+  } else {
+    const err = await r.json();
+    alert(err.error || 'Erro ao adicionar passo');
+  }
+}
+
+async function salvarPasso(passoId) {
+  const input = document.getElementById(`passo_${passoId}`);
+  const descricao = input.value.trim();
+  if (!descricao) {
+    alert('Descrição do passo não pode ser vazia');
+    return;
+  }
+  const r = await fetch(`/api/modo-preparo/${passoId}`, {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ descricao })
+  });
+  if (r.ok) {
+    const msg = document.getElementById(`savedPasso_${passoId}`);
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+  } else {
+    const err = await r.json();
+    alert(err.error || 'Erro ao salvar passo');
+  }
+}
+
+async function removerPasso(passoId) {
+  const input = document.getElementById(`passo_${passoId}`);
+  const descricao = input ? input.value : '';
+  if (!confirm(`Remover o passo "${descricao}"?`)) return;
+  const r = await fetch(`/api/modo-preparo/${passoId}`, {
+    method: 'DELETE'
+  });
+  if (r.ok) {
+    selecionarPrato(pratoAtivo);
+  } else {
+    const err = await r.json();
+    alert(err.error || 'Erro ao remover passo');
   }
 }
 

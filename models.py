@@ -88,6 +88,23 @@ class PratoComposicao(db.Model):
         return f"{self.prato} → {self.ingrediente} ({self.quantidade_g}g)"
 
 
+class PassoPreparo(db.Model):
+    """Modo de preparo da preparação — 1 passo por linha, ordenado (ficha técnica)."""
+    __tablename__ = 'passos_preparo'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    prato_id = db.Column(db.Integer, db.ForeignKey('pratos.id', ondelete='CASCADE'), nullable=False)
+    ordem = db.Column(db.Integer, nullable=False, default=1)
+    descricao = db.Column(db.Text, nullable=False)
+    criado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    editado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
+    desativado = db.Column(db.Boolean, default=False)
+
+    prato = db.relationship('Prato', backref='passos_preparo')
+
+    def __str__(self):
+        return f"Passo {self.ordem}: {self.descricao[:40]}"
+
+
 class Dieta(db.Model):
     __tablename__ = 'dietas'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

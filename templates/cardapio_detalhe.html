@@ -49,6 +49,18 @@
                 <small>média kcal/dia</small>
             </div>
             <div class="meta-card">
+                <b>{{ '%.1f'|format(media_macros.proteina_g) }}</b>
+                <small>média proteína/dia (g)</small>
+            </div>
+            <div class="meta-card">
+                <b>{{ '%.1f'|format(media_macros.carboidrato_g) }}</b>
+                <small>média carboidrato/dia (g)</small>
+            </div>
+            <div class="meta-card">
+                <b>{{ '%.1f'|format(media_macros.lipidios_g) }}</b>
+                <small>média lipídio/dia (g)</small>
+            </div>
+            <div class="meta-card">
                 <b>{{ '%.0f'|format(total_energia) }}</b>
                 <small>total {{ cardapio.dias }} dias</small>
             </div>
@@ -69,7 +81,13 @@
         <div class="dia-card">
             <div class="dia-header">
                 <h3>Dia {{ dia.dia_numero }}</h3>
-                <span class="kcal">⚡ <b>{{ '%.0f'|format(dia.energia_kcal_total) if dia.energia_kcal_total else '--' }}</b> kcal</span>
+                <span class="kcal">⚡ <b>{{ '%.0f'|format(dia.energia_kcal_total) if dia.energia_kcal_total else '--' }}</b> kcal
+                    {% if dia.macros %}
+                    · P <b>{{ '%.1f'|format(dia.macros.proteina_g) }}</b>g
+                    · C <b>{{ '%.1f'|format(dia.macros.carboidrato_g) }}</b>g
+                    · L <b>{{ '%.1f'|format(dia.macros.lipidios_g) }}</b>g
+                    {% endif %}
+                </span>
             </div>
             {% for tipo in dia.tipos %}
             <div class="refeicao">

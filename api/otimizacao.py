@@ -135,6 +135,11 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False
         WHERE dieta_id = :did
     """), {'did': dieta_id}).mappings().all()]
 
+    regras_sensoriais = [dict(row) for row in db.session.execute(text("""
+        SELECT tipo_refeicao_id, regra, valor_limite, grupos_afetados
+        FROM regras_sensoriais_gerais
+    """)).mappings().all()]
+
     return {
         'dieta_id': dieta_id,
         'dieta_nome': dieta_nome,
@@ -148,6 +153,7 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False
         'restricoes_nutricionais': restricoes_nutricionais,
         'regras_variedade': regras_variedade,
         'regras_elegibilidade': regras_elegibilidade,
+        'regras_sensoriais': regras_sensoriais,
         'alimentos_industrializados': alimentos_ind,
     }
 
@@ -315,6 +321,40 @@ def criar_modelo_otimizacao(dados, dias=5, overrides=None, objetivo='max_energia
                 ]
                 for pid in pratos_bloqueados:
                     problema += X[pid][r][d] == 0, f"Eleg_{attr}_R{r}_P{pid}_Dia{d}"
+
+    # ══════════════════════════════════════════════════════════════════
+    # REGRAS SENSORIAIS (regras_sensoriais_gerais) — incremental
+    # 11/08/2026: 'sem_quentes' implementada (bloqueia pratos QUENTES dos
+    # grupos afetados na refeição; bebidas = grupos FORA de grupos_afetados
+    # continuam permitidas). max_cores_iguais e consistencia_unica entram
+    # nos próximos testes (uma a uma, com medição de tempo/factibilidade).
+    # Regras com nome desconhecido são ignoradas (continuam inertes).
+    # ══════════════════════════════════════════════════════════════════
+    regras_sensoriais = dados.get('regras_sensoriais', [])
+    if regras_sensoriais:
+        # Abreviatura do tipo: 'MD - Principal (Carne)' -> 'MD'
+        abrev_por_tipo = {
+            tpid: (nome.split(' - ')[0] if nome else '')
+            for tpid, nome in dados['tipos_prato'].items()
+        }
+        for regra in regras_sensoriais:
+            r = regra['tipo_refeicao_id']
+            if r not in refeicoes_ids:
+                continue  # refeição não está no mapa da dieta
+            grupos = set(json.loads(regra['grupos_afetados'] or '[]'))
+            limite = int(regra['valor_limite'] or 0)
+
+            if regra['regra'] == 'sem_quentes':
+                afetados_quentes = [
+                    p['id'] for p in dados['pratos']
+                    if abrev_por_tipo.get(p['tipo_prato_id']) in grupos
+                    and (p.get('temperatura_servimento') or '').strip().lower() == 'quente'
+                ]
+                if not afetados_quentes:
+                    continue
+                for d in dias_range:
+                    problema += pulp.lpSum(X[pid][r][d] for pid in afetados_quentes) <= limite, \
+                        f"Sensorial_SemQuentes_R{r}_Dia{d}"
 
     return problema, X, dados
 

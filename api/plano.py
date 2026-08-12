@@ -550,6 +550,26 @@ def pagina_cardapio(cardapio_id):
     for r in refeicoes:
         refeicoes_por_dia.setdefault(r["cardapio_dia_id"], []).append(dict(r))
 
+    # Macros por dia — mesma fonte da energia (vw_pratos_nutricional, 1 porção
+    # padrão por prato), para os totais de P/C/L baterem com o kcal exibido.
+    # energia_calculada serve de conferência contra cardapio_dias.energia_kcal_total.
+    macros_por_dia = {
+        row["cardapio_dia_id"]: row
+        for row in db.session.execute(text("""
+            SELECT cr.cardapio_dia_id,
+                   ROUND(SUM(COALESCE(v.proteina_g, 0)), 1)    AS proteina_g,
+                   ROUND(SUM(COALESCE(v.carboidrato_g, 0)), 1) AS carboidrato_g,
+                   ROUND(SUM(COALESCE(v.lipidios_g, 0)), 1)    AS lipidios_g,
+                   ROUND(SUM(COALESCE(v.energia_kcal, 0)), 1)  AS energia_calculada
+            FROM cardapio_refeicoes cr
+            LEFT JOIN vw_pratos_nutricional v ON v.prato_id = cr.prato_id
+            WHERE cr.cardapio_dia_id IN (
+                SELECT id FROM cardapio_dias WHERE cardapio_id = :cid
+            )
+            GROUP BY cr.cardapio_dia_id
+        """), {"cid": cardapio_id}).mappings().all()
+    }
+
     dias_view = []
     for dia in sorted(cardapio.dias_itens, key=lambda x: x.dia_numero):
         refs = refeicoes_por_dia.get(dia.id, [])
@@ -564,14 +584,30 @@ def pagina_cardapio(cardapio_id):
                 }
                 ordem_tipos.append(r["tipo_refeicao_id"])
             grupos[r["tipo_refeicao_id"]]["pratos"].append(r)
+        macros = macros_por_dia.get(dia.id, {})
         dias_view.append({
             "dia_numero": dia.dia_numero,
             "energia_kcal_total": float(dia.energia_kcal_total) if dia.energia_kcal_total else None,
+            "macros": {
+                "proteina_g": float(macros.get("proteina_g") or 0),
+                "carboidrato_g": float(macros.get("carboidrato_g") or 0),
+                "lipidios_g": float(macros.get("lipidios_g") or 0),
+            },
             "tipos": [grupos[t] for t in ordem_tipos],
         })
 
     total_energia = sum(d["energia_kcal_total"] or 0 for d in dias_view)
     media_energia = total_energia / len(dias_view) if dias_view else 0
+
+    total_macros = {
+        "proteina_g": round(sum(d["macros"]["proteina_g"] for d in dias_view), 1),
+        "carboidrato_g": round(sum(d["macros"]["carboidrato_g"] for d in dias_view), 1),
+        "lipidios_g": round(sum(d["macros"]["lipidios_g"] for d in dias_view), 1),
+    }
+    media_macros = {
+        k: round(v / len(dias_view), 1) if dias_view else 0
+        for k, v in total_macros.items()
+    }
 
     return render_template(
         "cardapio_detalhe.html",
@@ -581,4 +617,6 @@ def pagina_cardapio(cardapio_id):
         dias_view=dias_view,
         total_energia=round(total_energia, 1),
         media_energia=round(media_energia, 1),
+        total_macros=total_macros,
+        media_macros=media_macros,
     )

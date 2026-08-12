@@ -87,7 +87,7 @@ class PratoView(BaseModelView):
     column_list = ['nome', 'tipo_prato', 'consistencia', 'temperatura_servimento']
     column_searchable_list = ['nome']
     column_filters = ['tipo_prato', 'consistencia', 'temperatura_servimento']
-    form_excluded_columns = ['criado_em', 'editado_em', 'prato_preparacoes']
+    form_excluded_columns = ['criado_em', 'editado_em', 'prato_preparacoes', 'passos_preparo']
     column_labels = {
         'tipo_prato': 'Tipo', 'consistencia': 'Consistência',
         'temperatura_servimento': 'Temperatura'
@@ -271,7 +271,7 @@ def setup_admin():
     admin.add_view(AlimentoVersaoView(AlimentoVersao, db, name='Versões de Alimentos'))
     admin.add_view(VwPratosNutricionalView(VwPratosNutricional, db, name='Nutrientes (view)', category='Consultas'))
     admin.add_view(VwAlimentosIndustrializados100gView(VwAlimentosIndustrializados100g, db, name='Alimentos 100g (view)', category='Consultas'))
-    admin.add_link(MenuLink(name='Ajustar Composição', url='/composicao-view', category='Consultas'))
+    admin.add_link(MenuLink(name='Ficha Técnica', url='/composicao-view', category='Ferramentas'))
     admin.add_view(PacienteView(Paciente, db, name='Pacientes (tabela)', endpoint="admin_paciente",))
 
     # Ferramentas — páginas standalone (fora do chrome do admin)

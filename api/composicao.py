@@ -27,11 +27,12 @@ def api_pratos():
 
 @composicao_bp.route('/api/pratos/<int:prato_id>/composicao')
 def api_prato_composicao(prato_id):
-    """Detalhes do prato + ingredientes"""
+    """Ficha técnica do prato: detalhes + ingredientes + passos + nutrientes"""
     prato = db.session.execute(
         text("""
             SELECT p.id, p.nome, p.porcao_padrao_g, tp.nome AS tipo,
-                   p.consistencia, p.textura, p.temperatura_servimento
+                   p.consistencia, p.textura, p.temperatura_servimento,
+                   p.tempo_producao_min
             FROM pratos p
             LEFT JOIN tipos_preparacoes tp ON p.tipo_prato_id = tp.id
             WHERE p.id = :pid AND p.desativado = 0
@@ -51,6 +52,29 @@ def api_prato_composicao(prato_id):
         """), {'pid': prato_id}
     ).mappings().all()
 
+    passos = db.session.execute(
+        text("""
+            SELECT id, ordem, descricao
+            FROM passos_preparo
+            WHERE prato_id = :pid AND desativado = 0
+            ORDER BY ordem, id
+        """), {'pid': prato_id}
+    ).mappings().all()
+
+    nutrientes_row = db.session.execute(
+        text("""
+            SELECT energia_kcal, proteina_g, carboidrato_g, lipidios_g,
+                   fibra_alimentar_g, sodio_mg, potassio_mg
+            FROM vw_pratos_nutricional
+            WHERE prato_id = :pid
+        """), {'pid': prato_id}
+    ).mappings().first()
+
+    nutrientes = {
+        k: float(v) if v is not None else 0.0
+        for k, v in (dict(nutrientes_row) if nutrientes_row else {}).items()
+    }
+
     massa_calculada = sum(float(r['quantidade_g'] or 0) for r in ingredientes)
     porcao = float(prato['porcao_padrao_g'] or 0)
     diferenca = round(massa_calculada - porcao, 2)
@@ -59,6 +83,8 @@ def api_prato_composicao(prato_id):
     return jsonify({
         'prato': dict(prato),
         'ingredientes': [dict(r) for r in ingredientes],
+        'modo_preparo': [dict(r) for r in passos],
+        'nutrientes': nutrientes,
         'massa_calculada': massa_calculada,
         'diferenca': diferenca,
         'ok': ok
@@ -152,6 +178,144 @@ def api_remove_composicao(prato_id, ingrediente_id):
     )
     db.session.commit()
     return jsonify({'success': True})
+
+
+# ══════════════════════════════════════════════════════════════════
+# MODO DE PREPARO (passos) — Ficha Técnica
+# ══════════════════════════════════════════════════════════════════
+
+@composicao_bp.route('/api/pratos/<int:prato_id>/modo-preparo', methods=['POST'])
+def api_add_passo_preparo(prato_id):
+    """Adiciona um passo ao modo de preparo (ordem = última + 1)"""
+    prato = db.session.execute(
+        text("SELECT 1 FROM pratos WHERE id = :pid AND desativado = 0"),
+        {'pid': prato_id}
+    ).scalar()
+    if not prato:
+        return jsonify({'error': 'Prato não encontrado'}), 404
+
+    data = request.get_json() or {}
+    descricao = (data.get('descricao') or '').strip()
+    if not descricao:
+        return jsonify({'error': 'Descrição do passo não pode ser vazia'}), 400
+
+    ultima_ordem = db.session.execute(
+        text("""
+            SELECT COALESCE(MAX(ordem), 0) FROM passos_preparo
+            WHERE prato_id = :pid AND desativado = 0
+        """),
+        {'pid': prato_id}
+    ).scalar() or 0
+
+    res = db.session.execute(
+        text("""
+            INSERT INTO passos_preparo (prato_id, ordem, descricao)
+            VALUES (:pid, :ordem, :descricao)
+        """),
+        {'pid': prato_id, 'ordem': ultima_ordem + 1, 'descricao': descricao}
+    )
+    db.session.commit()
+    return jsonify({
+        'success': True,
+        'passo': {'id': res.lastrowid, 'ordem': ultima_ordem + 1, 'descricao': descricao}
+    }), 201
+
+
+@composicao_bp.route('/api/modo-preparo/<int:passo_id>', methods=['PATCH'])
+def api_update_passo_preparo(passo_id):
+    """Edita descricao e/ou ordem de um passo"""
+    passo = db.session.execute(
+        text("SELECT id FROM passos_preparo WHERE id = :pid AND desativado = 0"),
+        {'pid': passo_id}
+    ).scalar()
+    if not passo:
+        return jsonify({'error': 'Passo não encontrado'}), 404
+
+    data = request.get_json() or {}
+    updates = []
+    params = {'pid': passo_id}
+
+    if 'descricao' in data:
+        descricao = (data.get('descricao') or '').strip()
+        if not descricao:
+            return jsonify({'error': 'Descrição do passo não pode ser vazia'}), 400
+        updates.append("descricao = :descricao")
+        params['descricao'] = descricao
+
+    if 'ordem' in data:
+        try:
+            ordem = int(data.get('ordem'))
+        except (TypeError, ValueError):
+            return jsonify({'error': 'Ordem deve ser um inteiro >= 1'}), 400
+        if ordem < 1:
+            return jsonify({'error': 'Ordem deve ser um inteiro >= 1'}), 400
+        updates.append("ordem = :ordem")
+        params['ordem'] = ordem
+
+    if not updates:
+        return jsonify({'error': 'Nenhum campo para atualizar'}), 400
+
+    db.session.execute(
+        text(f"UPDATE passos_preparo SET {', '.join(updates)}, editado_em = CURRENT_TIMESTAMP WHERE id = :pid"),
+        params
+    )
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@composicao_bp.route('/api/modo-preparo/<int:passo_id>', methods=['DELETE'])
+def api_remove_passo_preparo(passo_id):
+    """Remove um passo do modo de preparo (soft delete)"""
+    res = db.session.execute(
+        text("""
+            UPDATE passos_preparo
+            SET desativado = 1, editado_em = CURRENT_TIMESTAMP
+            WHERE id = :pid AND desativado = 0
+        """),
+        {'pid': passo_id}
+    )
+    db.session.commit()
+    if res.rowcount == 0:
+        return jsonify({'error': 'Passo não encontrado'}), 404
+    return jsonify({'success': True})
+
+
+@composicao_bp.route('/api/pratos/<int:prato_id>/preparo', methods=['PATCH'])
+def api_update_preparo(prato_id):
+    """Atualiza tempo_producao_min do prato (ficha técnica)"""
+    prato = db.session.execute(
+        text("SELECT 1 FROM pratos WHERE id = :pid AND desativado = 0"),
+        {'pid': prato_id}
+    ).scalar()
+    if not prato:
+        return jsonify({'error': 'Prato não encontrado'}), 404
+
+    data = request.get_json() or {}
+    if 'tempo_producao_min' not in data:
+        return jsonify({'error': 'Campo tempo_producao_min é obrigatório'}), 400
+
+    valor = data.get('tempo_producao_min')
+    if valor is None:
+        db.session.execute(
+            text("UPDATE pratos SET tempo_producao_min = NULL, editado_em = CURRENT_TIMESTAMP WHERE id = :pid"),
+            {'pid': prato_id}
+        )
+        db.session.commit()
+        return jsonify({'success': True, 'tempo_producao_min': None})
+
+    try:
+        minutos = int(valor)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Tempo de produção deve ser um inteiro >= 0'}), 400
+    if minutos < 0:
+        return jsonify({'error': 'Tempo de produção deve ser um inteiro >= 0'}), 400
+
+    db.session.execute(
+        text("UPDATE pratos SET tempo_producao_min = :min, editado_em = CURRENT_TIMESTAMP WHERE id = :pid"),
+        {'min': minutos, 'pid': prato_id}
+    )
+    db.session.commit()
+    return jsonify({'success': True, 'tempo_producao_min': minutos})
 
 
 @composicao_bp.route('/composicao-view')
