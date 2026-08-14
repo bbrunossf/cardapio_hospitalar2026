@@ -40,6 +40,9 @@ class IngredienteView(BaseModelView):
 
     'custo_por_100g', 'disponibilidade', 'observacoes', 'fonte', 'desativado']
 
+    list_template = 'admin/ingrediente_list.html'
+    edit_template = 'admin/ingrediente_edit.html'
+
     column_searchable_list = ['nome', 'tipo_alimento']
     column_filters = ['tipo_alimento', 'disponibilidade', 'desativado']
     column_editable_list = ['disponibilidade', 'custo_por_100g']

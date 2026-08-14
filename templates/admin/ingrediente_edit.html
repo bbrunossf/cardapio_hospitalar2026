@@ -1,0 +1,350 @@
+{% extends 'admin/model/edit.html' %}
+
+{% block edit_form %}
+
+<form action="" method="POST" role="form">
+
+    {{ form.csrf_token }}
+
+    <div class="card">
+
+        <div class="card-body">
+
+            <ul class="nav nav-tabs" id="ingredienteTabs" role="tablist">
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link active"
+                        id="identificacao-tab"
+                        data-toggle="tab"
+                        href="#identificacao"
+                        role="tab">
+                        Identificação
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        id="composicao-tab"
+                        data-toggle="tab"
+                        href="#composicao"
+                        role="tab">
+                        Composição
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        id="minerais-tab"
+                        data-toggle="tab"
+                        href="#minerais"
+                        role="tab">
+                        Minerais e vitaminas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        id="outros-tab"
+                        data-toggle="tab"
+                        href="#outros"
+                        role="tab">
+                        Outros
+                    </a>
+                </li>
+
+            </ul>
+
+
+            <div class="tab-content pt-4" id="ingredienteTabsContent">
+
+                <div
+                    class="tab-pane fade show active"
+                    id="identificacao"
+                    role="tabpanel">
+
+                    <div class="row">
+
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                {{ form.nome.label(class="control-label") }}
+                                {{ form.nome(class="form-control") }}
+
+                                {% if form.nome.errors %}
+                                    {% for error in form.nome.errors %}
+                                        <div class="text-danger">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.tipo_alimento.label(class="control-label") }}
+                                {{ form.tipo_alimento(class="form-control") }}
+
+                                {% if form.tipo_alimento.errors %}
+                                    {% for error in form.tipo_alimento.errors %}
+                                        <div class="text-danger">
+                                            {{ error }}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.qtde.label(class="control-label") }}
+                                {{ form.qtde(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.unidade_medida.label(class="control-label") }}
+                                {{ form.unidade_medida(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.fonte.label(class="control-label") }}
+                                {{ form.fonte(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.disponibilidade.label(class="control-label") }}
+                                <div>
+                                    {{ form.disponibilidade() }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.desativado.label(class="control-label") }}
+                                <div>
+                                    {{ form.desativado() }}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="tab-pane fade"
+                    id="composicao"
+                    role="tabpanel">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.energia_kcal.label(class="control-label") }}
+                                {{ form.energia_kcal(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.carboidrato_g.label(class="control-label") }}
+                                {{ form.carboidrato_g(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.proteina_g.label(class="control-label") }}
+                                {{ form.proteina_g(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.lipidios_g.label(class="control-label") }}
+                                {{ form.lipidios_g(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.fibra_alimentar_g.label(class="control-label") }}
+                                {{ form.fibra_alimentar_g(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="tab-pane fade"
+                    id="minerais"
+                    role="tabpanel">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.calcio_mg.label(class="control-label") }}
+                                {{ form.calcio_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.ferro_mg.label(class="control-label") }}
+                                {{ form.ferro_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.sodio_mg.label(class="control-label") }}
+                                {{ form.sodio_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.potassio_mg.label(class="control-label") }}
+                                {{ form.potassio_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.fosforo_mg.label(class="control-label") }}
+                                {{ form.fosforo_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.vit_c_mg.label(class="control-label") }}
+                                {{ form.vit_c_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.vit_a_mg.label(class="control-label") }}
+                                {{ form.vit_a_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="tab-pane fade"
+                    id="outros"
+                    role="tabpanel">
+
+                    <div class="row">
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.gordura_saturada_g.label(class="control-label") }}
+                                {{ form.gordura_saturada_g(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.colesterol_mg.label(class="control-label") }}
+                                {{ form.colesterol_mg(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.custo_por_100g.label(class="control-label") }}
+                                {{ form.custo_por_100g(class="form-control") }}
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.observacoes.label(class="control-label") }}
+                                {{ form.observacoes(
+                                    class="form-control",
+                                    rows="5"
+                                ) }}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="form-actions mt-3">
+
+        <button
+            type="submit"
+            class="btn btn-primary">
+            Salvar
+        </button>
+
+        <a
+            href="{{ return_url }}"
+            class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </div>
+
+</form>
+
+{% endblock %}
