@@ -279,3 +279,4 @@ def setup_admin():
     admin.add_link(MenuLink(name='Cadastro por Rótulo', url='/rotulo', category='Ferramentas'))
     admin.add_link(MenuLink(name='Otimização de Cardápio', url='/otimizacao', category='Ferramentas'))
     admin.add_link(MenuLink(name='Posso Comer?', url='/posso-comer', category='Ferramentas'))
+    admin.add_link(MenuLink(name='Alimentos Semelhantes', url='/busca-semelhantes', category='Ferramentas'))

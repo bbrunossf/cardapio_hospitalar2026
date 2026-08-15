@@ -183,8 +183,9 @@ quiser.
 `/home/plena/api_posso_comer/` (serviço Flask isolado, porta 5010, bind
 127.0.0.1, GPT-4o-mini): `POST /interpretar` (texto/foto → nome_sugerido +
 descricao), `POST /estimar` (descricao + porção → kcal/sódio por 100g e por
-porção, `estimado: true`), `GET /health`. ✅ Chave OpenAI inserida pelo Bruno
-no `.env` (FAKE=0) — validado em modo real.
+porção, `estimado: true`), `POST /embed` (texto → embedding 1536d,
+text-embedding-3-small), `GET /health`. ✅ Chave OpenAI no `.env` (FAKE=0) —
+validado em modo real.
 
 **Módulo no app — implementado e validado (E2E headless chromium):**
 
@@ -194,19 +195,39 @@ no `.env` (FAKE=0) — validado em modo real.
   busca; candidato escolhido; estimar). Registrado no `app2.py`; link
   "Posso Comer?" no menu Ferramentas (`admin_views.py`)
 - `templates/posso_comer.html` + `static/js/posso_comer.js`: página fixa com
-  scroll vertical — seleção de paciente, contexto do dia, entrada (texto +
-  porção + foto), semáforo grande (verde/amarelo/vermelho), card do alimento
-  (imagem = foto enviada ou placeholder; badge ESTIMADO), tabela
-  consumido vs. +alimento, gráfico de barras do acréscimo, mensagem e
-  alternativas (se vermelho); lista de candidatos com "Nenhum desses"
-- Busca por nome com regra estrita (todos os tokens) — "bolo de chocolate" não
-  casa com "Pudim de chocolate"; sem match → fluxo de descrição/estimativa
-- E2E validado: banana prata 100g → verde "Liberado" (98 kcal, +5,5%); bolo de
-  chocolate 80g (estimado) → amarelo "Moderação" (320 kcal +18%, 160 mg sódio
-  +10%), badge ESTIMADO; contexto do paciente 1: 1772 kcal / 1627 mg sódio
+  scroll vertical — semáforo grande, card do alimento (imagem ou placeholder;
+  badge ESTIMADO), tabela consumido vs. +alimento, gráfico de barras,
+  mensagem e alternativas; lista de candidatos com "Nenhum desses"
+- Busca por nome com regra estrita (todos os tokens); sem match → descrição/estimativa
+
+**Alternativas híbridas (camadas) + banco vetorial:**
+
+- Banco vetorial `chroma_db/` (coleção `ingredientes_embeddings`, 323
+  embeddings, 1536 dims = OpenAI text-embedding-3-small, criado 04/08) — abre
+  com **chromadb==1.5.9** (adicionado ao `requirements.txt`; instalado no
+  `~/.venv` via `uv pip install`, pois o venv não tem pip)
+- `_alternativas(alimento)` em camadas: (1) vizinhos semânticos no chroma
+  (vetor do próprio id p/ ingrediente, ou `/embed` do nome/descrição p/ prato e
+  estimado); (2) filtro MESMA categoria (`tipo_alimento`) + kcal menor;
+  (3) qualquer vizinho com kcal menor; fallback determinístico (kcal 30–90%).
+  Fallback silencioso se o chroma estiver indisponível
+- Validado: bolo de chocolate 150g (estimado, vermelho) → Pudim de chocolate
+  (119), Pudim Diet (76), Pudim de coco (117) — todos "produtos açucarados";
+  azeite 100g (vermelho) → substitutos com menos kcal
+- **Script versionado** `scripts/gerar_embeddings_alimentos.py`: recria a
+  coleção a partir do banco relacional (text-embedding-3-small, upsert
+  idempotente, espaço COSINE). Descrições em 3 modos: `--modo auto` (default:
+  GPT-4o-mini com fallback por item p/ template se a chamada falhar), `llm`
+  (só LLM) e `template` (determinístico, offline). Cache das descrições em
+  `scripts/descricoes_llm_cache.json` (gitignorado; reutiliza entre execuções
+  sem custo). Flags: `--recriar`, `--ids 1,48` (testes), `--somente-descricoes`,
+  `--dry-run`, `--cache PATH`. ⚠️ Requer `OPENAI_API_KEY` no `.env` do
+  novo_cardapio para os modos llm/auto (sem chave, auto cai p/ template com
+  aviso). NÃO rodado em modo real (não sobrescreve o índice atual sem aval)
 
 **Pendente:** E2E do Bruno no navegador real (regra 1) e commit da feature.
 
 ## Pendências / fase 2
 
 - Histórico de consultas (`posso_comer_consultas`) — fase 2, opcional
+- Modo LLM no script de embeddings (regenerar descrições ricas antes de recriar)

@@ -17,7 +17,7 @@ from datetime import date
 
 import httpx
 from flask import Blueprint, jsonify, render_template, request
-from sqlalchemy import text
+from sqlalchemy import text, bindparam
 from extensions import db
 
 posso_comer_bp = Blueprint('posso_comer', __name__)
@@ -176,7 +176,125 @@ def _mensagem(alimento, pcts, semafaro):
     return txt
 
 
-def _alternativas(kcal_100g_alimento):
+# ---------------------------------------------------------------- alternativas (híbridas)
+CHROMA_PATH = os.getenv(
+    'CHROMA_DB_PATH',
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'chroma_db'),
+)
+_chroma_client = None
+
+
+def _get_chroma():
+    """Cliente ChromaDB lazy; None se indisponível (aí usa fallback determinístico)."""
+    global _chroma_client
+    if _chroma_client is None:
+        try:
+            import chromadb
+            _chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
+        except Exception:
+            _chroma_client = False
+    return _chroma_client or None
+
+
+def _vetor_consulta(alimento):
+    """Embedding do alimento consultado: ingrediente cadastrado -> vetor do próprio
+    id no chroma (sem custo); prato/estimado -> embed do nome/descrição via API."""
+    col = None
+    try:
+        if _get_chroma():
+            col = _get_chroma().get_collection('ingredientes_embeddings')
+    except Exception:
+        col = None
+
+    if col is not None and alimento.get('tipo') == 'ingrediente' and alimento.get('id'):
+        try:
+            r = col.get(ids=[str(alimento['id'])], include=['embeddings'])
+            if r and r.get('embeddings'):
+                return r['embeddings'][0]
+        except Exception:
+            pass
+
+    texto = alimento.get('descricao') or alimento.get('nome')
+    if not texto:
+        return None
+    try:
+        resp = _chamar_api('/embed', {'texto': texto})
+        return resp.get('embedding')
+    except httpx.HTTPError:
+        return None
+
+
+def _alternativas(alimento):
+    """Substitutos em camadas:
+    1. vizinhos semânticos do alimento consultado (chroma, cosseno)
+    2. filtro determinístico: MESMA categoria (tipo_alimento) + kcal menor
+    3. qualquer vizinho com kcal menor; fallback: só kcal menor (determinístico)
+    Retorna top 3 [{nome, kcal_100g, tipo}]."""
+    kcal_100g = None
+    if alimento.get('porcao_g'):
+        kcal_100g = alimento['kcal_porcao'] / alimento['porcao_g'] * 100
+    if not kcal_100g:
+        return []
+
+    # categoria alvo: ingrediente -> tipo do próprio; senão -> vizinho nº 1
+    categoria_alvo = None
+    if alimento.get('tipo') == 'ingrediente' and alimento.get('id'):
+        r = db.session.execute(text(
+            "SELECT tipo_alimento FROM ingredientes WHERE id = :i AND desativado = 0"
+        ), {'i': alimento['id']}).mappings().first()
+        categoria_alvo = (r['tipo_alimento'] or '').lower() if r else None
+
+    vizinhos = []
+    vetor = _vetor_consulta(alimento)
+    if vetor:
+        try:
+            col = _get_chroma().get_collection('ingredientes_embeddings')
+            res = col.query(query_embeddings=[vetor], n_results=12)
+            for mid, meta, dist in zip(res['ids'][0], res['metadatas'][0], res['distances'][0]):
+                vizinhos.append({
+                    'id': int(mid), 'nome': meta.get('nome', ''),
+                    'tipo': (meta.get('tipo') or '').lower(), 'dist': float(dist),
+                })
+        except Exception:
+            vizinhos = []
+
+    if vizinhos and categoria_alvo is None:
+        categoria_alvo = vizinhos[0]['tipo']
+
+    # kcal dos vizinhos vem do banco relacional (metadados do chroma não têm energia)
+    if vizinhos:
+        ids = [v['id'] for v in vizinhos]
+        kcal_map = {}
+        rows = db.session.execute(
+            text("SELECT id, energia_kcal FROM ingredientes WHERE id IN :ids")
+            .bindparams(bindparam('ids', expanding=True)),
+            {'ids': tuple(ids)},
+        ).mappings().all()
+        for r in rows:
+            kcal_map[r['id']] = _num(r['energia_kcal'])
+        for v in vizinhos:
+            v['kcal_100g'] = kcal_map.get(v['id'])
+
+    # camada 1: mesma categoria + kcal menor
+    candidatos = [v for v in vizinhos
+                  if v.get('kcal_100g') and v['kcal_100g'] < kcal_100g
+                  and categoria_alvo and v['tipo'] == categoria_alvo]
+    # camada 2: qualquer vizinho com kcal menor
+    if len(candidatos) < 3:
+        ja = {v['id'] for v in candidatos}
+        candidatos += [v for v in vizinhos
+                       if v.get('kcal_100g') and v['kcal_100g'] < kcal_100g
+                       and v['id'] not in ja]
+    # camada 3: fallback determinístico (kcal entre 30% e 90%)
+    if not candidatos:
+        return _alternativas_fallback(kcal_100g)
+
+    candidatos.sort(key=lambda v: v['dist'])
+    return [{'nome': v['nome'], 'kcal_100g': round(v['kcal_100g'], 1), 'tipo': v['tipo']}
+            for v in candidatos[:3]]
+
+
+def _alternativas_fallback(kcal_100g_alimento):
     if not kcal_100g_alimento:
         return []
     limite_max = kcal_100g_alimento * 0.9
@@ -209,9 +327,9 @@ def _montar_resposta(paciente_id, alimento):
         impacto['semafaro'] = ('verde' if pior <= LIMITE_VERDE
                                else 'amarelo' if pior <= LIMITE_AMARELO else 'vermelho')
         impacto['mensagem'] = _mensagem(alimento, pcts, impacto['semafaro'])
-        if impacto['semafaro'] == 'vermelho':
-            kcal_100g = alimento['kcal_porcao'] / alimento['porcao_g'] * 100 if alimento['porcao_g'] else None
-            impacto['alternativas'] = _alternativas(kcal_100g)
+        if impacto['semafaro'] != 'verde':
+            # alternativas úteis também na moderação (amarelo), não só no vermelho
+            impacto['alternativas'] = _alternativas(alimento)
 
     return {'encontrado': True, 'alimento': alimento, 'contexto': contexto, 'impacto': impacto}
 
@@ -274,6 +392,7 @@ def api_consultar():
             return jsonify({'erro': f'API de interpretação indisponível: {e}'}), 502
         alimento = {
             'tipo': 'estimado', 'id': None, 'nome': descricao[:60],
+            'descricao': descricao,
             'kcal_porcao': _num(est.get('kcal_porcao'), 0),
             'sodio_mg_porcao': _num(est.get('sodio_mg_porcao'), 0),
             'porcao_g': _num(est.get('porcao_g'), 100.0), 'estimado': True,
