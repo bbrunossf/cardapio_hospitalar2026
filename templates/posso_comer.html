@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Posso Comer?</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 10px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .controls label { font-size: 0.78rem; color: var(--text2); display: inline-flex; align-items: center; gap: 6px; }
+  .controls select, .controls input {
+    font-family: var(--font); font-size: 0.82rem; color: var(--text);
+    padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff;
+  }
+  #ctxCard {
+    margin-left: auto; font-size: 0.78rem; color: var(--text2);
+    background: var(--surface2); border-radius: 6px; padding: 6px 12px;
+  }
+  #ctxCard b { color: var(--primary); }
+
+  .entrada {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface);
+  }
+  #txtAlimento { flex: 1; min-width: 220px; padding: 8px 10px; font-size: 0.9rem; }
+  #txtPorcao { width: 110px; }
+  #msgErro { color: var(--danger); font-size: 0.8rem; width: 100%; }
+
+  #resultado { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* semáforo */
+  .semaforo {
+    border-radius: 10px; color: #fff; padding: 18px 24px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow);
+  }
+  .semaforo .bola { width: 46px; height: 46px; border-radius: 50%; background: rgba(255,255,255,0.35); flex-shrink: 0; }
+  .semaforo .rotulo { font-size: 1.35rem; font-weight: 700; }
+  .semaforo .pct { font-size: 0.85rem; opacity: 0.92; }
+  .semaforo.verde { background: #1e8449; }
+  .semaforo.amarelo { background: #b7950b; }
+  .semaforo.vermelho { background: #c0392b; }
+  .semaforo.sem { background: #5c6b7a; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 0.85rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+  .alimento-topo { display: flex; gap: 16px; align-items: center; }
+  .alimento-topo img { width: 84px; height: 84px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+  .alimento-topo .placeholder {
+    width: 84px; height: 84px; border-radius: 8px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; color: var(--primary); font-size: 2rem;
+  }
+  .alimento-nome { font-size: 1.15rem; font-weight: 700; }
+  .badge-estimado {
+    display: inline-block; background: #FBF0DC; color: #7A5300; font-size: 0.7rem;
+    font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle;
+  }
+  .alimento-sub { font-size: 0.8rem; color: var(--text2); }
+
+  table.nutri { border-collapse: collapse; width: 100%; font-size: 0.85rem; margin-top: 10px; }
+  table.nutri th, table.nutri td { padding: 6px 10px; text-align: right; border-bottom: 1px solid var(--border); }
+  table.nutri th:first-child, table.nutri td:first-child { text-align: left; }
+  table.nutri th { color: var(--text2); font-size: 0.75rem; }
+
+  /* gráfico de acréscimo */
+  .grafico { margin-top: 12px; }
+  .barra-linha { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.78rem; }
+  .barra-linha .rot { width: 130px; color: var(--text2); text-align: right; }
+  .barra-linha .pista { flex: 1; background: var(--surface2); border-radius: 4px; height: 22px; position: relative; }
+  .barra-linha .pista .fill { height: 100%; border-radius: 4px; min-width: 2px; }
+  .barra-linha .val { width: 90px; font-weight: 600; }
+
+  .mensagem { font-size: 0.95rem; line-height: 1.5; }
+  .aviso-estimado { color: #7A5300; font-weight: 600; }
+
+  .candidato {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; cursor: pointer; background: var(--surface);
+  }
+  .candidato:hover { background: var(--surface2); }
+  .candidato .k { font-size: 0.78rem; color: var(--text2); }
+
+  .alternativas li { margin-bottom: 4px; font-size: 0.88rem; }
+  .carregando { color: var(--text2); font-size: 0.9rem; padding: 12px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+    Posso Comer?
+  </h1>
+  <a class="voltar" href="/admin/">&larr; Voltar ao Admin</a>
+</header>
+
+<div class="controls">
+  <label>Paciente
+    <select id="selPaciente"><option value="">Carregando pacientes...</option></select>
+  </label>
+  <div id="ctxCard">Selecione um paciente</div>
+</div>
+
+<div class="entrada">
+  <input type="text" id="txtAlimento" placeholder="Nome do alimento (ex.: bolo de chocolate)">
+  <input type="number" id="txtPorcao" placeholder="Porção (g)" min="1">
+  <input type="file" id="fileFoto" accept="image/*">
+  <button class="btn btn-primary" id="btnConsultar">Ver impacto</button>
+  <div id="msgErro"></div>
+</div>
+
+<div id="resultado">
+  <div class="carregando">Digite o alimento e veja o impacto no cardápio do dia.</div>
+</div>
+
+<script src="{{ url_for('static', filename='js/posso_comer.js') }}"></script>
+</body>
+</html>
