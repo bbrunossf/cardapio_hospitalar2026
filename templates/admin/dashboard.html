@@ -11,14 +11,16 @@
   /* Dashboard ocupa a largura toda — o container padrão do Flask-Admin é
      substituído pelo .idv-dashboard (que já tem o padding da identidade) */
   .container, .container-fluid { max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
+  .idv-h1 svg { width: 28px; height: 28px; }
+  .idv-stat-icon svg { width: 22px; height: 22px; }
+  .idv-alert svg { width: 20px; height: 20px; }
+  .idv-h3 svg { width: 20px; height: 20px; }
 </style>
 
 <div class="idv-dashboard">
   <header class="idv-header">
     <h1 class="idv-h1">
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-      </svg>
+      {% include 'icons/chart-column.svg' %}
       Cardápio Hospitalar — Dashboard
     </h1>
     <p class="idv-sub">Épico 1: Gestão de Dados Mestres</p>
@@ -27,9 +29,7 @@
   <div class="idv-stats">
     <div class="idv-stat">
       <div class="idv-stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21 8h-6"/><path d="m21 8-9 5.15L3 8"/><path d="m3 8 9 5.15L21 8"/><path d="M12 13.15V21"/>
-        </svg>
+        {% include 'icons/package.svg' %}
       </div>
       <div class="idv-stat-value">{{ stats.ingredientes }}</div>
       <div class="idv-stat-label">Ingredientes</div>
@@ -37,9 +37,7 @@
 
     <div class="idv-stat">
       <div class="idv-stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
-        </svg>
+        {% include 'icons/utensils.svg' %}
       </div>
       <div class="idv-stat-value">{{ stats.pratos }}</div>
       <div class="idv-stat-label">Pratos</div>
@@ -47,9 +45,7 @@
 
     <div class="idv-stat">
       <div class="idv-stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-        </svg>
+        {% include 'icons/flame.svg' %}
       </div>
       <div class="idv-stat-value">{{ stats.dietas }}</div>
       <div class="idv-stat-label">Dietas</div>
@@ -57,9 +53,7 @@
 
     <div class="idv-stat">
       <div class="idv-stat-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
+        {% include 'icons/clock.svg' %}
       </div>
       <div class="idv-stat-value">{{ stats.tipos_refeicao }}</div>
       <div class="idv-stat-label">Refeições</div>
@@ -68,9 +62,7 @@
 
   {% if stats.pratos_sem_composicao %}
   <div class="idv-alert">
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>
-    </svg>
+    {% include 'icons/triangle-alert.svg' %}
     <span><strong>{{ stats.pratos_sem_composicao }} pratos</strong> ainda sem composição de ingredientes.</span>
   </div>
   {% endif %}
@@ -78,9 +70,7 @@
   <div class="idv-grid">
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-        </svg>
+        {% include 'icons/salad.svg' %}
         Pratos mais calóricos
       </h3>
       <table class="idv-table">
@@ -101,9 +91,7 @@
 
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M6 14h12"/>
-        </svg>
+        {% include 'icons/beef.svg' %}
         Ingredientes + Proteicos
       </h3>
       <table class="idv-table">
@@ -124,9 +112,7 @@
 
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>
-        </svg>
+        {% include 'icons/chart-pie.svg' %}
         Pratos por Tipo
       </h3>
       {% for t in pratos_por_tipo %}
@@ -142,9 +128,7 @@
 
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>
-        </svg>
+        {% include 'icons/wrench.svg' %}
         Maiores Porções
       </h3>
       <table class="idv-table">
@@ -166,9 +150,7 @@
   <div class="idv-grid">
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>
-        </svg>
+        {% include 'icons/layers.svg' %}
         Consistência dos Pratos
       </h3>
       {% for c in consistencias %}
@@ -184,9 +166,7 @@
 
     <div class="idv-panel">
       <h3 class="idv-h3">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-        </svg>
+        {% include 'icons/flame.svg' %}
         Dietas
       </h3>
       <div class="idv-diet-block">
@@ -194,13 +174,9 @@
         <div class="idv-diet-item">
           <div class="idv-diet-icon">
             {% if d.com_sal %}
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M11 21a1 1 0 0 0 1 1h0a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h0a1 1 0 0 0-1 1Z"/><path d="M5 21h14"/><path d="M7 4h10"/><path d="M5 7.5c0 1.5 1 2.5 3 2.5s3-1 3-2.5"/><path d="M13 7.5c0 1.5 1 2.5 3 2.5s3-1 3-2.5"/>
-            </svg>
+            {% include 'icons/glass-water.svg' %}
             {% else %}
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M11 21a1 1 0 0 0 1 1h0a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1h0a1 1 0 0 0-1 1Z"/><path d="M5 21h14"/><path d="M7 4h10"/><path d="M5 7.5c0 1.5 1 2.5 3 2.5s3-1 3-2.5"/><path d="M13 7.5c0 1.5 1 2.5 3 2.5s3-1 3-2.5"/><line x1="4" y1="20" x2="20" y2="4"/>
-            </svg>
+            {% include 'icons/glass-water-off.svg' %}
             {% endif %}
           </div>
           <div class="idv-diet-value">{{ d.qtd }}</div>

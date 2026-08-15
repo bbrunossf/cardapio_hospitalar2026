@@ -6,6 +6,11 @@
     <title>Otimização de Cardápio</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        /* Ícones externos (lucide) — dimensões por contexto */
+        h1 svg { width: 24px; height: 24px; }
+        #btnExecutar svg { width: 16px; height: 16px; }
+    </style>
 </head>
 <body class="pg-form">
     {% from 'admin/_navbar_standalone.html' import navbar with context %}
@@ -13,7 +18,7 @@
 
     <div class="pg-container">
     <h1>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        {% include 'icons/search.svg' %}
         Otimização de Cardápio
     </h1>
     <p class="subtitle">Gere um cardápio otimizado por refeição usando programação linear (PuLP + CBC)</p>
@@ -47,7 +52,7 @@
         </select>
 
         <button type="submit" class="btn" id="btnExecutar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            {% include 'icons/play.svg' %}
             Executar Otimização
         </button>
     </form>

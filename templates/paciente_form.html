@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_pacientes.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+    <style>
+        /* Ícones externos (lucide) — dimensões por contexto */
+        .form-acoes .btn svg { width: 18px; height: 18px; }
+        .radio-card svg { width: 28px; height: 28px; }
+    </style>
 </head>
 <body>
     {% from 'admin/_navbar_standalone.html' import navbar with context %}
@@ -98,9 +103,7 @@
                 <div class="form-acoes">
                     <a href="/pacientes" class="btn btn-secondary">Cancelar</a>
                     <button type="submit" class="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M5 13l4 4L19 7"/>
-                        </svg>
+                        {% include 'icons/check.svg' %}
                         Salvar
                     </button>
                 </div>
@@ -115,9 +118,7 @@
                             <input type="radio" name="objetivo" value="ganhar"
                                    {% if paciente and paciente.objetivo == 'ganhar' %}checked{% endif %}/>
                             <div class="radio-card">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M5 15l7-7 7 7"/>
-                                </svg>
+                                {% include 'icons/arrow-up.svg' %}
                                 <span>Ganhar Peso</span>
                             </div>
                         </label>
@@ -125,9 +126,7 @@
                             <input type="radio" name="objetivo" value="perder"
                                    {% if paciente and paciente.objetivo == 'perder' %}checked{% endif %}/>
                             <div class="radio-card">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M19 9l-7 7-7-7"/>
-                                </svg>
+                                {% include 'icons/arrow-down.svg' %}
                                 <span>Perder Peso</span>
                             </div>
                         </label>
@@ -135,9 +134,7 @@
                             <input type="radio" name="objetivo" value="manter"
                                    {% if not paciente or paciente.objetivo == 'manter' %}checked{% endif %}/>
                             <div class="radio-card">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M5 12h14"/>
-                                </svg>
+                                {% include 'icons/minus.svg' %}
                                 <span>Manter</span>
                             </div>
                         </label>

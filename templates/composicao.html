@@ -20,12 +20,19 @@
     }
     .nutri-grid { display: grid !important; }
   }
+
+  /* Ícones externos (lucide) — dimensões por contexto */
+  header h1 svg { width: 24px; height: 24px; }
+  .empty-state .icon svg { width: 48px; height: 48px; }
+  .status svg { width: 16px; height: 16px; }
+  .prato-detail h4 svg { width: 16px; height: 16px; color: var(--primary); }
+  .saved-msg svg, .btn svg { width: 14px; height: 14px; }
 </style>
 </head>
 <body>
 <header>
   <h1>
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+    {% include 'icons/utensils.svg' %}
     Ficha Técnica das Preparações
   </h1>
   <a class="voltar" href="/admin/">&larr; Voltar ao Admin</a>
@@ -43,7 +50,7 @@
   <div class="panel-right" id="panelRight">
     <div class="empty-state">
       <div class="icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        {% include 'icons/arrow-left.svg' %}
       </div>
       <p>Selecione um prato na lista ao lado<br>para ver a ficha técnica</p>
     </div>
@@ -117,8 +124,8 @@ function renderComposicao(data) {
 
   const statusClass = ok ? 'ok' : 'warn';
   const statusIcon = ok
-    ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'
-    : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+    ? `{% include 'icons/check.svg' %}`
+    : `{% include 'icons/triangle-alert.svg' %}`;
   const statusText = ok ? 'Massas coincidem' : `Diferença de ${Math.abs(diferenca).toFixed(1)}g`;
 
   // Resumo nutricional por porção (read-only)
@@ -145,10 +152,10 @@ function renderComposicao(data) {
              style="flex:1; padding:8px 12px; border-radius:var(--radius); border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:0.9rem; outline:none; font-family:var(--font);">
       <button class="btn btn-primary btn-sm" onclick="salvarPasso(${passo.id})">Salvar</button>
       <span class="saved-msg" id="savedPasso_${passo.id}">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+        {% include 'icons/check.svg' %}
       </span>
       <button class="btn btn-sm btn-danger" onclick="removerPasso(${passo.id})">
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        {% include 'icons/x.svg' %}
       </button>
     </div>`).join('');
 
@@ -169,7 +176,7 @@ function renderComposicao(data) {
           </div>
           <button class="btn btn-primary btn-sm" onclick="salvarPorcao(${prato.id})">Salvar</button>
           <span class="saved-msg" id="porcaoSaved">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
+            {% include 'icons/check.svg' %} salvo
           </span>
         </div>
         <div class="tempo-row" style="flex:1; min-width:220px;">
@@ -177,7 +184,7 @@ function renderComposicao(data) {
           <input type="number" min="0" step="1" id="tempoInput" value="${prato.tempo_producao_min ?? ''}" placeholder="—" onchange="salvarPreparo(${prato.id})">
           <button class="btn btn-primary btn-sm" onclick="salvarPreparo(${prato.id})">Salvar</button>
           <span class="saved-msg" id="tempoSaved">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> salvo
+            {% include 'icons/check.svg' %} salvo
           </span>
         </div>
       </div>
@@ -197,10 +204,10 @@ function renderComposicao(data) {
               <td>
                 <button class="btn btn-primary btn-sm" onclick="salvarComposicao(${prato.id}, ${ing.ingrediente_id})">Salvar</button>
                 <span class="saved-msg" id="saved_${ing.ingrediente_id}">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                  {% include 'icons/check.svg' %}
                 </span>
                 <button class="btn btn-sm btn-danger" style="margin-left:4px;" onclick="removerIngrediente(${prato.id}, ${ing.ingrediente_id}, '${ing.ingrediente}')">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  {% include 'icons/x.svg' %}
                 </button>
               </td>
             </tr>
@@ -217,7 +224,7 @@ function renderComposicao(data) {
 
       <div class="add-ingrediente-box" style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
         <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+          {% include 'icons/plus.svg' %}
           Adicionar Ingrediente
         </h4>
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
@@ -234,7 +241,7 @@ function renderComposicao(data) {
 
       <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
         <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+          {% include 'icons/chef-hat.svg' %}
           Modo de Preparo
         </h4>
         <div id="passosList">
@@ -249,7 +256,7 @@ function renderComposicao(data) {
 
       <div style="margin-top: 24px; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);">
         <h4 style="margin-bottom: 12px; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--primary);"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+          {% include 'icons/flame.svg' %}
           Valores Nutricionais por Porção
         </h4>
         <div class="nutri-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px;">

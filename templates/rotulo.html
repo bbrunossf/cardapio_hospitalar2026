@@ -32,6 +32,9 @@
     .hint { font-size: 0.9em; color: var(--text2); }
     .modal-content h3 { display: flex; align-items: center; gap: 8px; }
     .modal-content h3 svg { color: var(--primary); }
+    /* Ícones externos (lucide) — dimensões por contexto */
+    button svg { width: 18px; height: 18px; }
+    .modal-content h3 svg { width: 20px; height: 20px; }
     </style>
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
@@ -49,8 +52,8 @@
         <input type="text" id="ean" placeholder="7891234567890" autocomplete="off">
         <div class="botoes-ean">
             <button class="primary" onclick="buscarEan()">Buscar</button>
-            <button class="secondary" onclick="abrirScanner()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código</button>
-            <button class="secondary" onclick="enviarFotoCodigo()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Foto do código</button>
+            <button class="secondary" onclick="abrirScanner()">{% include 'icons/camera.svg' %}Ler código</button>
+            <button class="secondary" onclick="enviarFotoCodigo()">{% include 'icons/image.svg' %}Foto do código</button>
         </div>
         <p class="hint">Digite o EAN, leia com a câmera ou envie uma foto do código.</p>
     </div>
@@ -71,12 +74,12 @@
 
     <div id="modalScanner" class="modal hidden" onclick="if (event.target === this) fecharScanner()">
         <div class="modal-content">
-            <h3><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código de barras</h3>
+            <h3>{% include 'icons/camera.svg' %}Ler código de barras</h3>
             <div id="reader"></div>
             <p id="statusScanner" class="hint">Aponte a câmera para o código de barras do produto.</p>
             <div class="botoes-ean">
                 <button class="secondary" onclick="fecharScanner()">Cancelar</button>
-                <button class="secondary" onclick="enviarFotoCodigo()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Usar foto do código</button>
+                <button class="secondary" onclick="enviarFotoCodigo()">{% include 'icons/image.svg' %}Usar foto do código</button>
             </div>
         </div>
     </div>
@@ -88,8 +91,8 @@
                 <label for="codigo_barras">Código de barras *</label>
                 <input type="text" id="codigo_barras" placeholder="Digite ou leia o código do produto" autocomplete="off" required>
                 <div class="botoes-ean" style="margin-top: 0.35rem;">
-                    <button class="secondary" onclick="abrirScannerForm()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Ler código</button>
-                    <button class="secondary" onclick="enviarFotoCodigoForm()"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Foto do código</button>
+                    <button class="secondary" onclick="abrirScannerForm()">{% include 'icons/camera.svg' %}Ler código</button>
+                    <button class="secondary" onclick="enviarFotoCodigoForm()">{% include 'icons/image.svg' %}Foto do código</button>
                 </div>
                 <p class="hint" id="dicaEanForm">Obrigatório para novos cadastros — evita duplicidade por código de barras.</p>
             </div>
