@@ -3,3 +3,8 @@ teste_embeddings.py
 .env
 usage.db*
 .understand-anything/
+# bancos de dados locais (dados mudam a cada uso; não versionar)
+cardapio_hospitalar.db
+cardapio_hospitalar - Copia*.db
+chroma_db/
+scripts/descricoes_llm_cache.json

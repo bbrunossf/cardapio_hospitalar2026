@@ -1,14 +1,16 @@
 """
-Blueprint de Planos Nutricionais por Paciente + Integração WolframAlpha.
+Blueprint de Planos Nutricionais por Paciente.
 
 Fluxo:
   1. Nutricionista cadastra o paciente (api/paciente.py) e informa o objetivo.
-  2. POST /api/planos → calcula TMB/GET/meta/macros via WolframDietClient
-     (com fallbacks locais) e salva o plano em planos_nutricionais.
+  2. POST /api/planos → calcula TMB/GET/meta/macros via cálculo LOCAL
+     (calculo_nutricional — default, determinístico) ou WolframAlpha
+     (FONTE_CALCULO=wolfram, benchmark opcional) e salva o plano.
   3. POST /api/planos/<id>/cardapio → roda o PuLP com overrides do plano
      (energia ±10%, macros ±15%, objetivo TARGET) e salva o cardápio
      versionado (cardapios_salvos → dias → refeicoes).
 """
+import os
 from datetime import date
 
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
@@ -39,8 +41,8 @@ def _calcular_idade(paciente: Paciente) -> int | None:
     return hoje.year - nasc.year - ((hoje.month, hoje.day) < (nasc.month, nasc.day))
 
 
-def _dados_wolfram(paciente: Paciente) -> dict:
-    """Monta o dict de entrada do WolframDietClient a partir do paciente."""
+def _dados_para_calculo(paciente: Paciente) -> dict:
+    """Monta o dict de entrada do cálculo (local ou Wolfram) a partir do paciente."""
     return {
         "sexo": paciente.sexo or "M",
         "idade": _calcular_idade(paciente) or 30,
@@ -48,6 +50,29 @@ def _dados_wolfram(paciente: Paciente) -> dict:
         "peso_kg": float(paciente.peso_kg or 0),
         "nivel_atividade_fisica": paciente.nivel_atividade_fisica or "moderado",
     }
+
+
+def _fonte_calculo() -> str:
+    """
+    Fonte de cálculo do plano: 'local' (default) ou 'wolfram'.
+
+    Lê FONTE_CALCULO do ambiente (o CLI do flask carrega .env). Se não estiver
+    no ambiente, lê direto do arquivo .env — robustez caso o app rode fora do
+    `flask run` (ex: gunicorn sem load_dotenv).
+    """
+    valor = os.environ.get("FONTE_CALCULO")
+    if not valor:
+        try:
+            env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env")
+            with open(env_path, encoding="utf-8") as fh:
+                for linha in fh:
+                    linha = linha.strip()
+                    if linha.startswith("FONTE_CALCULO="):
+                        valor = linha.split("=", 1)[1].strip().strip('"').strip("'")
+                        break
+        except OSError:
+            pass
+    return (valor or "local").strip().lower()
 
 
 def _overrides_do_plano(plano: PlanoNutricional) -> dict:
@@ -170,14 +195,23 @@ def api_criar_plano():
     }
 
     try:
-        cliente = WolframDietClient()
+        fonte_calculo = _fonte_calculo()
+        if fonte_calculo == "wolfram":
+            cliente = WolframDietClient()
+            try:
+                resultado = cliente.calcular_plano_completo(_dados_para_calculo(paciente), meta)
+            except Exception as e:  # rede/quota — não derruba a API
+                return jsonify({"erro": f"Falha ao consultar WolframAlpha: {e}"}), 502
+            consultas = cliente.consultas
+        else:
+            from calculo_nutricional import calcular_plano_completo as calcular_plano_local
+            try:
+                resultado = calcular_plano_local(_dados_para_calculo(paciente), meta)
+            except (TypeError, ValueError) as e:
+                return jsonify({"erro": f"Dados inválidos para o cálculo: {e}"}), 400
+            consultas = resultado.get("consultas", [])
     except ErroConfiguracao as e:
         return jsonify({"erro": str(e)}), 500
-
-    try:
-        resultado = cliente.calcular_plano_completo(_dados_wolfram(paciente), meta)
-    except Exception as e:  # rede/quota — não derruba a API
-        return jsonify({"erro": f"Falha ao consultar WolframAlpha: {e}"}), 502
 
     plano = PlanoNutricional(
         paciente_id=paciente_id,
@@ -203,8 +237,8 @@ def api_criar_plano():
     db.session.add(plano)
     db.session.flush()  # garante plano.id
 
-    # Auditoria das consultas à API (wolfram_consultas)
-    for consulta in cliente.consultas:
+    # Auditoria das consultas (wolfram_consultas — fonte 'local' ou API)
+    for consulta in consultas:
         db.session.add(WolframConsulta(
             plano_id=plano.id,
             query=consulta.get("query", "")[:500],
@@ -255,6 +289,103 @@ def api_cancelar_plano(plano_id):
     if not plano:
         return jsonify({"erro": "Plano não encontrado."}), 404
     plano.status = "cancelado"
+    db.session.commit()
+    return jsonify(plano.to_dict())
+
+
+# ---------------------------------------------------------------------------
+# API REST — Simulador interativo (Fase 2, d3.js)
+# ---------------------------------------------------------------------------
+
+@plano_bp.route("/planos/<int:plano_id>/simulador")
+def pagina_simulador(plano_id):
+    """Página do simulador de estratégia (arrastar ingestão/peso-alvo)."""
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return "Plano não encontrado.", 404
+    paciente = db.session.get(Paciente, plano.paciente_id)
+    return render_template("simulador.html", plano=plano, paciente=paciente)
+
+
+@plano_bp.route("/api/planos/<int:plano_id>/simulador/dados")
+def api_dados_simulador(plano_id):
+    """Dados iniciais do simulador: plano + projeção semanal (7700 kcal/kg)."""
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return jsonify({"erro": "Plano não encontrado."}), 404
+    paciente = db.session.get(Paciente, plano.paciente_id)
+
+    get_kcal = float(plano.get_kcal or 0)
+    meta_kcal = float(plano.meta_kcal or get_kcal)
+    peso_atual = float(paciente.peso_kg or 0) if paciente else 0.0
+    peso_alvo = float(plano.peso_alvo_kg or peso_atual)
+    prazo_dias = plano.prazo_dias or 56
+
+    from calculo_nutricional import projecao_peso
+    projecao = projecao_peso(peso_atual, meta_kcal, get_kcal, prazo_dias)
+
+    return jsonify({
+        "plano_id": plano.id,
+        "paciente": {"id": paciente.id, "nome": paciente.nome} if paciente else None,
+        "objetivo": plano.objetivo,
+        "peso_atual_kg": peso_atual,
+        "peso_alvo_kg": peso_alvo,
+        "prazo_dias": prazo_dias,
+        "get_kcal": get_kcal,
+        "meta_kcal": meta_kcal,
+        "deficit_diario_kcal": float(plano.deficit_diario_kcal or 0),
+        "perfil_macro": plano.perfil_macro or "equilibrado",
+        "projecao": projecao,
+    })
+
+
+@plano_bp.route("/api/planos/<int:plano_id>", methods=["PATCH"])
+def api_ajustar_plano(plano_id):
+    """
+    Ajusta campos do plano a partir do simulador.
+
+    Campos aceitos: peso_alvo_kg, prazo_dias, meta_kcal, deficit_diario_kcal,
+    perfil_macro. Se meta_kcal mudar e macros não forem enviadas, recalcula
+    as macros pelo perfil (calculo_nutricional.distribuir_macros).
+    """
+    plano = db.session.get(PlanoNutricional, plano_id)
+    if not plano:
+        return jsonify({"erro": "Plano não encontrado."}), 404
+    if plano.status != "ativo":
+        return jsonify({"erro": "Plano não está ativo."}), 400
+
+    payload = request.get_json(silent=True) or {}
+    permitidos = {"peso_alvo_kg", "prazo_dias", "meta_kcal",
+                  "deficit_diario_kcal", "perfil_macro"}
+    extras = set(payload) - permitidos
+    if extras:
+        return jsonify({"erro": f"Campos não permitidos: {sorted(extras)}"}), 400
+
+    meta_antiga = float(plano.meta_kcal) if plano.meta_kcal is not None else None
+    perfil = payload.get("perfil_macro") or plano.perfil_macro or "equilibrado"
+
+    for campo in permitidos:
+        if campo not in payload:
+            continue
+        valor = payload[campo]
+        if campo == "prazo_dias":
+            valor = int(valor) if valor is not None else None
+        elif campo in ("peso_alvo_kg", "meta_kcal", "deficit_diario_kcal"):
+            valor = float(valor) if valor is not None else None
+        setattr(plano, campo, valor)
+
+    # Recalcula macros se a meta mudou (macros não são enviadas pelo simulador)
+    nova_meta = float(plano.meta_kcal) if plano.meta_kcal is not None else None
+    if nova_meta is not None and (meta_antiga is None or meta_antiga != nova_meta):
+        from calculo_nutricional import distribuir_macros
+        mac = distribuir_macros(nova_meta, perfil)
+        plano.proteinas_pct = mac["proteinas_pct"]
+        plano.carboidratos_pct = mac["carboidratos_pct"]
+        plano.lipidios_pct = mac["lipidios_pct"]
+        plano.proteinas_g = mac["proteinas_g"]
+        plano.carboidratos_g = mac["carboidratos_g"]
+        plano.lipidios_g = mac["lipidios_g"]
+
     db.session.commit()
     return jsonify(plano.to_dict())
 
@@ -419,6 +550,26 @@ def pagina_cardapio(cardapio_id):
     for r in refeicoes:
         refeicoes_por_dia.setdefault(r["cardapio_dia_id"], []).append(dict(r))
 
+    # Macros por dia — mesma fonte da energia (vw_pratos_nutricional, 1 porção
+    # padrão por prato), para os totais de P/C/L baterem com o kcal exibido.
+    # energia_calculada serve de conferência contra cardapio_dias.energia_kcal_total.
+    macros_por_dia = {
+        row["cardapio_dia_id"]: row
+        for row in db.session.execute(text("""
+            SELECT cr.cardapio_dia_id,
+                   ROUND(SUM(COALESCE(v.proteina_g, 0)), 1)    AS proteina_g,
+                   ROUND(SUM(COALESCE(v.carboidrato_g, 0)), 1) AS carboidrato_g,
+                   ROUND(SUM(COALESCE(v.lipidios_g, 0)), 1)    AS lipidios_g,
+                   ROUND(SUM(COALESCE(v.energia_kcal, 0)), 1)  AS energia_calculada
+            FROM cardapio_refeicoes cr
+            LEFT JOIN vw_pratos_nutricional v ON v.prato_id = cr.prato_id
+            WHERE cr.cardapio_dia_id IN (
+                SELECT id FROM cardapio_dias WHERE cardapio_id = :cid
+            )
+            GROUP BY cr.cardapio_dia_id
+        """), {"cid": cardapio_id}).mappings().all()
+    }
+
     dias_view = []
     for dia in sorted(cardapio.dias_itens, key=lambda x: x.dia_numero):
         refs = refeicoes_por_dia.get(dia.id, [])
@@ -433,14 +584,30 @@ def pagina_cardapio(cardapio_id):
                 }
                 ordem_tipos.append(r["tipo_refeicao_id"])
             grupos[r["tipo_refeicao_id"]]["pratos"].append(r)
+        macros = macros_por_dia.get(dia.id, {})
         dias_view.append({
             "dia_numero": dia.dia_numero,
             "energia_kcal_total": float(dia.energia_kcal_total) if dia.energia_kcal_total else None,
+            "macros": {
+                "proteina_g": float(macros.get("proteina_g") or 0),
+                "carboidrato_g": float(macros.get("carboidrato_g") or 0),
+                "lipidios_g": float(macros.get("lipidios_g") or 0),
+            },
             "tipos": [grupos[t] for t in ordem_tipos],
         })
 
     total_energia = sum(d["energia_kcal_total"] or 0 for d in dias_view)
     media_energia = total_energia / len(dias_view) if dias_view else 0
+
+    total_macros = {
+        "proteina_g": round(sum(d["macros"]["proteina_g"] for d in dias_view), 1),
+        "carboidrato_g": round(sum(d["macros"]["carboidrato_g"] for d in dias_view), 1),
+        "lipidios_g": round(sum(d["macros"]["lipidios_g"] for d in dias_view), 1),
+    }
+    media_macros = {
+        k: round(v / len(dias_view), 1) if dias_view else 0
+        for k, v in total_macros.items()
+    }
 
     return render_template(
         "cardapio_detalhe.html",
@@ -450,4 +617,6 @@ def pagina_cardapio(cardapio_id):
         dias_view=dias_view,
         total_energia=round(total_energia, 1),
         media_energia=round(media_energia, 1),
+        total_macros=total_macros,
+        media_macros=media_macros,
     )

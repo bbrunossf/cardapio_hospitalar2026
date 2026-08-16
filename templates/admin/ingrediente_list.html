@@ -1,0 +1,240 @@
+{% extends 'admin/model/list.html' %}
+
+
+{% block model_menu_bar %}
+    {{ super() }}
+
+    <div class="mt-3 mb-3">
+        <ul class="nav nav-tabs" id="nutricao-tabs">
+
+            <li class="nav-item">
+                <button
+                    type="button"
+                    class="nav-link active"
+                    data-tab="composicao">
+                    Composição
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button
+                    type="button"
+                    class="nav-link"
+                    data-tab="minerais">
+                    Vitaminas e minerais
+                </button>
+            </li>
+
+            <li class="nav-item">
+                <button
+                    type="button"
+                    class="nav-link"
+                    data-tab="outros">
+                    Outros
+                </button>
+            </li>
+
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block tail %}
+    {{ super() }}
+
+    <style>
+        /*
+         * Esconde colunas não selecionadas antes do JS carregar
+         * (evita flash de conteúdo não filtrado).
+         */
+        .col-energia_kcal,
+        .col-carboidrato_g,
+        .col-proteina_g,
+        .col-lipidios_g,
+        .col-fibra_alimentar_g,
+        .col-calcio_mg,
+        .col-ferro_mg,
+        .col-sodio_mg,
+        .col-potassio_mg,
+        .col-fosforo_mg,
+        .col-vit_c_mg,
+        .col-vit_a_mg,
+        .col-gordura_saturada_g,
+        .col-colesterol_mg,
+        .col-custo_por_100g,
+        .col-disponibilidade,
+        .col-observacoes,
+        .col-fonte,
+        .col-desativado {
+            display: none;
+        }
+    </style>
+
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            /*
+             * Colunas fixas
+             */
+            const colunasFixas = [
+                'nome',
+                'tipo_alimento',
+                'qtde',
+                'unidade_medida'
+            ];
+
+
+            /*
+             * Grupos de colunas
+             */
+            const abas = {
+
+                composicao: [
+                    'energia_kcal',
+                    'carboidrato_g',
+                    'proteina_g',
+                    'lipidios_g',
+                    'fibra_alimentar_g'
+                ],
+
+                minerais: [
+                    'calcio_mg',
+                    'ferro_mg',
+                    'sodio_mg',
+                    'potassio_mg',
+                    'fosforo_mg',
+                    'vit_c_mg',
+                    'vit_a_mg'
+                ],
+
+                outros: [
+                    'gordura_saturada_g',
+                    'colesterol_mg',
+                    'custo_por_100g',
+                    'disponibilidade',
+                    'observacoes',
+                    'fonte',
+                    'desativado'
+                ]
+
+            };
+
+
+            /*
+             * Retorna todos os elementos HTML
+             * correspondentes a uma coluna.
+             *
+             * O Flask-Admin gera classes como:
+             *
+             *   th.column-header.col-nome
+             *   td.col-nome
+             *
+             *   th.column-header.col-energia_kcal
+             *   td.col-energia_kcal
+             *
+             */
+            function elementosColuna(nome) {
+                return document.querySelectorAll('.col-' + nome);
+            }
+
+
+            /*
+             * Mostra uma coluna.
+             */
+            function mostrarColuna(nome) {
+
+                elementosColuna(nome).forEach(function (elemento) {
+                    elemento.style.display = 'table-cell';
+                });
+
+            }
+
+
+            /*
+             * Esconde uma coluna.
+             */
+            function esconderColuna(nome) {
+
+                elementosColuna(nome).forEach(function (elemento) {
+                    elemento.style.display = 'none';
+                });
+
+            }
+
+
+            /*
+             * Mostra uma determinada aba.
+             */
+            function mostrarAba(nomeAba) {
+
+                /*
+                 * Primeiro escondemos todas as colunas
+                 * nutricionais.
+                 */
+                Object.values(abas)
+                    .flat()
+                    .forEach(esconderColuna);
+
+
+                /*
+                 * Depois mostramos as colunas
+                 * pertencentes à aba selecionada.
+                 */
+                abas[nomeAba].forEach(mostrarColuna);
+
+
+                /*
+                 * Atualiza o estado visual das abas Bootstrap.
+                 */
+                document
+                    .querySelectorAll('#nutricao-tabs .nav-link')
+                    .forEach(function (botao) {
+
+                        botao.classList.remove('active');
+
+                    });
+
+
+                const botaoAtivo = document.querySelector(
+                    '#nutricao-tabs .nav-link[data-tab="' +
+                    nomeAba +
+                    '"]'
+                );
+
+                if (botaoAtivo) {
+                    botaoAtivo.classList.add('active');
+                }
+
+            }
+
+
+            /*
+             * Eventos dos botões.
+             */
+            document
+                .querySelectorAll('#nutricao-tabs .nav-link')
+                .forEach(function (botao) {
+
+                    botao.addEventListener('click', function () {
+
+                        mostrarAba(
+                            this.dataset.tab
+                        );
+
+                    });
+
+                });
+
+
+            /*
+             * Inicializa a primeira aba.
+             */
+            mostrarAba('composicao');
+
+        });
+
+    </script>
+
+{% endblock %}

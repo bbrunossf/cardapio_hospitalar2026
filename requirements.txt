@@ -9,3 +9,4 @@ pytesseract>=0.3
 Pillow>=10.0
 rapidfuzz>=3.0
 cryptography
+chromadb==1.5.9

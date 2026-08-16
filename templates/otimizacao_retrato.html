@@ -6,6 +6,12 @@
 <title>Resultado - Cardápio Otimizado</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_navbar.css') }}">
+<style>
+    /* Ícones externos (lucide) — dimensões por contexto */
+    .pg-h1 svg { width: 26px; height: 26px; }
+    .dia-titulo svg { width: 18px; height: 18px; }
+    .refeicao-nome svg { width: 16px; height: 16px; }
+</style>
 </head>
 <body class="pg-result">
 {% set nav_active = '/otimizacao' %}
@@ -13,7 +19,7 @@
 {{ navbar(admin) }}
 <div class="pg-wrap">
   <h1 class="pg-h1">
-    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+    {% include 'icons/utensils.svg' %}
     Cardápio Otimizado
   </h1>
   <p class="subtitle">
@@ -33,13 +39,13 @@
   {% for dia in resultado.cardapio %}
   <div class="dia-card">
     <div class="dia-titulo">
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+      {% include 'icons/calendar.svg' %}
       Dia {{ dia.dia }}
     </div>
     {% for ref in dia.refeicoes %}
     <div class="refeicao">
       <div class="refeicao-nome">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        {% include 'icons/clock.svg' %}
         {{ ref.refeicao_nome }}{% if ref.horario %} ({{ ref.horario }}){% endif %}
       </div>
       <table>
