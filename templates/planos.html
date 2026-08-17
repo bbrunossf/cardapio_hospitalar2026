@@ -24,6 +24,24 @@
         .vazio a { color: var(--primario, #2563eb); }
         /* Ícones externos (lucide) — dimensões por contexto */
         .btn svg { width: 18px; height: 18px; vertical-align: -3px; margin-right: 6px; }
+        /* ── Bloco "Regras do cardápio" (personalização Fase 1) ── */
+        .regras-block { margin-top: 32px; padding-top: 24px; border-top: 1px solid #e2e8f0; }
+        .regras-tabs { display: flex; gap: 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; flex-wrap: wrap; }
+        .regras-tab { border: 0; background: none; padding: 8px 16px; font: inherit; font-size: 14px; font-weight: 600; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+        .regras-tab.ativo { color: var(--primario, #2563eb); border-bottom-color: var(--primario, #2563eb); }
+        .regras-panel { display: none; }
+        .regras-panel.ativo { display: block; }
+        .regras-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        .regras-form label { display: flex; flex-direction: column; font-size: 12px; color: #64748b; gap: 4px; }
+        .regras-form input, .regras-form select { border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 13px; background: #fff; min-width: 90px; }
+        .regras-form input[type=number] { min-width: 90px; }
+        .regras-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; background: #fff; font-size: 14px; }
+        .regras-item .acoes { display: flex; gap: 6px; }
+        .regras-item button { border: 0; border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+        .btn-editar { background: var(--primario-soft, #dbeafe); color: var(--primario, #2563eb); }
+        .btn-excluir { background: #f9e4dc; color: #9a3309; }
+        .regras-vazio { color: #94a3b8; font-size: 13px; padding: 8px 2px; }
+        .regras-badge { font-size: 11px; font-weight: 600; background: #f1f5f9; color: #475569; border-radius: 999px; padding: 2px 8px; margin-left: 6px; }
     </style>
 </head>
 <body>
@@ -88,6 +106,102 @@
             <p style="font-size:18px; margin-bottom:8px;">Nenhum plano criado ainda.</p>
             <p>Crie o primeiro em <a href="/planos/novo">Novo Plano</a> — o WolframAlpha dimensiona TMB, GET e meta calórica do paciente.</p>
         </div>
+        {% endif %}
+
+        {% if paciente %}
+        <section id="regras-cardapio" class="regras-block"
+                 data-paciente-id="{{ paciente.id }}"
+                 data-tipos='{{ tipos_prato|tojson }}'
+                 data-pratos='{{ pratos|tojson }}'
+                 data-ingredientes='{{ ingredientes|tojson }}'>
+            <div style="margin-bottom:14px;">
+                <h2 style="font-size:18px; margin:0 0 4px;">Regras do cardápio</h2>
+                <p style="margin:0; font-size:13px; color:#64748b;">Personalização deste paciente — o que não for preenchido herda da dieta base. Precedência: dieta → plano → regras do paciente.</p>
+            </div>
+
+            <div class="regras-tabs">
+                <button type="button" class="regras-tab ativo" data-tab="faixas">Faixas nutricionais</button>
+                <button type="button" class="regras-tab" data-tab="elegibilidade">Elegibilidade</button>
+                <button type="button" class="regras-tab" data-tab="variedade">Variedade / aversão</button>
+                <button type="button" class="regras-tab" data-tab="exclusoes">Exclusões</button>
+            </div>
+
+            <div id="regras-faixas" class="regras-panel ativo">
+                <form class="regras-form" data-tipo="faixa">
+                    <label>Nutriente
+                        <input type="text" name="nutriente" list="nutrientes-comuns" placeholder="ex.: potassio_mg" required>
+                        <datalist id="nutrientes-comuns">
+                            <option value="energia_kcal"><option value="proteina_g"><option value="carboidrato_g">
+                            <option value="lipidios_g"><option value="fibra_alimentar_g"><option value="sodio_mg">
+                            <option value="potassio_mg"><option value="fosforo_mg"><option value="calcio_mg">
+                            <option value="ferro_mg"><option value="vit_c_mg">
+                        </datalist>
+                    </label>
+                    <label>Mínimo <input type="number" name="valor_minimo" step="0.01"></label>
+                    <label>Máximo <input type="number" name="valor_maximo" step="0.01"></label>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+                <div class="regras-lista"></div>
+            </div>
+
+            <div id="regras-elegibilidade" class="regras-panel">
+                <form class="regras-form" data-tipo="elegibilidade">
+                    <label>Atributo
+                        <select name="atributo">
+                            <option value="consistencia">Consistência</option>
+                            <option value="textura">Textura</option>
+                            <option value="temperatura_servimento">Temperatura</option>
+                            <option value="cor_predominante">Cor</option>
+                        </select>
+                    </label>
+                    <label>Valores <input type="text" name="valores_permitidos" placeholder="ex.: PASTOSA;LÍQUIDA" required></label>
+                    <label>Operador
+                        <select name="operador">
+                            <option value="IN">IN (permitir)</option>
+                            <option value="NOT IN">NOT IN (banir)</option>
+                        </select>
+                    </label>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+                <div class="regras-lista"></div>
+            </div>
+
+            <div id="regras-variedade" class="regras-panel">
+                <form class="regras-form" data-tipo="variedade">
+                    <label>Tipo de prato
+                        <select name="tipo_prato_id" required>
+                            <option value="">Selecione...</option>
+                            {% for t in tipos_prato %}<option value="{{ t.id }}">{{ t.nome }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label>Dias mín. repetição <input type="number" name="dias_minimos_repeticao" min="0"></label>
+                    <label>Máx. por semana <input type="number" name="frequencia_maxima_semanal" min="0" placeholder="0 = nunca"></label>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+                <div class="regras-lista"></div>
+            </div>
+
+            <div id="regras-exclusoes" class="regras-panel">
+                <form class="regras-form" data-tipo="exclusao">
+                    <label>Prato
+                        <select name="prato_id">
+                            <option value="">(nenhum)</option>
+                            {% for p in pratos %}<option value="{{ p.id }}">{{ p.nome }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label>ou Ingrediente
+                        <select name="ingrediente_id">
+                            <option value="">(nenhum)</option>
+                            {% for i in ingredientes %}<option value="{{ i.id }}">{{ i.nome }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label>Motivo <input type="text" name="motivo" placeholder="ex.: alergia"></label>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+                <div class="regras-lista"></div>
+            </div>
+        </section>
+        <script src="{{ url_for('static', filename='js/regras_paciente.js') }}"></script>
         {% endif %}
     </main>
 </body>

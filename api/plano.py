@@ -16,7 +16,8 @@ from datetime import date
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from sqlalchemy import desc, text
 
-from api.otimizacao import carregar_dados_otimizacao, criar_modelo_otimizacao, resolver_e_extrair
+from api.otimizacao import (carregar_dados_otimizacao, carregar_restricoes_paciente,
+                            criar_modelo_otimizacao, resolver_e_extrair)
 from authz import paciente_acessivel, plano_acessivel, query_pacientes
 from extensions import db
 from models_paciente import Paciente
@@ -132,7 +133,21 @@ def pagina_planos_paciente(paciente_id):
         data = plano.to_dict()
         data["paciente_nome"] = paciente.nome
         itens.append(data)
-    return render_template("planos.html", planos=itens, paciente=paciente)
+
+    # Dados para o bloco "Regras do cardápio" (personalização Fase 1)
+    tipos_prato = [{"id": t[0], "nome": t[1]}
+                   for t in db.session.execute(text(
+                       "SELECT id, nome FROM tipos_preparacoes ORDER BY nome")).all()]
+    pratos = [{"id": p[0], "nome": p[1]}
+              for p in db.session.execute(text(
+                  "SELECT id, nome FROM pratos WHERE desativado = 0 ORDER BY nome")).all()]
+    ingredientes = [{"id": i[0], "nome": i[1]}
+                    for i in db.session.execute(text(
+                        "SELECT id, nome FROM ingredientes WHERE desativado = 0 ORDER BY nome")).all()]
+
+    return render_template("planos.html", planos=itens, paciente=paciente,
+                           tipos_prato=tipos_prato, pratos=pratos,
+                           ingredientes=ingredientes)
 
 
 @plano_bp.route("/planos/novo")
@@ -420,11 +435,14 @@ def api_gerar_cardapio(plano_id):
         return jsonify({"erro": "dias deve estar entre 1 e 30."}), 400
 
     try:
-        dados = carregar_dados_otimizacao(dieta_nome)
+        dados = carregar_dados_otimizacao(dieta_nome, paciente_id=plano.paciente_id)
     except ValueError as e:
         return jsonify({"erro": str(e)}), 404
 
     overrides = _overrides_do_plano(plano)
+    # Fase 1 personalização: faixas do paciente vencem as do plano (precedência
+    # dieta → plano → paciente). Exclusões já filtraram os pratos no carregador.
+    overrides.update(carregar_restricoes_paciente(plano.paciente_id))
     try:
         problema, X, dados = criar_modelo_otimizacao(dados, dias=dias, overrides=overrides, objetivo="target")
         resultado = resolver_e_extrair(problema, X, dados, dias=dias)

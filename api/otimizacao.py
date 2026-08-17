@@ -56,8 +56,45 @@ def carregar_alimentos_industrializados():
     return [dict(r) for r in rows]
 
 
-def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False):
-    """Carrega dados do banco via SQLAlchemy (substitui sqlite3 direto)."""
+def carregar_restricoes_paciente(paciente_id):
+    """Faixas nutricionais do paciente → {nutriente: (min, max)} (Fase 1).
+
+    Só o que está preenchido entra; o resto continua vindo da dieta/plano.
+    Precedência (docs/personalizacao_por_paciente.md §3.3): paciente > plano > dieta.
+    """
+    rows = db.session.execute(text("""
+        SELECT nutriente, valor_minimo, valor_maximo
+        FROM restricoes_nutricionais_paciente
+        WHERE paciente_id = :pid AND desativado = 0
+    """), {'pid': paciente_id}).mappings().all()
+    faixas = {}
+    for r in rows:
+        vmin = float(r['valor_minimo']) if r['valor_minimo'] is not None else None
+        vmax = float(r['valor_maximo']) if r['valor_maximo'] is not None else None
+        faixas[r['nutriente']] = (vmin, vmax)
+    return faixas
+
+
+def carregar_pratos_excluidos(paciente_id):
+    """Ids de pratos excluídos do paciente (direto ou via ingrediente)."""
+    rows = db.session.execute(text("""
+        SELECT prato_id FROM exclusoes_paciente
+        WHERE paciente_id = :pid AND desativado = 0 AND prato_id IS NOT NULL
+        UNION
+        SELECT pc.prato_id FROM exclusoes_paciente e
+        JOIN prato_composicao pc ON pc.ingrediente_id = e.ingrediente_id
+        WHERE e.paciente_id = :pid AND e.desativado = 0 AND e.ingrediente_id IS NOT NULL
+    """), {'pid': paciente_id}).mappings().all()
+    return {r['prato_id'] for r in rows}
+
+
+def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False,
+                              paciente_id=None):
+    """Carrega dados do banco via SQLAlchemy (substitui sqlite3 direto).
+
+    paciente_id (opcional, Fase 1 personalização): aplica as exclusões do
+    paciente (direto ou via ingrediente) filtrado o conjunto de pratos.
+    """
     dieta = db.session.execute(
         text("SELECT id FROM dietas WHERE nome = :nome"), {'nome': dieta_nome}
     ).mappings().first()
@@ -84,6 +121,14 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False
           AND v.energia_kcal IS NOT NULL
     """)).mappings().all()
     pratos = [dict(row) for row in pratos]
+
+    # Fase 1 personalização: exclusões do paciente filtram o conjunto candidato
+    # (prato banido direto ou via ingrediente em prato_composicao)
+    if paciente_id:
+        excluidos = carregar_pratos_excluidos(paciente_id)
+        if excluidos:
+            pratos = [p for p in pratos if p['id'] not in excluidos]
+
     mapa_pratos = {p['id']: p for p in pratos}
 
     # Alimentos industrializados não são pratos diretamente; são carregados
