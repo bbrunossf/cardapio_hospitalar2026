@@ -18,6 +18,7 @@ from datetime import date
 import httpx
 from flask import Blueprint, jsonify, render_template, request
 from sqlalchemy import text, bindparam
+from authz import paciente_acessivel
 from extensions import db
 
 posso_comer_bp = Blueprint('posso_comer', __name__)
@@ -342,6 +343,8 @@ def pagina_posso_comer():
 
 @posso_comer_bp.route('/api/posso-comer/contexto/<int:paciente_id>')
 def api_contexto(paciente_id):
+    if not paciente_acessivel(paciente_id):
+        return jsonify({'erro': 'Paciente não encontrado.'}), 404
     return jsonify(_contexto_publico(paciente_id))
 
 
@@ -351,6 +354,8 @@ def api_consultar():
     paciente_id = data.get('paciente_id')
     if not paciente_id:
         return jsonify({'erro': 'paciente_id obrigatório'}), 400
+    if not paciente_acessivel(paciente_id):
+        return jsonify({'erro': 'Paciente não encontrado.'}), 404
 
     # --- modo 3: candidato escolhido na lista ambígua
     if data.get('candidato_tipo') and data.get('candidato_id'):

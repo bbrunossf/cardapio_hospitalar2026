@@ -1,14 +1,17 @@
 """
-App Flask + SQLAlchemy + Flask-Admin
+App Flask + SQLAlchemy + Flask-Admin + autenticação (Flask-Login)
 Interface administrativa para o banco de Cardápio Hospitalar
 """
-from flask import Flask, redirect, url_for
-
+import click
+from flask import Flask, abort, jsonify, redirect, request, url_for
+from flask_login import current_user
 
 from config import Config
-from extensions import db, admin
+from extensions import db, admin, login_manager
 from dashboard import DashboardView
 from admin_views import setup_admin
+from models_auth import Usuario
+from api.auth import auth_bp
 from api.composicao import composicao_bp
 from api.otimizacao import otimizacao_bp
 from api.rotulo import rotulo_bp
@@ -25,18 +28,48 @@ def create_app():
 
     # Inicializa extensões com o app
     db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = "Faça login para continuar."
 
     # Registra views do admin (ANTES de init_app!)
     setup_admin()
 
     # Registra blueprints de forma idempotente (evita erro no reloader)
-    for bp in [composicao_bp, otimizacao_bp, rotulo_bp, paciente_bp, plano_bp, posso_comer_bp, busca_semelhantes_bp]:
+    for bp in [auth_bp, composicao_bp, otimizacao_bp, rotulo_bp,
+               paciente_bp, plano_bp, posso_comer_bp, busca_semelhantes_bp]:
         if bp.name not in app.blueprints:
             app.register_blueprint(bp)
 
     # Monitor de uso por rota (server-side, SQLite separado via USAGE_DB_PATH)
     register_usage(app)
 
+    @login_manager.user_loader
+    def carregar_usuario(user_id):
+        return db.session.get(Usuario, int(user_id))
+
+    # ─── Proteção global: exige login em tudo, menos exceções ───────────────
+    # /api/* responde 401 JSON (fetch não quebra); demais redirecionam p/ login.
+    # O papel/escopo é checado depois, em cada view/rota (ver authz.py).
+    @app.before_request
+    def exigir_login():
+        if request.endpoint is None:
+            return
+        if request.endpoint in (
+            "auth.login", "auth.logout", "static",
+            "usage_monitor.usage_panel",  # painel tem guard próprio (token)
+        ):
+            return
+        if current_user.is_authenticated:
+            # leitura = somente leitura em qualquer lugar (nem POST nos forms)
+            if current_user.papel == "leitura" and request.method != "GET":
+                if request.path.startswith("/api/"):
+                    return jsonify({"erro": "Usuário somente leitura."}), 403
+                return abort(403)
+            return
+        if request.path.startswith("/api/"):
+            return jsonify({"erro": "Não autenticado."}), 401
+        return redirect(url_for("auth.login", next=request.path))
 
     print("Blueprints registrados:")
     for bp in app.blueprints:
@@ -59,6 +92,26 @@ def create_app():
     @app.context_processor
     def inject_admin():
         return {"admin": admin}
+
+    # ─── CLI: criar usuário (senha via prompt, hash scrypt) ─────────────────
+    @app.cli.command("criar-usuario")
+    @click.option("--email", required=True, prompt="E-mail")
+    @click.option("--nome", required=True, prompt="Nome")
+    @click.option("--papel", type=click.Choice(["admin", "nutricionista", "leitura"]),
+                  default="nutricionista", show_default=True, prompt="Papel")
+    @click.option("--senha", required=True, prompt="Senha",
+                  hide_input=True, confirmation_prompt=True)
+    def criar_usuario(email, nome, papel, senha):
+        """Cria um usuário do sistema (senha nunca fica em claro)."""
+        email = (email or "").strip().lower()
+        with app.app_context():
+            if db.session.query(Usuario).filter_by(email=email).first():
+                raise click.ClickException(f"E-mail já cadastrado: {email}")
+            u = Usuario(nome=(nome or "").strip(), email=email, papel=papel)
+            u.set_senha(senha)
+            db.session.add(u)
+            db.session.commit()
+            click.echo(f"Usuário criado: {email} ({papel})")
 
     return app
 

@@ -17,6 +17,7 @@ from flask import Blueprint, jsonify, redirect, render_template, request, url_fo
 from sqlalchemy import desc, text
 
 from api.otimizacao import carregar_dados_otimizacao, criar_modelo_otimizacao, resolver_e_extrair
+from authz import paciente_acessivel, plano_acessivel, query_pacientes
 from extensions import db
 from models_paciente import Paciente
 from models_plano import (CardapioDia, CardapioRefeicao, CardapioSalvo,
@@ -108,16 +109,18 @@ def pagina_lista_planos():
     """
     paciente_id = request.args.get("paciente_id", type=int)
     if paciente_id:
+        if not paciente_acessivel(paciente_id):
+            return "Paciente não encontrado.", 404
         return redirect(url_for("plano.pagina_planos_paciente", paciente_id=paciente_id))
-    pacientes = db.session.query(Paciente).filter(Paciente.desativado == False).order_by(Paciente.nome).all()
+    pacientes = query_pacientes().order_by(Paciente.nome).all()
     return render_template("planos_selecao.html", pacientes=pacientes)
 
 
 @plano_bp.route("/pacientes/<int:paciente_id>/planos")
 def pagina_planos_paciente(paciente_id):
     """Lista os planos de UM paciente (seleciona o paciente primeiro)."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return "Paciente não encontrado.", 404
 
     planos = (db.session.query(PlanoNutricional)
@@ -135,8 +138,10 @@ def pagina_planos_paciente(paciente_id):
 @plano_bp.route("/planos/novo")
 def pagina_novo_plano():
     """Formulário para criar um plano nutricional para um paciente."""
-    pacientes = db.session.query(Paciente).filter(Paciente.desativado == False).order_by(Paciente.nome).all()
+    pacientes = query_pacientes().order_by(Paciente.nome).all()
     paciente_id = request.args.get("paciente_id", type=int)
+    if paciente_id and not paciente_acessivel(paciente_id):
+        return "Paciente não encontrado.", 404
     return render_template("plano_form.html", pacientes=pacientes, paciente_id=paciente_id)
 
 
@@ -144,7 +149,7 @@ def pagina_novo_plano():
 def pagina_plano(plano_id):
     """Detalhe do plano + botão de gerar cardápio."""
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return "Plano não encontrado.", 404
     paciente = db.session.get(Paciente, plano.paciente_id)
     cardapios = (db.session.query(CardapioSalvo)
@@ -180,8 +185,8 @@ def api_criar_plano():
     if objetivo not in OBJETIVOS_VALIDOS:
         return jsonify({"erro": f"objetivo deve ser um de: {sorted(OBJETIVOS_VALIDOS)}."}), 400
 
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return jsonify({"erro": "Paciente não encontrado."}), 404
     if not paciente.peso_kg or not paciente.altura_cm:
         return jsonify({"erro": "Paciente precisa de peso_kg e altura_cm para o cálculo."}), 400
@@ -254,8 +259,8 @@ def api_criar_plano():
 @plano_bp.route("/api/pacientes/<int:paciente_id>/planos", methods=["GET"])
 def api_listar_planos(paciente_id):
     """Lista os planos de um paciente (mais recentes primeiro)."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return jsonify({"erro": "Paciente não encontrado."}), 404
     planos = (db.session.query(PlanoNutricional)
               .filter(PlanoNutricional.paciente_id == paciente_id)
@@ -268,7 +273,7 @@ def api_listar_planos(paciente_id):
 def api_obter_plano(plano_id):
     """Detalhe de um plano (com cardápios salvos)."""
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return jsonify({"erro": "Plano não encontrado."}), 404
     data = plano.to_dict()
     cardapios = (db.session.query(CardapioSalvo)
@@ -286,7 +291,7 @@ def api_obter_plano(plano_id):
 def api_cancelar_plano(plano_id):
     """Cancela um plano (status → cancelado; mantém histórico)."""
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return jsonify({"erro": "Plano não encontrado."}), 404
     plano.status = "cancelado"
     db.session.commit()
@@ -301,7 +306,7 @@ def api_cancelar_plano(plano_id):
 def pagina_simulador(plano_id):
     """Página do simulador de estratégia (arrastar ingestão/peso-alvo)."""
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return "Plano não encontrado.", 404
     paciente = db.session.get(Paciente, plano.paciente_id)
     return render_template("simulador.html", plano=plano, paciente=paciente)
@@ -311,7 +316,7 @@ def pagina_simulador(plano_id):
 def api_dados_simulador(plano_id):
     """Dados iniciais do simulador: plano + projeção semanal (7700 kcal/kg)."""
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return jsonify({"erro": "Plano não encontrado."}), 404
     paciente = db.session.get(Paciente, plano.paciente_id)
 
@@ -349,7 +354,7 @@ def api_ajustar_plano(plano_id):
     as macros pelo perfil (calculo_nutricional.distribuir_macros).
     """
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return jsonify({"erro": "Plano não encontrado."}), 404
     if plano.status != "ativo":
         return jsonify({"erro": "Plano não está ativo."}), 400
@@ -403,7 +408,7 @@ def api_gerar_cardapio(plano_id):
     Payload: {dieta?: 'LIVRE', dias?: int (1-30), versao?: int}
     """
     plano = db.session.get(PlanoNutricional, plano_id)
-    if not plano:
+    if not plano or not plano_acessivel(plano):
         return jsonify({"erro": "Plano não encontrado."}), 404
     if plano.status != "ativo":
         return jsonify({"erro": "Plano não está ativo."}), 400
@@ -491,7 +496,7 @@ def api_gerar_cardapio(plano_id):
 def api_obter_cardapio(cardapio_id):
     """Retorna um cardápio salvo com dias e refeições."""
     cardapio = db.session.get(CardapioSalvo, cardapio_id)
-    if not cardapio:
+    if not cardapio or not paciente_acessivel(cardapio.paciente_id):
         return jsonify({"erro": "Cardápio não encontrado."}), 404
     return jsonify({
         "id": cardapio.id,
@@ -527,7 +532,7 @@ def pagina_cardapio(cardapio_id):
     com totais de energia por dia e por refeição.
     """
     cardapio = db.session.get(CardapioSalvo, cardapio_id)
-    if not cardapio:
+    if not cardapio or not paciente_acessivel(cardapio.paciente_id):
         return "Cardápio não encontrado.", 404
 
     paciente = db.session.get(Paciente, cardapio.paciente_id)
@@ -550,17 +555,24 @@ def pagina_cardapio(cardapio_id):
     for r in refeicoes:
         refeicoes_por_dia.setdefault(r["cardapio_dia_id"], []).append(dict(r))
 
-    # Macros por dia — mesma fonte da energia (vw_pratos_nutricional, 1 porção
-    # padrão por prato), para os totais de P/C/L baterem com o kcal exibido.
+    # Nutrientes por dia — mesma fonte da energia (vw_pratos_nutricional, 1
+    # porção padrão por prato), para os totais baterem com o kcal exibido.
     # energia_calculada serve de conferência contra cardapio_dias.energia_kcal_total.
-    macros_por_dia = {
+    nutrientes_por_dia = {
         row["cardapio_dia_id"]: row
         for row in db.session.execute(text("""
             SELECT cr.cardapio_dia_id,
-                   ROUND(SUM(COALESCE(v.proteina_g, 0)), 1)    AS proteina_g,
-                   ROUND(SUM(COALESCE(v.carboidrato_g, 0)), 1) AS carboidrato_g,
-                   ROUND(SUM(COALESCE(v.lipidios_g, 0)), 1)    AS lipidios_g,
-                   ROUND(SUM(COALESCE(v.energia_kcal, 0)), 1)  AS energia_calculada
+                   ROUND(SUM(COALESCE(v.proteina_g, 0)), 1)          AS proteina_g,
+                   ROUND(SUM(COALESCE(v.carboidrato_g, 0)), 1)       AS carboidrato_g,
+                   ROUND(SUM(COALESCE(v.lipidios_g, 0)), 1)          AS lipidios_g,
+                   ROUND(SUM(COALESCE(v.fibra_alimentar_g, 0)), 1)   AS fibra_alimentar_g,
+                   ROUND(SUM(COALESCE(v.energia_kcal, 0)), 1)        AS energia_calculada,
+                   ROUND(SUM(COALESCE(v.calcio_mg, 0)), 1)           AS calcio_mg,
+                   ROUND(SUM(COALESCE(v.ferro_mg, 0)), 1)            AS ferro_mg,
+                   ROUND(SUM(COALESCE(v.sodio_mg, 0)), 1)            AS sodio_mg,
+                   ROUND(SUM(COALESCE(v.potassio_mg, 0)), 1)         AS potassio_mg,
+                   ROUND(SUM(COALESCE(v.fosforo_mg, 0)), 1)          AS fosforo_mg,
+                   ROUND(SUM(COALESCE(v.vit_c_mg, 0)), 1)            AS vit_c_mg
             FROM cardapio_refeicoes cr
             LEFT JOIN vw_pratos_nutricional v ON v.prato_id = cr.prato_id
             WHERE cr.cardapio_dia_id IN (
@@ -584,14 +596,23 @@ def pagina_cardapio(cardapio_id):
                 }
                 ordem_tipos.append(r["tipo_refeicao_id"])
             grupos[r["tipo_refeicao_id"]]["pratos"].append(r)
-        macros = macros_por_dia.get(dia.id, {})
+        nutri = nutrientes_por_dia.get(dia.id, {})
         dias_view.append({
             "dia_numero": dia.dia_numero,
             "energia_kcal_total": float(dia.energia_kcal_total) if dia.energia_kcal_total else None,
             "macros": {
-                "proteina_g": float(macros.get("proteina_g") or 0),
-                "carboidrato_g": float(macros.get("carboidrato_g") or 0),
-                "lipidios_g": float(macros.get("lipidios_g") or 0),
+                "proteina_g": float(nutri.get("proteina_g") or 0),
+                "carboidrato_g": float(nutri.get("carboidrato_g") or 0),
+                "lipidios_g": float(nutri.get("lipidios_g") or 0),
+            },
+            "micronutrientes": {
+                "fibra_alimentar_g": float(nutri.get("fibra_alimentar_g") or 0),
+                "calcio_mg": float(nutri.get("calcio_mg") or 0),
+                "ferro_mg": float(nutri.get("ferro_mg") or 0),
+                "sodio_mg": float(nutri.get("sodio_mg") or 0),
+                "potassio_mg": float(nutri.get("potassio_mg") or 0),
+                "fosforo_mg": float(nutri.get("fosforo_mg") or 0),
+                "vit_c_mg": float(nutri.get("vit_c_mg") or 0),
             },
             "tipos": [grupos[t] for t in ordem_tipos],
         })

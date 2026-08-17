@@ -1,10 +1,18 @@
+from flask import redirect, request, url_for
 from flask_admin import AdminIndexView, expose
+from flask_login import current_user
 from sqlalchemy import text
 from models import Ingrediente, Prato, Dieta, TipoRefeicao
 from extensions import db
 
 
 class DashboardView(AdminIndexView):
+
+    def is_accessible(self):
+        return current_user.is_authenticated
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for("auth.login", next=request.url))
 
     @expose('/')
     def index(self):
@@ -18,8 +26,6 @@ class DashboardView(AdminIndexView):
             'tipos_refeicao': TipoRefeicao.query.count(),
         }
 
-        # ... (cole EXATAMENTE o restante das queries do método index,
-        #      linhas 412–439, sem alteração)
         # Top pratos mais calóricos (via view)
         top_kcal = db.session.execute(
             text("SELECT prato_nome, energia_kcal, proteina_g FROM vw_pratos_nutricional WHERE qtd_ingredientes > 0 ORDER BY energia_kcal DESC LIMIT 5")

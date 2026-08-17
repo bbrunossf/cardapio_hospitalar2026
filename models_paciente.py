@@ -22,6 +22,9 @@ class Paciente(db.Model):
     objetivo = db.Column(db.String(20), default="manter")  # ganhar | perder | manter
     nivel_atividade_fisica = db.Column(db.String(20))  # sedentario | leve | moderado | intenso
     observacoes = db.Column(db.Text)
+    # Dono (escopo por nutricionista — docs/autenticacao.md). NULL = sem dono
+    # (só admin vê até atribuir). FK p/ usuarios(id), DDL em autenticacao.sql.
+    criado_por = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=True)
     criado_em = db.Column(db.DateTime, server_default=func.now())
     editado_em = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now())
     desativado = db.Column(db.Boolean, default=False)

@@ -24,6 +24,13 @@
         .meta-card small { color: #64748b; font-size: 12px; }
         .voltar { display: inline-block; margin-bottom: 12px; font-size: 13px; color: #2563eb; text-decoration: none; }
         .voltar:hover { text-decoration: underline; }
+        .micro-resumo { padding: 10px 20px; background: #f0f6ff; border-bottom: 1px solid #e2e8f0; }
+        .micro-resumo summary { cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #2563eb; }
+        .micro-resumo summary:hover { text-decoration: underline; }
+        .micro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 10px; }
+        .micro-item { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; text-align: center; }
+        .micro-item b { display: block; font-size: 15px; color: #1e293b; }
+        .micro-item small { color: #64748b; font-size: 11px; }
     </style>
 </head>
 <body>
@@ -89,6 +96,20 @@
                     {% endif %}
                 </span>
             </div>
+            {% if dia.micronutrientes %}
+            <details class="micro-resumo">
+                <summary>Micronutrientes do dia</summary>
+                <div class="micro-grid">
+                    <div class="micro-item"><b>{{ '%.1f'|format(dia.micronutrientes.fibra_alimentar_g) }}</b><small>fibra (g)</small></div>
+                    <div class="micro-item"><b>{{ '%.0f'|format(dia.micronutrientes.calcio_mg) }}</b><small>cálcio (mg)</small></div>
+                    <div class="micro-item"><b>{{ '%.1f'|format(dia.micronutrientes.ferro_mg) }}</b><small>ferro (mg)</small></div>
+                    <div class="micro-item"><b>{{ '%.0f'|format(dia.micronutrientes.sodio_mg) }}</b><small>sódio (mg)</small></div>
+                    <div class="micro-item"><b>{{ '%.0f'|format(dia.micronutrientes.potassio_mg) }}</b><small>potássio (mg)</small></div>
+                    <div class="micro-item"><b>{{ '%.0f'|format(dia.micronutrientes.fosforo_mg) }}</b><small>fósforo (mg)</small></div>
+                    <div class="micro-item"><b>{{ '%.0f'|format(dia.micronutrientes.vit_c_mg) }}</b><small>vit. C (mg)</small></div>
+                </div>
+            </details>
+            {% endif %}
             {% for tipo in dia.tipos %}
             <div class="refeicao">
                 <div class="refeicao-nome">{{ tipo.tipo_nome }}</div>

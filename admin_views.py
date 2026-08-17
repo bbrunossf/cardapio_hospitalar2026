@@ -1,5 +1,9 @@
+from flask import abort, redirect, request, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
+from flask_login import current_user
+from wtforms import PasswordField
+
 from models import (
     Ingrediente, TipoPrato, Prato, PratoComposicao,
     Dieta, TipoRefeicao, RegraComposicao, DietaRefeicao,
@@ -8,14 +12,13 @@ from models import (
 )
 from models_rotulo import AlimentoIndustrializado, AlimentoVersao, VwAlimentosIndustrializados100g
 from models_paciente import Paciente
+from models_auth import Usuario
+from authz import is_admin
 from extensions import db, admin
 
 
 # ─── BaseModelView ──────────────────────────────────────────────────────
 class BaseModelView(ModelView):
-    can_create = True
-    can_edit = True
-    can_delete = True
     can_export = True
     create_modal = False
     edit_modal = False
@@ -23,15 +26,99 @@ class BaseModelView(ModelView):
     column_display_pk = False
     column_hide_backrefs = False
 
+    # ─── Controle de acesso (docs/autenticacao.md) ─────────────────────────
+    # papeis_acesso: quem vê a view no menu. papeis_escrita: quem pode CRUD.
+    # escopo_por_dono: filtra por pacientes.criado_por (não-admin).
+    papeis_acesso = ("admin", "nutricionista", "leitura")
+    papeis_escrita = ("admin", "nutricionista")
+    escopo_por_dono = False
 
-# ─── (cole aqui TODAS as classes de view, L269–393) ────────────────────
-# IngredienteView, TipoPratoView, PratoView, DietaView,
-# PratoComposicaoView, TipoRefeicaoView, RegraComposicaoView,
-# DietaRefeicaoView, RegraElegibilidadeDietaView,
-# RestricaoNutricionalDietaView, RegraSensorialGeralView,
-# RegraVariedadeView, VwPratosNutricionalView
-#
-#
+    def is_accessible(self):
+        if not current_user.is_authenticated:
+            return False
+        return current_user.papel in self.papeis_acesso
+
+    def inaccessible_callback(self, name, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for("auth.login", next=request.url))
+        return abort(403)
+
+    def _pode_escrever(self):
+        return current_user.is_authenticated and current_user.papel in self.papeis_escrita
+
+    @property
+    def can_create(self):
+        return self._pode_escrever()
+
+    @property
+    def can_edit(self):
+        return self._pode_escrever()
+
+    @property
+    def can_delete(self):
+        return self._pode_escrever()
+
+    # Escopo por dono (equivalente a RLS na aplicação — SQLite não tem RLS)
+    def get_query(self):
+        q = super().get_query()
+        if self.escopo_por_dono and not is_admin():
+            q = q.filter(self.model.criado_por == current_user.id)
+        return q
+
+    def get_count_query(self):
+        q = super().get_count_query()
+        if self.escopo_por_dono and not is_admin():
+            q = q.filter(self.model.criado_por == current_user.id)
+        return q
+
+    def get_one(self, id):
+        obj = super().get_one(id)
+        if obj is None:
+            return None
+        if self.escopo_por_dono and not is_admin() and obj.criado_por != current_user.id:
+            return None
+        return obj
+
+
+# ─── Usuários (só admin; senha nunca listada; soft delete) ──────────────
+class UsuarioView(BaseModelView):
+    papeis_acesso = ("admin",)
+    papeis_escrita = ("admin",)
+    can_delete = False  # desativar em vez de apagar (pacientes referenciam)
+
+    column_list = ["nome", "email", "papel", "ultimo_login", "desativado", "criado_em"]
+    column_searchable_list = ["nome", "email"]
+    column_filters = ["papel", "desativado"]
+    column_choices = {
+        "papel": [("admin", "admin"), ("nutricionista", "nutricionista"), ("leitura", "leitura")],
+    }
+    column_labels = {
+        "nome": "Nome", "email": "E-mail", "papel": "Papel",
+        "ultimo_login": "Último login", "desativado": "Inativo", "criado_em": "Criado em",
+    }
+    form_excluded_columns = ["senha_hash", "criado_em", "editado_em", "ultimo_login"]
+    form_extra_fields = {
+        "senha": PasswordField("Senha"),
+        "confirmar": PasswordField("Confirmar senha"),
+    }
+
+    def validate_form(self, form):
+        if not super().validate_form(form):
+            return False
+        if form.senha.data and form.senha.data != form.confirmar.data:
+            form.confirmar.errors.append("As senhas não conferem.")
+            return False
+        if request.endpoint and request.endpoint.endswith("create_view") and not form.senha.data:
+            form.senha.errors.append("Senha é obrigatória no cadastro.")
+            return False
+        return True
+
+    def on_model_change(self, form, model, is_created):
+        if form.senha.data:
+            model.set_senha(form.senha.data)
+
+
+# ─── Catálogo (nutricionista pode CRUD) ─────────────────────────────────
 class IngredienteView(BaseModelView):
     column_list = ['nome', 'tipo_alimento', 'qtde', 'unidade_medida', 'energia_kcal', 'carboidrato_g', 'proteina_g', 'lipidios_g', 'fibra_alimentar_g', 'calcio_mg',
     'ferro_mg', 'sodio_mg', 'potassio_mg', 'fosforo_mg', 'vit_c_mg', 'vit_a_mg',
@@ -78,6 +165,7 @@ class IngredienteView(BaseModelView):
     # pass
 
 class TipoPratoView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['nome', 'ordem_servico']
     column_searchable_list = ['nome']
     form_excluded_columns = ['criado_em', 'editado_em', 'pratos']
@@ -94,7 +182,9 @@ class PratoView(BaseModelView):
     }
 
 
+# ─── Regras globais (config do motor — só admin edita) ──────────────────
 class DietaView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['nome', 'com_sal', 'descricao']
     column_searchable_list = ['nome']
     column_filters = ['com_sal']
@@ -123,21 +213,25 @@ class PratoComposicaoView(BaseModelView):
 # ==========================================
 
 class TipoRefeicaoView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['nome', 'horario_padrao', 'descricao']
     column_searchable_list = ['nome']
     form_excluded_columns = ['criado_em', 'editado_em', 'regras_composicao', 'dieta_refeicoes', 'regras_sensoriais']
 
 class RegraComposicaoView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['tipo_refeicao', 'tipo_prato', 'qtd_minima', 'qtd_maxima', 'obrigatorio']
     column_filters = ['tipo_refeicao', 'tipo_prato', 'obrigatorio']
     form_excluded_columns = ['id']
 
 class DietaRefeicaoView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['dieta', 'tipo_refeicao']
     column_filters = ['dieta', 'tipo_refeicao']
     form_excluded_columns = ['id']
 
 class RegraElegibilidadeDietaView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['dieta', 'atributo', 'valores_permitidos', 'operador']
     column_filters = ['dieta', 'atributo', 'operador']
     column_searchable_list = ['valores_permitidos']
@@ -147,11 +241,13 @@ class RegraElegibilidadeDietaView(BaseModelView):
     }
 
 class RestricaoNutricionalDietaView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['dieta', 'nutriente', 'valor_minimo', 'valor_maximo', 'periodo']
     column_filters = ['dieta', 'nutriente', 'periodo']
     form_excluded_columns = ['id']
 
 class RegraSensorialGeralView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['tipo_refeicao', 'regra', 'valor_limite', 'grupos_afetados']
     column_filters = ['tipo_refeicao', 'regra']
     form_excluded_columns = ['id']
@@ -160,11 +256,13 @@ class RegraSensorialGeralView(BaseModelView):
     }
 
 class RegraVariedadeView(BaseModelView):
+    papeis_escrita = ("admin",)
     column_list = ['tipo_prato', 'dias_minimos_repeticao', 'frequencia_maxima_semanal']
     column_filters = ['tipo_prato']
     form_excluded_columns = ['id']
 
 
+# ─── Consultas (somente leitura para todos) ─────────────────────────────
 class VwPratosNutricionalView(BaseModelView):
     can_create = False
     can_edit = False
@@ -234,13 +332,14 @@ class VwAlimentosIndustrializados100gView(BaseModelView):
 
 
 class PacienteView(BaseModelView):
+    escopo_por_dono = True  # nutricionista só vê os próprios (criado_por)
     column_list = [
         'nome', 'sexo', 'data_nascimento', 'peso_kg', 'altura_cm',
         'cintura_cm', 'quadril_cm', 'objetivo', 'desativado'
     ]
     column_searchable_list = ['nome']
     column_filters = ['sexo', 'objetivo', 'desativado']
-    form_excluded_columns = ['criado_em', 'editado_em']
+    form_excluded_columns = ['criado_em', 'editado_em', 'criado_por']
     column_labels = {
         'nome': 'Nome', 'sexo': 'Sexo', 'data_nascimento': 'Nascimento',
         'peso_kg': 'Peso (kg)', 'altura_cm': 'Altura (cm)',
@@ -254,6 +353,7 @@ class PacienteView(BaseModelView):
 def setup_admin():
     """Registra todas as views no admin."""
 
+    admin.add_view(UsuarioView(Usuario, db, name='Usuários'))
     admin.add_view(IngredienteView(Ingrediente, db, name='Ingredientes'))
     admin.add_view(TipoPratoView(TipoPrato, db, name='Tipos Prato'))
     admin.add_view(PratoView(Prato, db, name='Pratos'))

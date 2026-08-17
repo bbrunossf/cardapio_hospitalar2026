@@ -4,3 +4,12 @@
 {{ super() }}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_identidade.css') }}">
 {% endblock %}
+
+{% block access_control %}
+{% if current_user.is_authenticated %}
+<span class="navbar-text mr-2">{{ current_user.nome }} ({{ current_user.papel }})</span>
+<form method="post" action="{{ url_for('auth.logout') }}" class="form-inline" style="display:inline">
+  <button type="submit" class="btn btn-sm btn-outline-secondary">Sair</button>
+</form>
+{% endif %}
+{% endblock %}

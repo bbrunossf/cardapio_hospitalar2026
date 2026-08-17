@@ -4,6 +4,9 @@ from datetime import date, datetime
 from flask import Blueprint, jsonify, render_template, request
 from sqlalchemy import or_
 
+from flask_login import current_user
+
+from authz import paciente_acessivel, query_pacientes
 from extensions import db
 from models_paciente import Paciente
 
@@ -19,7 +22,7 @@ def api_listar_pacientes():
     """Lista pacientes ativos (opcional: ?q= busca por nome)."""
     q = request.args.get("q", "").strip()
 
-    query = db.session.query(Paciente).filter(Paciente.desativado == False)
+    query = query_pacientes()
 
     if q:
         query = query.filter(Paciente.nome.ilike(f"%{q}%"))
@@ -31,8 +34,8 @@ def api_listar_pacientes():
 @paciente_bp.route("/api/pacientes/<int:paciente_id>", methods=["GET"])
 def api_obter_paciente(paciente_id):
     """Obtém um paciente pelo ID."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return jsonify({"erro": "Paciente não encontrado."}), 404
     return jsonify(paciente.to_dict())
 
@@ -45,6 +48,7 @@ def api_criar_paciente():
         return jsonify({"erro": "Nome é obrigatório."}), 400
 
     paciente = _preencher_paciente(Paciente(), payload)
+    paciente.criado_por = current_user.id
     db.session.add(paciente)
     db.session.commit()
     return jsonify(paciente.to_dict()), 201
@@ -53,8 +57,8 @@ def api_criar_paciente():
 @paciente_bp.route("/api/pacientes/<int:paciente_id>", methods=["PUT"])
 def api_atualizar_paciente(paciente_id):
     """Atualiza um paciente existente."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return jsonify({"erro": "Paciente não encontrado."}), 404
 
     payload = request.get_json() or {}
@@ -66,8 +70,8 @@ def api_atualizar_paciente(paciente_id):
 @paciente_bp.route("/api/pacientes/<int:paciente_id>", methods=["DELETE"])
 def api_desativar_paciente(paciente_id):
     """Desativa um paciente (soft delete)."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return jsonify({"erro": "Paciente não encontrado."}), 404
     paciente.desativado = True
     db.session.commit()
@@ -124,7 +128,7 @@ def pagina_novo_paciente():
 @paciente_bp.route("/pacientes/<int:paciente_id>/editar")
 def pagina_editar_paciente(paciente_id):
     """Formulário de edição de paciente."""
-    paciente = db.session.get(Paciente, paciente_id)
-    if not paciente or paciente.desativado:
+    paciente = paciente_acessivel(paciente_id)
+    if not paciente:
         return render_template("pacientes.html"), 404
     return render_template("paciente_form.html", paciente=paciente)
