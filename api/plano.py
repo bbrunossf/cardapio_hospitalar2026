@@ -87,7 +87,7 @@ def _overrides_do_plano(plano: PlanoNutricional) -> dict:
     if plano.meta_kcal is not None:
         meta = float(plano.meta_kcal)
         overrides["meta_kcal"] = meta
-        overrides["energia_kcal"] = (round(meta * (1 - TOL_ENERGIA)), round(meta * (1 + TOL_ENERGIA)))
+        overrides["energia"] = (round(meta * (1 - TOL_ENERGIA)), round(meta * (1 + TOL_ENERGIA)))
     for campo, nutriente in (("proteinas_g", "proteina"), ("carboidratos_g", "carboidrato"),
                              ("lipidios_g", "lipidios")):
         valor = getattr(plano, campo)
@@ -443,11 +443,57 @@ def api_gerar_cardapio(plano_id):
     # Fase 1 personalização: faixas do paciente vencem as do plano (precedência
     # dieta → plano → paciente). Exclusões já filtraram os pratos no carregador.
     overrides.update(carregar_restricoes_paciente(plano.paciente_id))
+
+    import time as _time
+    from motor_log import (caminho_debug, debug_ativo, registrar,
+                           resumo_cardapio, totais_por_dia)
+    _debug = debug_ativo()
+    _lp_arquivo = None
+    _solver_arquivo = caminho_debug("solver", "log") if _debug else None
     try:
         problema, X, dados = criar_modelo_otimizacao(dados, dias=dias, overrides=overrides, objetivo="target")
-        resultado = resolver_e_extrair(problema, X, dados, dias=dias)
+        if _debug:
+            _lp_arquivo = caminho_debug("lp", "lp")
+            try:
+                problema.writeLP(_lp_arquivo)
+            except Exception:
+                _lp_arquivo = None
+        _t0 = _time.time()
+        resultado = resolver_e_extrair(problema, X, dados, dias=dias, msg=_debug,
+                                       log_path=_solver_arquivo)
+        _tempo_s = round(_time.time() - _t0, 2)
     except Exception as e:
+        registrar({
+            'fluxo': 'plano', 'paciente_id': plano.paciente_id, 'plano_id': plano.id,
+            'dieta': dieta_nome, 'dias': dias, 'objetivo': 'target',
+            'status': 'erro', 'erro': str(e),
+        })
         return jsonify({"erro": f"Falha na otimização: {e}"}), 500
+
+    # Log do motor (JSONL — docs: motor_log.py); roda também p/ Infeasible
+    _log_dados = {
+        'fluxo': 'plano',
+        'paciente_id': plano.paciente_id,
+        'plano_id': plano.id,
+        'dieta': dieta_nome,
+        'dias': dias,
+        'objetivo': 'target',
+        'status': resultado['status'],
+        'tempo_s': _tempo_s,
+        'overrides': overrides,
+        'pratos_considerados': len(dados['pratos']),
+        'metricas': resultado.get('metricas', {}),
+        'cardapio': resumo_cardapio(resultado['cardapio']),
+    }
+    if _debug:
+        _log_dados['debug'] = {
+            'lp_arquivo': _lp_arquivo,
+            'solver_log': _solver_arquivo,
+            'variaveis': len(problema.variables()),
+            'restricoes': len(problema.constraints),
+            'totais_por_dia': totais_por_dia(resultado['cardapio']),
+        }
+    registrar(_log_dados)
 
     if resultado["status"] != "Optimal":
         return jsonify({

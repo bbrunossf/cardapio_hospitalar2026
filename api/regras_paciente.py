@@ -14,6 +14,7 @@ import json
 from flask import Blueprint, jsonify, request
 
 from authz import paciente_acessivel
+from api.otimizacao import COLUNAS_NUTRIENTES, COLUNA_PARA_NOME
 from extensions import db
 from models_personalizacao import (
     ExclusaoPaciente,
@@ -68,8 +69,9 @@ def _preencher(regra, payload, parcial=False):
     if isinstance(regra, RestricaoNutricionalPaciente):
         if "nutriente" in payload:
             nutriente = (payload.get("nutriente") or "").strip().lower()
-            if not nutriente:
-                return "nutriente é obrigatório."
+            nutriente = COLUNA_PARA_NOME.get(nutriente, nutriente)  # tolera 'sodio_mg'
+            if nutriente not in COLUNAS_NUTRIENTES:
+                return (f"nutriente inválido. Válidos: {', '.join(sorted(COLUNAS_NUTRIENTES))}.")
             regra.nutriente = nutriente
         elif not parcial:
             return "nutriente é obrigatório."

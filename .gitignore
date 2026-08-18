@@ -2,6 +2,7 @@ __pycache__/
 teste_embeddings.py
 .env
 usage.db*
+logs/
 .understand-anything/
 # bancos de dados locais (dados mudam a cada uso; não versionar)
 cardapio_hospitalar.db

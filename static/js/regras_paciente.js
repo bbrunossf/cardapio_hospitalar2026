@@ -26,10 +26,10 @@
     temperatura_servimento: 'Temperatura', cor_predominante: 'Cor'
   };
   var LABEL_NUTRIENTE = {
-    energia_kcal: 'Energia (kcal)', proteina_g: 'Proteína (g)', carboidrato_g: 'Carboidrato (g)',
-    lipidios_g: 'Lipídios (g)', fibra_alimentar_g: 'Fibra (g)', sodio_mg: 'Sódio (mg)',
-    potassio_mg: 'Potássio (mg)', fosforo_mg: 'Fósforo (mg)', calcio_mg: 'Cálcio (mg)',
-    ferro_mg: 'Ferro (mg)', vit_c_mg: 'Vitamina C (mg)'
+    energia: 'Energia (kcal)', proteina: 'Proteína (g)', carboidrato: 'Carboidrato (g)',
+    lipidios: 'Lipídios (g)', fibra: 'Fibra (g)', sodio: 'Sódio (mg)',
+    potassio: 'Potássio (mg)', fosforo: 'Fósforo (mg)', calcio: 'Cálcio (mg)',
+    ferro: 'Ferro (mg)', gordura_saturada: 'Gordura saturada (g)'
   };
 
   function api(url, opts) {

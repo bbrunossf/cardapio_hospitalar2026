@@ -17,11 +17,15 @@ otimizacao_bp = Blueprint('otimizacao', __name__)
 # ══════════════════════════════════════════════════════════════════
 
 # Mapeamento de nutrientes das restrições para colunas do banco
+# Nome canônico = nome CURTO (mesmo da tabela restricoes_nutricionais_dieta).
+# Nomes de coluna ('sodio_mg') são tolerados na entrada e normalizados.
 COLUNAS_NUTRIENTES = {
     'energia': 'energia_kcal', 'proteina': 'proteina_g', 'lipidios': 'lipidios_g',
     'carboidrato': 'carboidrato_g', 'fibra': 'fibra_alimentar_g', 'sodio': 'sodio_mg',
-    'potassio': 'potassio_mg',
+    'potassio': 'potassio_mg', 'fosforo': 'fosforo_mg', 'calcio': 'calcio_mg',
+    'ferro': 'ferro_mg', 'gordura_saturada': 'gordura_saturada_g',
 }
+COLUNA_PARA_NOME = {v: k for k, v in COLUNAS_NUTRIENTES.items()}
 
 # Mapeamento de atributos sensoriais das regras de elegibilidade para colunas do banco
 # (a coluna da cor é 'cor_predominante', mas as regras usam 'cor')
@@ -69,9 +73,13 @@ def carregar_restricoes_paciente(paciente_id):
     """), {'pid': paciente_id}).mappings().all()
     faixas = {}
     for r in rows:
+        nome = r['nutriente']
+        nome = COLUNA_PARA_NOME.get(nome, nome)  # tolera legado gravado como coluna ('sodio_mg')
+        if nome not in COLUNAS_NUTRIENTES:
+            continue  # nutriente sem coluna no motor (ex.: vit_c_mg sem dados) — ignorar
         vmin = float(r['valor_minimo']) if r['valor_minimo'] is not None else None
         vmax = float(r['valor_maximo']) if r['valor_maximo'] is not None else None
-        faixas[r['nutriente']] = (vmin, vmax)
+        faixas[nome] = (vmin, vmax)
     return faixas
 
 
@@ -113,6 +121,10 @@ def carregar_dados_otimizacao(dieta_nome="LIVRE", incluir_industrializados=False
                COALESCE(v.fibra_alimentar_g, 0) AS fibra_alimentar_g,
                COALESCE(v.sodio_mg, 0) AS sodio_mg,
                COALESCE(v.potassio_mg, 0) AS potassio_mg,
+               COALESCE(v.fosforo_mg, 0) AS fosforo_mg,
+               COALESCE(v.calcio_mg, 0) AS calcio_mg,
+               COALESCE(v.ferro_mg, 0) AS ferro_mg,
+               COALESCE(v.gordura_saturada_g, 0) AS gordura_saturada_g,
                v.massa_total_calculada, v.qtd_ingredientes
         FROM pratos p
         JOIN vw_pratos_nutricional v ON p.id = v.prato_id
@@ -408,10 +420,19 @@ def criar_modelo_otimizacao(dados, dias=5, overrides=None, objetivo='max_energia
 # RESOLUÇÃO E EXTRAÇÃO DE RESULTADOS
 # ══════════════════════════════════════════════════════════════════
 
-def resolver_e_extrair(problema, X, dados, dias=5):
-    """Resolve o modelo PuLP e retorna dados estruturados."""
+def resolver_e_extrair(problema, X, dados, dias=5, msg=False, log_path=None):
+    """Resolve o modelo PuLP e retorna dados estruturados.
 
-    status = problema.solve(pulp.PULP_CBC_CMD(timeLimit=180, gapRel=0.1, msg=0))
+    msg=True (debug): mostra o progresso do CBC no console.
+    log_path (debug): redireciona a saída do CBC para o arquivo (PuLP 3.x
+    suporta logPath no PULP_CBC_CMD — mais confiável que capturar stdout).
+    """
+
+    if log_path:
+        status = problema.solve(pulp.PULP_CBC_CMD(timeLimit=180, gapRel=0.1,
+                                                  msg=False, logPath=log_path))
+    else:
+        status = problema.solve(pulp.PULP_CBC_CMD(timeLimit=180, gapRel=0.1, msg=msg))
 
     if status not in (1, 0):
         return {
@@ -438,6 +459,14 @@ def resolver_e_extrair(problema, X, dados, dias=5):
                         'porcao_g': float(porcao) if porcao else None,
                         'energia_kcal': float(p.get('energia_kcal', 0)),
                         'proteina_g': float(p.get('proteina_g', 0)),
+                        'carboidrato_g': float(p.get('carboidrato_g', 0)),
+                        'lipidios_g': float(p.get('lipidios_g', 0)),
+                        'sodio_mg': float(p.get('sodio_mg', 0)),
+                        'potassio_mg': float(p.get('potassio_mg', 0)),
+                        'fosforo_mg': float(p.get('fosforo_mg', 0)),
+                        'calcio_mg': float(p.get('calcio_mg', 0)),
+                        'ferro_mg': float(p.get('ferro_mg', 0)),
+                        'gordura_saturada_g': float(p.get('gordura_saturada_g', 0)),
                     }
                     tipos_na_refeicao[tipo_nome].append(prato_info)
                     for n in totais_nutrientes:
@@ -508,8 +537,49 @@ def executar_otimizacao():
     except ValueError as e:
         return jsonify({'erro': str(e)}), 404
 
-    problema, X, dados = criar_modelo_otimizacao(dados, dias=dias)
-    resultado = resolver_e_extrair(problema, X, dados, dias=dias)
+    # ⚠️ objetivo agora é repassado ao modelo (bug antigo: endpoint lia e
+    # descartava; log ficaria mentiroso)
+    problema, X, dados = criar_modelo_otimizacao(dados, dias=dias, objetivo=funcao_objetivo)
+
+    from motor_log import (caminho_debug, debug_ativo, registrar,
+                           resumo_cardapio, totais_por_dia)
+    _debug = debug_ativo()
+    _lp_arquivo = None
+    if _debug:
+        _lp_arquivo = caminho_debug("lp", "lp")
+        try:
+            problema.writeLP(_lp_arquivo)
+        except Exception:
+            _lp_arquivo = None
+
+    import time as _time
+    _solver_arquivo = caminho_debug("solver", "log") if _debug else None
+    _t0 = _time.time()
+    resultado = resolver_e_extrair(problema, X, dados, dias=dias, msg=_debug,
+                                   log_path=_solver_arquivo)
+    _tempo_s = round(_time.time() - _t0, 2)
+
+    # Log do motor (JSONL — docs: motor_log.py)
+    _log_dados = {
+        'fluxo': 'otimizacao',
+        'dieta': dieta_nome,
+        'dias': dias,
+        'objetivo': funcao_objetivo,
+        'status': resultado['status'],
+        'tempo_s': _tempo_s,
+        'pratos_considerados': len(dados['pratos']),
+        'metricas': resultado.get('metricas', {}),
+        'cardapio': resumo_cardapio(resultado['cardapio']),
+    }
+    if _debug:
+        _log_dados['debug'] = {
+            'lp_arquivo': _lp_arquivo,
+            'solver_log': _solver_arquivo,
+            'variaveis': len(problema.variables()),
+            'restricoes': len(problema.constraints),
+            'totais_por_dia': totais_por_dia(resultado['cardapio']),
+        }
+    registrar(_log_dados)
 
     if formato == 'html':
         return render_template(
