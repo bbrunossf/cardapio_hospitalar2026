@@ -2,7 +2,7 @@
 Modelos SQLAlchemy para o módulo de cadastro de alimentos por rótulo nutricional.
 
 As tabelas correspondentes devem ser criadas manualmente no banco (DDL na
-especificacao_modulo_rotulo.md, seção 5.2). Este arquivo contém apenas os
+docs/especificacao_modulo_rotulo.md, seção 5.2). Este arquivo contém apenas os
 modelos de mapeamento, sem CREATE TABLE/ALTER TABLE.
 """
 from sqlalchemy import func

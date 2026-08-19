@@ -28,6 +28,8 @@ import io
 import sys
 from pathlib import Path
 
+from off_utils import detectar_delimitador, detectar_encoding, parse_linha, parse_num
+
 # Subconjunto exato de colunas usado pelo importador (docs/importacao_openfoodfacts.md seção 3)
 COLUNAS_OFF = [
     "code",
@@ -73,30 +75,24 @@ def parse_linha(linha, n_colunas):
     return campos
 
 
-def float_val(raw):
-    s = str(raw or "").strip()
-    if not s:
-        return None
-    try:
-        v = float(s)
-    except ValueError:
-        return None
-    return None if v < 0 else v
-
-
 def motivo_descarte(row):
-    """Retorna o motivo do descarte ou None se a linha aproveita."""
+    """Retorna o motivo do descarte ou None se a linha aproveita (dump completo, com países)."""
     paises = " ".join([row.get("countries_tags") or "",
                        row.get("countries_en") or "",
                        row.get("countries") or ""]).lower()
     if "brazil" not in paises:
         return "pais"
+    return motivo_descarte_sem_pais(row)
+
+
+def motivo_descarte_sem_pais(row):
+    """Filtros que não dependem de país (CSV já filtrado por Brazil pode não ter as colunas)."""
     if str(row.get("no_nutrition_data") or "").strip() == "1":
         return "sem_nutri"
-    e = float_val(row.get("energy-kcal_100g"))
+    e = parse_num(row.get("energy-kcal_100g"))
     if e is None or e <= 0:
         return "sem_energia"
-    p = float_val(row.get("serving_quantity"))
+    p = parse_num(row.get("serving_quantity"))
     if p is None or p <= 0:
         return "sem_porcao"
     nome = str(row.get("product_name") or row.get("abbreviated_product_name")
@@ -112,8 +108,10 @@ def extrair(args):
     linhas = 0
     primeiro = True
     header = None
+    tem_pais = False
+    encoding = args.encoding or detectar_encoding(args.origem)
 
-    with open(args.origem, encoding="utf-8", errors="replace", newline="") as fin, \
+    with open(args.origem, encoding=encoding, errors="replace", newline="") as fin, \
          open(args.destino, "w", encoding="utf-8", newline="") as fout:
         w = csv.DictWriter(fout, fieldnames=COLUNAS_OFF)
         w.writeheader()
@@ -126,25 +124,31 @@ def extrair(args):
                 continue
             if primeiro:
                 primeiro = False
-                header = parse_linha(linha, 0) or next(csv.reader(io.StringIO(linha)))
+                delimitador = detectar_delimitador(linha)
+                header = parse_linha(linha, 0, delimitador) or \
+                    next(csv.reader(io.StringIO(linha), delimiter=delimitador))
                 header = [h.strip() for h in header]
                 if "code" not in header:
                     sys.exit(f"ERRO: dump sem coluna 'code' (headers: {header[:8]}...)")
                 n_colunas = len(header)
+                tem_pais = any(c in header for c in ("countries", "countries_tags", "countries_en"))
+                if not tem_pais:
+                    print("AVISO: sem colunas de país no header — filtro de país desativado "
+                          "(assume que a extração já filtrou Brazil)")
                 continue
-            campos = parse_linha(linha, n_colunas)
+            campos = parse_linha(linha, n_colunas, delimitador)
             if campos is None:
                 contadores["linha_invalida"] += 1
                 continue
             row = dict(zip(header, campos))
-            motivo = motivo_descarte(row)
+            motivo = motivo_descarte(row) if tem_pais else motivo_descarte_sem_pais(row)
             if motivo:
                 contadores[motivo] += 1
                 continue
             w.writerow({c: row.get(c, "") for c in COLUNAS_OFF})
             contadores["aproveitadas"] += 1
 
-    return contadores, linhas
+    return contadores, linhas, encoding
 
 
 def main():
@@ -153,12 +157,15 @@ def main():
     ap.add_argument("--origem", required=True, help="dump CSV completo do OFF")
     ap.add_argument("--destino", required=True, help="CSV filtrado de saída")
     ap.add_argument("--limite", type=int, default=0, help="testar só as N primeiras linhas")
+    ap.add_argument("--encoding", default=None,
+                    help="forçar encoding do arquivo (default: auto-detect utf-8/cp1252/cp850)")
     args = ap.parse_args()
 
-    c, linhas = extrair(args)
+    c, linhas, encoding = extrair(args)
     util = c["aproveitadas"]
     pct = 100.0 * util / linhas if linhas else 0.0
     print(f"Linhas lidas: {linhas}")
+    print(f"Encoding detectado: {encoding}")
     print(f"Aproveitadas: {util} ({pct:.1f}%)")
     print("Descartadas: "
           f"pais={c['pais']} sem_nutri={c['sem_nutri']} sem_energia={c['sem_energia']} "

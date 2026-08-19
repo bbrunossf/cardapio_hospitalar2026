@@ -21,6 +21,8 @@ import sqlite3
 import sys
 from pathlib import Path
 
+from off_utils import detectar_delimitador, detectar_encoding, parse_linha, parse_num
+
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_DB = REPO / "cardapio_hospitalar.db"
 
@@ -82,17 +84,9 @@ FONTE = "barcode"  # único valor compatível com o CHECK da tabela (ver doc se�
 
 
 def float_or_none(raw):
-    """OFF usa string vazia p/ ausente; valores negativos = erro de edição -> None."""
-    if raw is None:
-        return None
-    s = str(raw).strip()
-    if not s:
-        return None
-    try:
-        v = float(s)
-    except ValueError:
-        return None
-    return None if v < 0 else v
+    """OFF usa string vazia p/ ausente; valores negativos = erro de edição -> None.
+    Aceita vírgula decimal pt-BR (\"380,00\") via off_utils.parse_num."""
+    return parse_num(raw)
 
 
 def norm_name(raw, limite):
@@ -102,18 +96,6 @@ def norm_name(raw, limite):
 
 def so_digitos(raw):
     return re.sub(r"\D", "", str(raw or ""))
-
-
-def parse_linha(linha, n_colunas):
-    """Uma linha do CSV do OFF pode ter quotes quebradas (dump conhecido por isso).
-    Retorna lista de campos ou None se a linha for irrecuperável."""
-    try:
-        campos = next(csv.reader(io.StringIO(linha)))
-    except csv.Error:
-        return None
-    if len(campos) != n_colunas:
-        return None
-    return campos
 
 
 def alergenos_json(raw):
@@ -158,7 +140,7 @@ def importar(args):
     faltando = obrig - tabela_cols
     if faltando:
         sys.exit(f"ERRO: tabela alimentos_industrializados sem colunas {sorted(faltando)} — "
-                 f"rodar o DDL da seção 5.2 do especificacao_modulo_rotulo.md")
+                 f"rodar o DDL da seção 5.2 do docs/especificacao_modulo_rotulo.md")
 
     tem_colunas_motor = {"porcao_padrao_g", "tipo_prato_id"} <= tabela_cols
 
@@ -193,10 +175,12 @@ def importar(args):
     sugestoes = 0
     exemplos = []
     linhas_lidas = 0
+    encoding = args.encoding or detectar_encoding(args.csv)
 
-    with open(args.csv, encoding="utf-8", errors="replace", newline="") as f:
+    with open(args.csv, encoding=encoding, errors="replace", newline="") as f:
         primeiro = True
         header = None
+        delimitador = None
         for linha_bruta in f:
             if args.limite and linhas_lidas >= args.limite:
                 break
@@ -206,16 +190,21 @@ def importar(args):
                 continue
             if primeiro:
                 primeiro = False
+                delimitador = detectar_delimitador(linha)
                 # headers também podem ter quote quebrada; tratar igual
-                header = parse_linha(linha, 0)
+                header = parse_linha(linha, 0, delimitador)
                 if header is None:
-                    header = csv.reader(io.StringIO(linha)).__next__()
+                    header = next(csv.reader(io.StringIO(linha), delimiter=delimitador))
                 header = [h.strip() for h in header]
                 if "code" not in header:
                     sys.exit(f"ERRO: CSV sem coluna 'code' (headers: {header[:8]}...)")
                 n_colunas = len(header)
+                tem_pais = any(c in header for c in ("countries", "countries_tags", "countries_en"))
+                if not tem_pais:
+                    print("AVISO: sem colunas de país no header — filtro de país desativado "
+                          "(assume que a extração já filtrou Brazil)")
                 continue
-            campos = parse_linha(linha, n_colunas)
+            campos = parse_linha(linha, n_colunas, delimitador)
             if campos is None:
                 contadores["linha_invalida"] += 1
                 continue
@@ -226,13 +215,14 @@ def importar(args):
             if not (8 <= len(codigo) <= 14):
                 contadores["codigo_invalido"] += 1
                 continue
-            # 2. país Brasil
-            paises = " ".join([row.get("countries_tags") or "",
-                               row.get("countries_en") or "",
-                               row.get("countries") or ""]).lower()
-            if "brazil" not in paises:
-                contadores["pais"] += 1
-                continue
+            # 2. país Brasil (só se o CSV tiver as colunas — filtrado antes pode não ter)
+            if tem_pais:
+                paises = " ".join([row.get("countries_tags") or "",
+                                   row.get("countries_en") or "",
+                                   row.get("countries") or ""]).lower()
+                if "brazil" not in paises:
+                    contadores["pais"] += 1
+                    continue
             # 3. tem tabela nutricional
             if str(row.get("no_nutrition_data") or "").strip() == "1":
                 contadores["sem_nutri"] += 1
@@ -337,6 +327,8 @@ def main():
     ap.add_argument("--seco", action="store_true", help="dry-run: nenhum INSERT; só relatório")
     ap.add_argument("--sugerir-tipos", action="store_true",
                     help="grava tipo_prato_id sugerido (sem a flag, sugestões só aparecem no relatório)")
+    ap.add_argument("--encoding", default=None,
+                    help="forçar encoding do CSV (default: auto-detect utf-8/cp1252/cp850)")
     args = ap.parse_args()
 
     c, alertas, exemplos, sugestoes, linhas = importar(args)

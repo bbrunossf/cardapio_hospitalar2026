@@ -38,9 +38,13 @@ A visão de produto original está em [`inicial.md`](inicial.md).
 - Nutrientes e massa calculados dinamicamente pela view
 
 ### Otimização de Cardápio (`/otimizacao`)
-- Gera cardápio diário respeitando dieta, regras sensoriais e de variedade
-- Objetivos: maximizar energia, minimizar custo, target
+- Gera cardápio diário respeitando dieta, composição por refeição,
+  elegibilidade e regras sensoriais (`sem_quentes`)
+- Objetivos: `max_energia` (default) e `target` (meta kcal do plano —
+  minimiza o desvio absoluto diário)
 - Overrides por plano: energia meta ±10%, macros ±15%
+- Histórico versionado do motor (v1→v2→v3):
+  [`docs/motor_otimizacao/`](docs/motor_otimizacao/README.md)
 
 ### Cadastro por Rótulo (`/rotulo`)
 - Leitura de código de barras (OpenFoodFacts), OCR (Tesseract) e visão LLM
@@ -73,6 +77,13 @@ A visão de produto original está em [`inicial.md`](inicial.md).
   pacientes (coluna `pacientes.criado_por`) — equivalente a RLS na aplicação
   (SQLite não tem RLS nativo; planos/cardápios/restrições escopam via JOIN)
 - Detalhes: [`docs/autenticacao.md`](docs/autenticacao.md)
+
+### Regras por Paciente (Fase 1 — 17/08/2026)
+- Faixas nutricionais, elegibilidade, variedade e exclusões **por paciente**
+  (`/pacientes/<id>/planos`, 4 abas) — precedência no motor:
+  **paciente > plano > dieta**
+- Fases 2-3 (elegibilidade/variedade no motor, refeições do paciente) planejadas
+- Detalhes: [`docs/personalizacao_por_paciente.md`](docs/personalizacao_por_paciente.md)
 
 ### Monitor de uso
 - Acessos anônimos por rota/dia em SQLite separado (`usage.db`), painel em
@@ -131,28 +142,45 @@ config.py / extensions.py
 models.py                # catálogo + regras + passos de preparo
 models_paciente.py       # pacientes (criado_por = dono)
 models_plano.py          # planos, cardápios, restrições
+models_personalizacao.py # regras por paciente (4 tabelas)
 models_rotulo.py         # alimentos industrializados
 models_auth.py           # usuarios (Flask-Login)
 authz.py                 # papéis + escopo por dono (paciente_acessivel)
 admin_views.py           # Flask-Admin (BaseModelView com papel/escopo)
 dashboard.py             # home do admin
-api/                     # blueprints: auth, paciente, plano, posso_comer,
-                         #   busca_semelhantes, composicao, otimizacao, rotulo
+motor_log.py             # log do motor (JSONL; MOTOR_DEBUG p/ artefatos PuLP)
+api/                     # blueprints: auth, paciente, plano, regras_paciente,
+                         #   posso_comer, busca_semelhantes, composicao,
+                         #   otimizacao, rotulo
 calculo_nutricional/     # TMB/GET/meta/macros/antropometria (stdlib puro)
 wolfram_client.py        # cliente WolframAlpha (legado/benchmark)
 usage_monitor.py         # monitor de uso por rota
-scripts/                 # gerar_embeddings_alimentos.py, aplicar_escopo_auth.py
+scripts/                 # embeddings, escopo auth, importação OFF (off_utils)
+legado/                  # arquivos antigos fora do app (app antigo, diagnósticos)
 templates/ static/       # páginas, JS (d3 local), CSS (paleta Blues)
 docs/                    # planos e DDLs por feature (docs/sql/)
 ```
 
 ## Documentação de decisões (`docs/`)
 
-- `autenticacao.md` — papéis + escopo por dono (17/08/2026)
-- `personalizacao_por_paciente.md` — delta de restrições por paciente (proposto)
-- `industrializados_no_motor.md` — alimentos industrializados no motor (aprovado)
-- `posso_comer.md`, `ficha_tecnica.md`, `plano_calculos_locais.md`,
-  `analise_integracao_wolfram.md`
+- `autenticacao.md` — papéis + escopo por dono (17/08/2026, implementado)
+- `personalizacao_por_paciente.md` — regras por paciente (Fase 1 implementada
+  17/08/2026; Fases 2-3 planejadas)
+- `industrializados_no_motor.md` — industrializados no motor (aprovado; DDL
+  executado 18/08, código pendente)
+- `importacao_openfoodfacts.md` — importação do dump Open Food Facts
+- `busca_semelhantes.md` — busca semântica de alimentos (15/08/2026, implementado)
+- `posso_comer.md` — "Posso Comer?" (15/08/2026, implementado)
+- `ficha_tecnica.md` — ficha técnica das preparações (implementado)
+- `plano_calculos_locais.md`, `analise_integracao_wolfram.md` — cálculos locais
+  determinísticos vs. Wolfram (benchmark)
+- `objetivo_generico.md` — função objetivo genérica max/min de nutrientes
+  (proposta 18/08/2026, aguardando aprovação)
+- `motor_otimizacao/` — histórico versionado do motor (v1/v2 arquivadas,
+  v3 = `api/otimizacao.py`) + pendências
+- `especificacao_modulo_rotulo.md` — spec do cadastro por rótulo nutricional
+  (DDL base + roteiro; referencia da seção 9 do motor)
+- `registro_alimentar_48h.md` — registro alimentar 48h (planejamento 19/08/2026)
 - DDLs prontos para execução manual em `docs/sql/`
 
 ## Workflow git
