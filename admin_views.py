@@ -133,7 +133,11 @@ class IngredienteView(BaseModelView):
     column_searchable_list = ['nome', 'tipo_alimento']
     column_filters = ['tipo_alimento', 'disponibilidade', 'desativado']
     column_editable_list = ['disponibilidade', 'custo_por_100g']
-    form_excluded_columns = ['criado_em', 'editado_em']
+    # 'composicoes' (backref to-many p/ prato_composicao) NÃO pode entrar no form:
+    # a PK de prato_composicao é (prato_id, ingrediente_id) e o campo vazio faria o
+    # SQLAlchemy tentar NULLar ingrediente_id ao salvar (AssertionError
+    # "tried to blank-out primary key column"). Composição se edita na Ficha Técnica.
+    form_excluded_columns = ['criado_em', 'editado_em', 'composicoes']
 
     # Labels com \n = quebra de linha no header (nome na 1ª linha, unidade na 2ª).
     # \u00a0 = espaço não-quebrável: nomes compostos não quebram no meio.
@@ -168,14 +172,18 @@ class TipoPratoView(BaseModelView):
     papeis_escrita = ("admin",)
     column_list = ['nome', 'ordem_servico']
     column_searchable_list = ['nome']
-    form_excluded_columns = ['criado_em', 'editado_em', 'pratos']
+    # Backrefs to-many fora do form: campo vazio NULLaria as FKs (regras_composicao/
+    # regras_variedade são nuláveis no schema) e orfanaria linhas silenciosamente.
+    form_excluded_columns = ['criado_em', 'editado_em', 'pratos', 'regras_composicao', 'regras_variedade']
 
 
 class PratoView(BaseModelView):
     column_list = ['nome', 'tipo_prato', 'consistencia', 'temperatura_servimento']
     column_searchable_list = ['nome']
     column_filters = ['tipo_prato', 'consistencia', 'temperatura_servimento']
-    form_excluded_columns = ['criado_em', 'editado_em', 'prato_preparacoes', 'passos_preparo']
+    # 'composicoes' (backref to-many p/ prato_composicao): PK composta não-nulável —
+    # o campo vazio no form estoura AssertionError ao salvar (mesmo caso do Ingrediente).
+    form_excluded_columns = ['criado_em', 'editado_em', 'prato_preparacoes', 'passos_preparo', 'composicoes']
     column_labels = {
         'tipo_prato': 'Tipo', 'consistencia': 'Consistência',
         'temperatura_servimento': 'Temperatura'
@@ -188,7 +196,10 @@ class DietaView(BaseModelView):
     column_list = ['nome', 'com_sal', 'descricao']
     column_searchable_list = ['nome']
     column_filters = ['com_sal']
-    form_excluded_columns = ['criado_em', 'editado_em', 'variacoes']
+    # Backrefs to-many fora do form: campo vazio NULLaria as FKs (nuláveis no schema)
+    # e orfanaria dieta_refeicoes/regras silenciosamente ao salvar.
+    form_excluded_columns = ['criado_em', 'editado_em', 'variacoes',
+                             'dieta_refeicoes', 'regras_elegibilidade', 'restricoes_nutricionais']
     column_labels = {'com_sal': 'Com sal?', 'descricao': 'Descrição'}
     column_editable_list = ['com_sal']
 
