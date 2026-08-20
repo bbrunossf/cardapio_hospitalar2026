@@ -2,7 +2,7 @@
 
 > Decisão de arquitetura: tratar `alimentos_industrializados` como **prato** no motor PuLP.
 > Status: **aprovado (16/08/2026)** — pendente implementação.
-> Data: 16/08/2026
+> Data: 16/08/2026 (atualizado 20/08/2026 — seção 3.5: teto de industrializados/dia)
 
 ## 1. Contexto
 
@@ -35,7 +35,7 @@ sobre ele que esta decisão é tomada.
 - Restrições: composição por refeição via `regras_composicao` (tipo_prato × qtd min/max), tipos não
   autorizados por refeição, um prato por dia no máximo, limite de 18 pratos/dia, restrições
   nutricionais da dieta, variedade, elegibilidade (`regras_elegibilidade_dieta`) e sensoriais
-  (`regras_sensoriais_gerais`).
+  (`regras_sensoriais_gerais`) e teto de industrializados por dia (nova, seção 3.5).
 
 **Não existe variável de ingrediente no modelo.** Ingredientes só entram indiretamente, já somados
 nos nutrientes do prato pela view.
@@ -148,6 +148,38 @@ política NULL (seção 3.3).
    repassa a `criar_modelo_otimizacao` (linha 466 chama sem `objetivo=`) — hoje só funciona porque o
    default do modelo é `max_energia`, que coincide com o default do request. Corrigir no mesmo
    commit para o teste de "maximizar energia" ser explícito.
+5. `criar_modelo_otimizacao()`: adicionar a restrição do teto de industrializados/dia (seção 3.5).
+
+### 3.5 Teto de industrializados por dia (20/08/2026)
+
+**Motivação.** O motor otimiza nutrientes dentro das faixas da dieta — ele não tem noção de
+"saudável". Com industrializados no modelo e objetivo `max_energia`, produtos densos em kcal
+(ultraprocessados) são atraentes e podem ocupar slots obrigatórios (ex.: salgadinho como SD no
+almoço) sem violar regra alguma, desde que as faixas da dieta permitam (a LIVRE hoje só limita
+energia 1000–2500 kcal e proteína 50–100 g, sem sódio/gordura). Para responder à pergunta do
+leigo ("o sistema pode oferecer um pacote de salgadinho no dia?"), entra uma regra explícita de
+quantidade.
+
+**Modelagem.** Constante `MAX_INDUSTRIALIZADOS_DIA` (default **2**) no `api/otimizacao.py` + uma
+restrição por dia:
+
+```
+Σ_{p ∈ industrializados} Σ_{r} X[p][r][d] ≤ MAX_INDUSTRIALIZADOS_DIA   ∀ d
+```
+
+- `industrializados` = pratos com `origem == 'industrializado'` (flag prevista na seção 3.2)
+  **após** o filtro da política NULL (seção 3.3) — só contam produtos que entraram no problema.
+- Não conflita com `Unico_Dia` (≤ 1 refeição/dia por prato) nem com `MaxPratos_Dia` (≤ 18/dia):
+  é um corte adicional sobre o total diário. Nome da restrição: `MaxInd_Dia{d}`.
+- `MAX_INDUSTRIALIZADOS_DIA = 0` força zero industrializados por dia (equivale a desligar a
+  inclusão via restrição, sem mudar o carregador) — útil para dieta restritiva sem nova flag.
+
+**Implementação.** No `criar_modelo_otimizacao`, junto às demais restrições por dia:
+`ids_ind = [p['id'] for p in dados['pratos'] if p.get('origem') == 'industrializado']`; se
+`ids_ind` não vazio, adicionar a restrição `Σ X[pid][r][d] ≤ MAX_INDUSTRIALIZADOS_DIA`.
+
+**Relatório.** `resolver_e_extrair` expõe `industrializados_por_dia` (contagem por dia) nas
+métricas — o E2E confere o teto no próprio payload, sem consultar o banco.
 
 ## 4. Fora de escopo (fase 2, se desejado)
 
@@ -168,6 +200,9 @@ política NULL (seção 3.3).
 3. **Filtro NULL**: dieta com restrição de sódio + produto sem `sodio_mg_100g` → excluído e
    presente em `excluidos_null` (caso da seção 10 do spec, linha 393).
 4. **E2E do Bruno**: rodar `/otimizacao` com flag, conferir que o relatório mostra origem dos itens.
+5. **Teto de industrializados/dia**: LIVRE, flag ON, `MAX_INDUSTRIALIZADOS_DIA=1` num teste →
+   conferir no payload `industrializados_por_dia` que nenhum dia passa de 1; com `0`, nenhum dia
+   tem industrializado.
 
 ## 6. Decisões do Bruno (16/08/2026)
 
@@ -177,3 +212,5 @@ política NULL (seção 3.3).
 3. **Política NULL** (excluir + reportar — seção 3.3) — ok;
 4. **Fase 1 sem salvar cardápio com industrializados** — ok;
 5. **Flag `incluir_industrializados` na tela de otimização (`/otimizacao`)** — ok, default marcada.
+6. **Teto de industrializados por dia** — ok (20/08/2026); default `MAX_INDUSTRIALIZADOS_DIA = 2`
+   (constante no `api/otimizacao.py`), valor ajustável pelo Bruno.
