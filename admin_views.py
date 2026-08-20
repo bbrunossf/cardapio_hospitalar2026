@@ -22,7 +22,7 @@ class BaseModelView(ModelView):
     can_export = True
     create_modal = False
     edit_modal = False
-    page_size = 6
+    page_size = 15
     column_display_pk = False
     column_hide_backrefs = False
 

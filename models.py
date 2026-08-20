@@ -28,7 +28,7 @@ class Ingrediente(db.Model):
     observacoes = db.Column(db.Text)
     criado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
     editado_em = db.Column(db.DateTime, server_default=text('CURRENT_TIMESTAMP'))
-    fonte = db.Column(db.String(20))
+    fonte = db.Column(db.String(200))
     desativado = db.Column(db.Boolean, default=False)
 
     def __str__(self):
