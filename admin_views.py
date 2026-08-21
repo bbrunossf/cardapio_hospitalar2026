@@ -1,7 +1,8 @@
-from flask import abort, redirect, request, url_for
+from flask import abort, flash, redirect, request, url_for
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.menu import MenuLink
 from flask_login import current_user
+from sqlalchemy.exc import IntegrityError
 from wtforms import PasswordField
 
 from models import (
@@ -57,6 +58,23 @@ class BaseModelView(ModelView):
     @property
     def can_delete(self):
         return self._pode_escrever()
+
+    def delete_model(self, obj):
+        """Delete com mensagem amigável quando o registro está em uso (FK).
+
+        Com PRAGMA foreign_keys=ON (app2.py), excluir um registro referenciado
+        (ex.: ingrediente com composição, prato em cardápio salvo) levanta
+        IntegrityError. Em vez do erro cru, avisa e sugere desativar — o padrão
+        do projeto é soft delete (desativado=1).
+        """
+        try:
+            return super().delete_model(obj)
+        except IntegrityError:
+            db.session.rollback()
+            flash("Não foi possível excluir: este registro está em uso em outras "
+                  "tabelas (ex.: composição de pratos, cardápios salvos). "
+                  "Desative em vez de excluir.", "error")
+            return False
 
     # Escopo por dono (equivalente a RLS na aplicação — SQLite não tem RLS)
     def get_query(self):

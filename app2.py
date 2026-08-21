@@ -2,9 +2,13 @@
 App Flask + SQLAlchemy + Flask-Admin + autenticação (Flask-Login)
 Interface administrativa para o banco de Cardápio Hospitalar
 """
+import sqlite3
+
 import click
 from flask import Flask, abort, jsonify, redirect, request, url_for
 from flask_login import current_user
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 from config import Config
 from extensions import db, admin, login_manager
@@ -22,6 +26,23 @@ from api.busca_semelhantes import busca_semelhantes_bp
 from api.regras_paciente import regras_bp
 from api.registro_alimentar import registro_bp
 from usage_monitor import register_usage
+
+
+@event.listens_for(Engine, "connect")
+def _sqlite_foreign_keys_on(dbapi_connection, connection_record):
+    """Enforça FKs no SQLite (PRAGMA foreign_keys=ON por conexão).
+
+    Sem isso o banco aceita DELETE que deixa linhas órfãs silenciosamente
+    (ex.: ingrediente usado em prato_composicao). Com a pragma ligada, o
+    SQLAlchemy levanta IntegrityError e o admin mostra mensagem amigável
+    (BaseModelView.delete_model). Incidente que motivou: 21/08/2026 —
+    deleção direta via DBeaver (conexão com FK OFF) deixou 18 órfãos em
+    prato_composicao.
+    """
+    if isinstance(dbapi_connection, sqlite3.Connection):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 def create_app():
