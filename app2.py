@@ -20,6 +20,7 @@ from api.plano import plano_bp
 from api.posso_comer import posso_comer_bp
 from api.busca_semelhantes import busca_semelhantes_bp
 from api.regras_paciente import regras_bp
+from api.registro_alimentar import registro_bp
 from usage_monitor import register_usage
 
 
@@ -39,7 +40,7 @@ def create_app():
     # Registra blueprints de forma idempotente (evita erro no reloader)
     for bp in [auth_bp, composicao_bp, otimizacao_bp, rotulo_bp,
                paciente_bp, plano_bp, posso_comer_bp, busca_semelhantes_bp,
-               regras_bp]:
+               regras_bp, registro_bp]:
         if bp.name not in app.blueprints:
             app.register_blueprint(bp)
 

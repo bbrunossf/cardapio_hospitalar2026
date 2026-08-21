@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro Alimentar 48h</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/identidade_paginas.css') }}">
+<style>
+  html, body { height: 100%; }
+  body { display: flex; flex-direction: column; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 10px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .controls label { font-size: 0.78rem; color: var(--text2); display: inline-flex; align-items: center; gap: 6px; }
+  .controls select {
+    font-family: var(--font); font-size: 0.82rem; color: var(--text);
+    padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: #fff;
+  }
+
+  .entrada {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface);
+  }
+  #txtRelato {
+    width: 100%; min-height: 110px; resize: vertical; font-family: var(--font);
+    font-size: 0.88rem; padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); box-sizing: border-box;
+  }
+  .entrada .linha { display: flex; gap: 10px; align-items: center; }
+  #msgErro { color: var(--danger); font-size: 0.8rem; }
+  #alertas { padding: 0 24px; }
+  #alertas .alerta {
+    background: #FBF0DC; color: #7A5300; font-size: 0.8rem;
+    border-radius: 6px; padding: 6px 12px; margin-top: 8px;
+  }
+
+  #resultado { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  .carregando { color: var(--text2); font-size: 0.9rem; padding: 12px 0; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .card h3 { font-size: 0.82rem; color: var(--text2); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+
+  .totais { display: flex; gap: 12px; flex-wrap: wrap; }
+  .dia-card { flex: 1; min-width: 260px; }
+  .totais table { border-collapse: collapse; width: 100%; font-size: 0.82rem; }
+  .totais th, .totais td { padding: 4px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+  .totais th:first-child, .totais td:first-child { text-align: left; }
+  .totais th { color: var(--text2); font-size: 0.72rem; }
+  .nao-info { color: var(--text2); font-style: italic; }
+
+  table.itens { border-collapse: collapse; width: 100%; font-size: 0.84rem; }
+  table.itens th, table.itens td { padding: 7px 9px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.itens th { color: var(--text2); font-size: 0.72rem; text-transform: uppercase; }
+  table.itens tr.revisar { background: #FBF0DC; }
+  table.itens .num { text-align: right; white-space: nowrap; }
+  table.itens select, table.itens input[type=number] {
+    font-family: var(--font); font-size: 0.8rem; padding: 4px 6px;
+    border: 1px solid var(--border); border-radius: 6px; max-width: 100%;
+  }
+  table.itens input[type=number] { width: 90px; }
+
+  .badge {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; vertical-align: middle;
+  }
+  .badge-origem { background: #D6EAF8; color: #1A5276; }
+  .badge-estimado { background: #FBF0DC; color: #7A5300; }
+  .badge-revisar { background: #FDEBD0; color: #935116; }
+
+  .obs { font-size: 0.72rem; color: var(--text2); margin-top: 2px; }
+  .fonte { font-size: 0.72rem; color: var(--primary); }
+  .acoes { margin-top: 12px; display: flex; gap: 10px; align-items: center; }
+  #msgOk { font-size: 0.85rem; color: var(--primary); }
+
+  /* ---- registros salvos (lista + detalhe) ---- */
+  #regsSalvos, #detalhe { padding: 0 24px; }
+  .reg-linha {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 6px; background: var(--surface); font-size: 0.84rem;
+  }
+  .reg-linha .k { color: var(--text2); font-size: 0.75rem; }
+  .reg-linha .espaco { margin-left: auto; display: flex; gap: 8px; }
+  .badge-status { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .badge-status.rascunho { background: #E8ECF1; color: #4A5568; }
+  .badge-status.processado { background: #D6EAF8; color: #1A5276; }
+  .badge-status.revisado { background: #FDEBD0; color: #935116; }
+  .btn-mini {
+    font-family: var(--font); font-size: 0.75rem; cursor: pointer;
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: #fff; color: var(--text);
+  }
+  .btn-mini:hover { background: var(--surface2); }
+  .btn-mini.perigo { color: #922B21; }
+  .detalhe-topo { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 8px; }
+  .detalhe-topo select {
+    font-family: var(--font); font-size: 0.8rem; padding: 4px 6px;
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  .ed-qtd { width: 80px; font-family: var(--font); font-size: 0.8rem;
+    padding: 4px 6px; border: 1px solid var(--border); border-radius: 6px; text-align: right; }
+  .sem-registros { color: var(--text2); font-size: 0.82rem; padding: 6px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+    Registro Alimentar 48h
+  </h1>
+  <a class="voltar" href="/admin/">&larr; Voltar ao Admin</a>
+</header>
+
+<div class="controls">
+  <label>Paciente
+    <select id="selPaciente"><option value="">Carregando pacientes...</option></select>
+  </label>
+</div>
+
+<div class="entrada">
+  <textarea id="txtRelato" placeholder="Cole aqui o relato do paciente (2 dias):&#10;Dia 1 — Café: 2 fatias de pão integral com queijo...&#10;Almoço: arroz, feijão, bife grelhado e salada...&#10;Dia 2 — ..."></textarea>
+  <div class="linha">
+    <button class="btn btn-primary" id="btnProcessar">Processar relato</button>
+    <div id="msgErro"></div>
+  </div>
+</div>
+
+<div id="regsSalvos"></div>
+<div id="detalhe"></div>
+
+<div id="alertas"></div>
+
+<div id="resultado">
+  <div class="carregando">Selecione o paciente, cole o relato e clique em "Processar relato".</div>
+</div>
+
+<script src="{{ url_for('static', filename='js/registro_alimentar.js') }}"></script>
+</body>
+</html>

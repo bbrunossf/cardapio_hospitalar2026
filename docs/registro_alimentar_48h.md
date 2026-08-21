@@ -86,8 +86,9 @@ Para **cada item** estruturado, nesta ordem — o primeiro que casar vence:
 | # | Estratégia | Alvos (em ordem) | Critério |
 |---|---|---|---|
 | 1 | Tokens exatos (normalizado: minúsculas, sem acentos, sem plural) | `pratos.nome` → `alimentos_industrializados.(nome+marca)` → `ingredientes.nome` | **todos** os tokens do texto (padrão já usado no Posso Comer) |
-| 2 | Fuzzy | idem | `difflib.SequenceMatcher.ratio ≥ 0.82` no nome normalizado |
-| 3 | Semântica (chroma) | coleção `alimentos_embeddings` | top-k vizinhos + filtro de categoria (`tipo_prato`/`tipo_alimento`) + menor distância; desempate por kcal da porção mais próxima da faixa informada |
+| 2 | Tokens relaxados (20/08) | idem | 2a: exato sem stopwords de preparo (`sem`, `com`, `feito`, `na`...); 2b: "all-but-one" (cai 1 token — ex.: `cebola roxa` → `Cebola`) com **precisão ≥ 0.75** (nome do candidato ≥75% explicado pelos tokens; evita o falso positivo `pão de forma` → `Pão francês`) |
+| 3 | Fuzzy | idem | `difflib.SequenceMatcher.ratio ≥ 0.82` no nome normalizado |
+| 4 | Semântica (chroma) | coleção `alimentos_embeddings` | top-k vizinhos + filtro de categoria (`tipo_prato`/`tipo_alimento`) + menor distância; desempate por kcal da porção mais próxima da faixa informada |
 
 Regras:
 - **Precedência de fonte é regra de aplicação, não de busca** — um item "arroz,
@@ -160,14 +161,27 @@ Alimentos Semelhantes continuam usando-a — não quebrar o que funciona).
 - `GET /registro-alimentar` — página (regra UX: **sempre por paciente**,
   seleção primeiro; nunca lista geral)
 - `POST /api/registro-alimentar/processar` — body `{paciente_id, texto}` →
-  estrutura (API 5010) → lookup → conversão → cálculo → resposta:
-  - `{registro_id, itens: [{dia, refeicao, descricao, quantidade_texto,
-    quantidade_g, origem, estimado, nome_encontrado?, nutrientes: {...},
-    fonte_dados?}], totais_por_dia: [{dia, kcal, macros...,
-    micronutrientes...}], alertas: [...]}`
-- `GET /api/registro-alimentar/<registro_id>` — detalhe persistido (auditoria)
-- `PATCH /api/registro-alimentar/itens/<item_id>` — correção manual do
-  nutricionista (origem/quantidade_g/nutrientes) — fase 2
+  estrutura (API 5010) → lookup → conversão → cálculo → resposta (dry-run,
+  NÃO grava):
+  - `{itens: [{dia, refeicao, descricao, quantidade_texto, quantidade_g,
+    origem, estimado, nome_encontrado?, nutrientes: {...}, fonte_dados?,
+    revisar?, ambiguo?, candidatos?}], totais_por_dia: [...], alertas: [...]}`
+- `POST /api/registro-alimentar/confirmar` — re-processa com as resoluções do
+  nutricionista (`candidato_tipo/candidato_id/quantidade_g` por item, mesma
+  ordem) e GRAVA (status `processado`; itens sem match viram `estimado`)
+- `GET /api/registro-alimentar?paciente_id=N` — lista por paciente (resumo:
+  datas, status, nº itens, kcal por dia, quem criou) — **CRUD (20/08)**
+- `GET /api/registro-alimentar/<registro_id>` — detalhe persistido (auditoria,
+  inclui `texto_original`)
+- `PATCH /api/registro-alimentar/<registro_id>` — cabeçalho (status
+  rascunho/processado/revisado, datas, texto) — **CRUD (20/08)**
+- `PATCH /api/registro-alimentar/itens/<item_id>` — correção manual: o
+  servidor RECALCULA os nutrientes a partir do banco (cliente só envia
+  `quantidade_g` e/ou `candidato_tipo/candidato_id`, inclusive `estimado`);
+  registro vira `revisado` automaticamente — **CRUD (20/08)**
+- `DELETE /api/registro-alimentar/<registro_id>` e
+  `DELETE /api/registro-alimentar/itens/<item_id>` — exclusão SOFT
+  (`desativado=1`, auditoria preservada) — **CRUD (20/08)**
 - Fluxo em 2 passos na página (padrão Posso Comer): processar → itens com
   match ambíguo ou `quantidade_g NULL` aparecem para confirmação → 2ª chamada
   resolve; o registro só é gravado com os itens resolvidos
@@ -218,9 +232,33 @@ editado_em DATETIME DEFAULT CURRENT_TIMESTAMP`, `desativado BOOLEAN DEFAULT 0`,
   insumo automático do plano (ex.: comparar consumo atual × meta calculada) —
   fora do escopo da v1
 
-## Estado da implementação
+## Estado da implementação (20/08/2026)
 
-Nada implementado — este é o doc de planejamento (fase doc primeiro, regra 2).
-Próximos passos após aprovação do Bruno: (1) executar DDL; (2) endpoint
-`/estruturar-registro` na api_posso_comer (5010); (3) extensão do script de
-embeddings + gerar `alimentos_embeddings`; (4) blueprint no app.
+1. ✅ **DDL executado pelo Bruno (20/08)** — `registros_alimentares`,
+   `registro_alimentar_itens` (CHECK de FK exclusiva ok), `medidas_caseiras`
+2. ✅ **API 5010** — endpoint `/estruturar-registro` implementado e no ar
+   (modo real testado: dias/refeições/quantidades corretos); `/estimar`
+   estendido com macros (carbo/prot/gordura/fibra por 100g e por porção,
+   retrocompatível — Posso Comer lê só kcal/sódio)
+3. ⏸️ **Embeddings `alimentos_embeddings` — ADIADOS**: discutir o formato com
+   o Bruno antes de gerar (a `ingredientes_embeddings` fica intacta)
+4. ✅ **Blueprint no app IMPLEMENTADO e testado (20/08)** — `models_registro.py`
+   + `api/registro_alimentar.py`: página `/registro-alimentar` (link em
+   Ferramentas), `POST /api/registro-alimentar/processar` (dry-run), `POST
+   /api/registro-alimentar/confirmar` (grava status `processado`), `GET
+   /api/registro-alimentar/<id>` (auditoria). **CRUD completo (20/08)**: lista
+   por paciente, PATCH cabeçalho, PATCH item com RECÁLCULO no servidor
+   (inclusive troca de origem estimado→prato), DELETE soft de registro e item
+   (registro vira `revisado` ao corrigir/excluir item). Fluxo em 2 passos:
+   itens ambíguos → lista p/ escolher; sem gramas → revisar; sem match →
+   estimado só na confirmação. Escopo por dono herdado (`paciente_acessivel`).
+   Testes E2E: `/tmp/test_registro_alimentar.py` (28/28) +
+   `/tmp/test_registro_crud.py` (30/30), banco temporário — CHECK de FK
+   exclusiva incluído
+5. ⏳ **Seed de medidas caseiras** — `docs/sql/medidas_caseiras_seed.sql`
+   criado; revisar valores e executar (`sqlite3 cardapio_hospitalar.db <
+   docs/sql/medidas_caseiras_seed.sql`) — **sem ele, medida caseira cai em
+   "revisar"** (o pipeline nunca inventa conversão). 20/08: análise do
+   registro #1 adicionou `('xicara','café',50)` (LLM devolve "xicara" e a
+   genérica de 240g inflava o café) e `('unidade','ovo',50)` — revisar e
+   executar o arquivo completo
