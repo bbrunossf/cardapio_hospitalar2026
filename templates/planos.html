@@ -126,7 +126,7 @@
                 <button type="button" class="regras-tab" data-tab="exclusoes">Exclusões</button>
             </div>
 
-            <div id="regras-faixas" class="regras-panel ativo">
+            <div id="regras-faixas" class="regras-panel ativo" data-tipo="faixa">
                 <form class="regras-form" data-tipo="faixa">
                     <label>Nutriente
                         <input type="text" name="nutriente" list="nutrientes-comuns" placeholder="ex.: sodio" required>
@@ -144,7 +144,7 @@
                 <div class="regras-lista"></div>
             </div>
 
-            <div id="regras-elegibilidade" class="regras-panel">
+            <div id="regras-elegibilidade" class="regras-panel" data-tipo="elegibilidade">
                 <form class="regras-form" data-tipo="elegibilidade">
                     <label>Atributo
                         <select name="atributo">
@@ -166,7 +166,7 @@
                 <div class="regras-lista"></div>
             </div>
 
-            <div id="regras-variedade" class="regras-panel">
+            <div id="regras-variedade" class="regras-panel" data-tipo="variedade">
                 <form class="regras-form" data-tipo="variedade">
                     <label>Tipo de prato
                         <select name="tipo_prato_id" required>
@@ -181,7 +181,7 @@
                 <div class="regras-lista"></div>
             </div>
 
-            <div id="regras-exclusoes" class="regras-panel">
+            <div id="regras-exclusoes" class="regras-panel" data-tipo="exclusao">
                 <form class="regras-form" data-tipo="exclusao">
                     <label>Prato
                         <select name="prato_id">

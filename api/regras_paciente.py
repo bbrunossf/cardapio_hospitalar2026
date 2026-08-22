@@ -120,19 +120,28 @@ def _preencher(regra, payload, parcial=False):
         return None
 
     if isinstance(regra, ExclusaoPaciente):
-        tem_lado = "prato_id" in payload or "ingrediente_id" in payload
-        if tem_lado and "prato_id" in payload and "ingrediente_id" in payload:
-            return "informe exatamente um: prato_id OU ingrediente_id."
-        if "prato_id" in payload:
-            regra.prato_id = _int(payload.get("prato_id"))
-            regra.ingrediente_id = None  # troca de lado limpa o outro
-        if "ingrediente_id" in payload:
-            regra.ingrediente_id = _int(payload.get("ingrediente_id"))
-            regra.prato_id = None
-        if tem_lado and (not regra.prato_id) == (not regra.ingrediente_id):
-            return "informe exatamente um: prato_id OU ingrediente_id."
-        if not parcial and not tem_lado:
-            return "informe prato_id ou ingrediente_id."
+        # Validar por VALOR, não por presença da chave: o frontend envia sempre
+        # os dois campos (o não escolhido vem null/vazio) — bug 22/08/2026
+        prato_raw = payload.get("prato_id")
+        ingrediente_raw = payload.get("ingrediente_id")
+        tem_prato = prato_raw is not None and str(prato_raw).strip() != ""
+        tem_ingrediente = ingrediente_raw is not None and str(ingrediente_raw).strip() != ""
+        if "prato_id" in payload or "ingrediente_id" in payload:
+            if tem_prato and tem_ingrediente:
+                return "informe exatamente um: prato_id OU ingrediente_id."
+            if tem_prato:
+                regra.prato_id = _int(prato_raw)
+                regra.ingrediente_id = None  # troca de lado limpa o outro
+                if not regra.prato_id:
+                    return "informe um prato_id válido."
+            elif tem_ingrediente:
+                regra.ingrediente_id = _int(ingrediente_raw)
+                regra.prato_id = None
+                if not regra.ingrediente_id:
+                    return "informe um ingrediente_id válido."
+            elif not parcial:
+                return "informe prato_id ou ingrediente_id."
+            # PATCH com os dois lados vazios: não mexe nos lados já salvos
         if "motivo" in payload:
             regra.motivo = (payload.get("motivo") or "").strip() or None
         return None

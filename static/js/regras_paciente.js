@@ -163,7 +163,8 @@
     lista.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-acao]');
       if (!btn) return;
-      var tipo = lista.closest('.regras-panel').id.replace('regras-', '');
+      // tipo da API vem do data-tipo do painel (singular), NÃO do id (plural)
+      var tipo = lista.closest('.regras-panel').dataset.tipo;
       var id = btn.dataset.id;
 
       if (btn.dataset.acao === 'excluir') {
